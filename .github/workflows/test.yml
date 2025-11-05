@@ -1,4 +1,4 @@
-name: Test Userpatches
+name: Test Lua Syntax
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
       
       - name: Check Lua syntax
         run: |
-          echo "Checking Lua syntax for all patch files..."
+          echo "Checking Lua syntax for all files..."
           FAILED=0
           
           while IFS= read -r file; do
@@ -41,19 +41,3 @@ jobs:
           fi
           
           echo "✅ All Lua files passed syntax check!"
-      
-      - name: Check for common issues
-        run: |
-          echo "Checking for common userpatch issues..."
-          
-          # Check for proper userpatch module usage
-          if grep -r "userpatch\." --include="*.lua" .; then
-            echo "✓ Found userpatch module usage"
-          fi
-          
-          # Warn about potential global pollution
-          if grep -r "^[^-]*function [A-Z]" --include="*.lua" . | grep -v "local"; then
-            echo "⚠️  Warning: Found non-local global functions (may cause conflicts)"
-          fi
-          
-          echo "✅ Basic checks completed"
