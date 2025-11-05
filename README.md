@@ -2,6 +2,8 @@
 
 A comprehensive KOReader plugin that displays beautiful weather information on your device's sleep screen.
 
+![Beautiful Weather Lockscreen](resources/beautiful.jpg)
+
 ![License](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)
 ![KOReader](https://img.shields.io/badge/KOReader-Plugin-orange.svg)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/loeffner/WeatherLockscreen/main)
@@ -16,6 +18,31 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
 - **Easy Configuration** - Configure settings via main menu, no need to edit source code
 - **Smart Caching** - Automatic caching with configurable expiration
 - **Offline Support** - Uses cached data when internet connection is unavailable
+
+## Installation
+
+1. Download the latest release from the [Releases](https://github.com/loeffner/weatherlockscreen.koplugin/releases) page
+2. Extract the `weatherlockscreen.koplugin` folder
+3. Copy it to your KOReader plugins directory:
+   - **Kindle**: `/mnt/us/koreader/plugins/`
+   - **Kobo**: `/mnt/onboard/.adds/koreader/plugins/`
+   - **Android**: `/sdcard/koreader/plugins/`
+4. Restart KOReader
+
+## Configuration
+
+### Initial Setup
+
+1. Navigate to **Main Menu > Weather Lockscreen > Settings**
+2. Configure the following:
+   - **Location**: Enter your location (city name, airport code, us postal code, or coordinates)
+     - Examples: "London", "MUC", "10001", "48.8567,2.3508"
+   - **Temperature Scale**: Choose Celsius (°C) or Fahrenheit (°F)
+   - **Display Format**: Select your layout
+
+### Enable Weather Display
+
+1. Navigate to **Settings > Screen > Sleep screen > Wallpaper**
 
 ## Display Modes
 
@@ -50,31 +77,6 @@ The plugin offers several display formats to customize your lockscreen:
     <td></td>
   </tr>
 </table>
-
-## Installation
-
-1. Download the latest release from the [Releases](https://github.com/loeffner/weatherlockscreen.koplugin/releases) page
-2. Extract the `weatherlockscreen.koplugin` folder
-3. Copy it to your KOReader plugins directory:
-   - **Kindle**: `/mnt/us/koreader/plugins/`
-   - **Kobo**: `/mnt/onboard/.adds/koreader/plugins/`
-   - **Android**: `/sdcard/koreader/plugins/`
-4. Restart KOReader
-
-## Configuration
-
-### Initial Setup
-
-1. Navigate to **Main Menu > Weather Lockscreen > Settings**
-2. Configure the following:
-   - **Location**: Enter your location (city name, airport code, us postal code, or coordinates)
-     - Examples: "London", "MUC", "10001", "48.8567,2.3508"
-   - **Temperature Scale**: Choose Celsius (°C) or Fahrenheit (°F)
-   - **Display Format**: Select your layout
-
-### Enable Weather Display
-
-1. Navigate to **Settings > Screen > Sleep screen > Wallpaper**
 2. Select **"Show weather on sleep screen"**
 
 ## How It Works
@@ -91,7 +93,7 @@ It uses my account and API Key. Please be responsible, otherwise I can not susta
 You can create your own account and API key at [WeatherAPI.com](https://www.weatherapi.com/).
 The free tier allows 1 000 000 API calls per month.
 
-<a href="https://www.weatherapi.com/" title="Free Weather API"><img src='//cdn.weatherapi.com/v4/images/weatherapi_logo.png' alt="Weather data by WeatherAPI.com" border="0"></a>
+<a href="https://www.weatherapi.com/" title="Free Weather API"><img src='https://cdn.weatherapi.com/v4/images/weatherapi_logo.png' alt="Weather data by WeatherAPI.com" border="0"></a>
 
 ## Customization
 
