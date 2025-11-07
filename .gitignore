@@ -5,6 +5,10 @@
 *.swo
 *~
 
+# Archives
+*.zip
+*.tar.gz
+
 # Temporary files
 tmp_*
 .DS_Store

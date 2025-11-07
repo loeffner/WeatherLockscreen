@@ -33,17 +33,31 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
 
 ### Initial Setup
 
-1. Navigate to **Main Menu > Weather Lockscreen > Settings**
-2. Configure the following:
-   - **Location**: Enter your location (city name, airport code, us postal code, or coordinates)
-     - Examples: "London", "MUC", "10001", "48.8567,2.3508"
-   - **Temperature Scale**: Choose Celsius (°C) or Fahrenheit (°F)
-   - **Display Format**: Select your layout
-
-### Enable Weather Display
-
-1. Navigate to **Settings > Screen > Sleep screen > Wallpaper**
-2. Select **"Show weather on sleep screen"**
+<table>
+  <tr>
+    <td valign="top">
+      <ol>
+        <li>Navigate to <b>Tools &gt; Weather Lockscreen</b></li>
+        <li>Configure the following:
+          <ul>
+            <li><b>Location</b>: Enter your location (city name, airport code, us postal code, or coordinates)
+              <br><i>Examples: "London", "MUC", "10001", "48.8567,2.3508"</i>
+            </li>
+            <li><b>Temperature Scale</b>: Choose Celsius (°C) or Fahrenheit (°F)</li>
+            <li><b>Display Format</b>: Select your layout</li>
+          </ul>
+        </li>
+        <li>Navigate to <b>Settings &gt; Screen  &gt;  Sleep Screen  &gt;  Wallpaper </b></li>
+        <li>Select <b>"Show weather on sleep screen" </b></li>
+      </ol>
+    </td>
+    <td valign="top" width="220">
+      <img src="resources/settings_where_to_find.png" width="300"><br>
+      <img src="resources/settings.png" width="300"><br>
+      <img src="resources/sleep_screen_settings.png" width="300">
+    </td>
+  </tr>
+</table>
 
 ## Display Modes
 
