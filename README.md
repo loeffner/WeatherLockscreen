@@ -8,7 +8,7 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
 ![KOReader](https://img.shields.io/badge/KOReader-Plugin-orange.svg)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/loeffner/WeatherLockscreen/main)
 ![GitHub Release](https://img.shields.io/github/v/release/loeffner/WeatherLockscreen)
-
+![GitHub Downloads](https://img.shields.io/github/downloads/loeffner/WeatherLockscreen/total)
 
 
 ## Features
@@ -43,6 +43,7 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
 ### Enable Weather Display
 
 1. Navigate to **Settings > Screen > Sleep screen > Wallpaper**
+2. Select **"Show weather on sleep screen"**
 
 ## Display Modes
 
@@ -77,7 +78,6 @@ The plugin offers several display formats to customize your lockscreen:
     <td></td>
   </tr>
 </table>
-2. Select **"Show weather on sleep screen"**
 
 ## How It Works
 
@@ -118,13 +118,20 @@ You can customize the fallback sun/moon icons:
 - Check the cache directory has write permissions
 
 ### Outdated weather data
-- Weather data is cached for 1 hour (default)
+- Weather data is cached for the configured time (1 hour default)
 - Enter sleep mode again to force a refresh after the cache expires
 - Check your internet connection
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Work in Progress
+
+- Dark Mode: Currently, the weather icons that are supplied by the API only look good in light mode.
+- Fallback: A more configurable fallback, when no weather data is available.
+- More display modes: I am always open for requests.
+- Testing: I tested on the koreader emulator and my kindle. I would love to hear feedback from users of other devices.
 
 ## Related Projects
 
