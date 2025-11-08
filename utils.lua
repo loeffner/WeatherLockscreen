@@ -7,8 +7,50 @@ local DataStorage = require("datastorage")
 local logger = require("logger")
 local ffiUtil = require("ffi/util")
 local util = require("util")
+local Device = require("device")
+local Screen = Device.screen
 
 local WeatherUtils = {}
+
+function WeatherUtils:scaleToScreenHeight(max_height, base_sizes, top_bottom_margin, header_font_size, header_margin)
+    --[[
+        Scales a set of base sizes to fit within available height.
+
+        Args:
+            screen_height: available_height:
+            base_sizes: table with:
+                - elements: array of element heights that will be stacked vertically
+            top_bottom_margin: total margin (top + bottom)
+            header_font_size: fixed header font size
+            header_margin: fixed header margin
+
+        Returns:
+            scale_factor: the factor to apply to all base sizes (1.0 if content fits, <1.0 if scaled down)
+    ]]
+
+    -- Calculate available space
+    local header_height = header_font_size + header_margin * 2
+    local available_height = max_height - header_height - 2 * top_bottom_margin
+
+    -- Calculate total required height
+    local estimated_height = 0
+    for _, element_height in ipairs(base_sizes.elements) do
+        estimated_height = estimated_height + element_height
+    end
+
+    -- Calculate scale factor
+    local scale_factor = 1.0
+    if estimated_height > available_height then
+        scale_factor = available_height / estimated_height
+        logger.dbg("WeatherLockscreen: Content scaled down to:", scale_factor,
+                   "- estimated:", estimated_height, "available:", available_height)
+    else
+        logger.dbg("WeatherLockscreen: Content fits without scaling - estimated:", estimated_height,
+                   "available:", available_height)
+    end
+
+    return scale_factor
+end
 
 function WeatherUtils:formatHourLabel(hour, twelve_hour_clock)
     if twelve_hour_clock then
@@ -30,7 +72,7 @@ function WeatherUtils:getMoonPhaseIcon(moon_phase)
     if not moon_phase then
         return nil
     end
-    
+
     -- Map moon phase names to icon files
     local phase_map = {
         ["New Moon"] = "new_moon.svg",
@@ -43,22 +85,22 @@ function WeatherUtils:getMoonPhaseIcon(moon_phase)
         ["Third Quarter"] = "last_quarter.svg",
         ["Waning Crescent"] = "waning_crescent.svg",
     }
-    
+
     local icon_file = phase_map[moon_phase]
     if not icon_file then
         -- Default to new moon if phase not recognized
         icon_file = "new_moon.svg"
     end
-    
+
     local icon_path = DataStorage:getDataDir() .. "/icons/moonphases/" .. icon_file
-    
+
     -- Check if file exists
     local f = io.open(icon_path, "r")
     if f then
         f:close()
         return icon_path
     end
-    
+
     return nil
 end
 
@@ -80,7 +122,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
         "sun",
         "moon",
     }
-    
+
     -- Moon phase icons (used in night owl mode)
     local moonphases_path = DataStorage:getDataDir() .. "/icons/moonphases"
     local moonphases_list = {
@@ -93,7 +135,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
         "last_quarter",
         "waning_crescent",
     }
-    
+
     -- Arrow icons for wind direction (used in retro analog mode)
     local arrows_path = DataStorage:getDataDir() .. "/icons/arrows"
     local arrows_list = {
@@ -106,7 +148,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
         "arrow_w",
         "arrow_nw",
     }
-    
+
     local function checkicons()
         logger.dbg("WeatherLockscreen: Checking for icons")
         local icons_found = true
@@ -124,7 +166,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
             return false
         end
     end
-    
+
     local function checkmoonphases()
         logger.dbg("WeatherLockscreen: Checking for moon phase icons")
         local moonphases_found = true
@@ -142,7 +184,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
             return false
         end
     end
-    
+
     local function checkarrows()
         logger.dbg("WeatherLockscreen: Checking for arrow icons")
         local arrows_found = true
@@ -169,13 +211,13 @@ function WeatherUtils:installIcons(plugin_dir_func)
         logger.dbg("WeatherLockscreen: Creating icons folder")
         if not result then return false end
     end
-    
+
     if not util.directoryExists(moonphases_path) then
         result = util.makePath(moonphases_path .. "/")
         logger.dbg("WeatherLockscreen: Creating moonphases folder")
         if not result then return false end
     end
-    
+
     if not util.directoryExists(arrows_path) then
         result = util.makePath(arrows_path .. "/")
         logger.dbg("WeatherLockscreen: Creating arrows folder")
@@ -188,7 +230,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
             logger.warn("WeatherLockscreen: plugin dir unknown; cannot copy bundled icons")
             return false
         end
-        
+
         for _, icon in ipairs(icons_list) do
             -- check icon files one at a time, and only copy when missing
             -- this will preserve custom icons set by the user
@@ -203,7 +245,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
                 end
             end
         end
-        
+
         for _, moonphase in ipairs(moonphases_list) do
             -- check moonphase files one at a time, and only copy when missing
             -- this will preserve custom moonphases set by the user
@@ -218,7 +260,7 @@ function WeatherUtils:installIcons(plugin_dir_func)
                 end
             end
         end
-        
+
         for _, arrow in ipairs(arrows_list) do
             -- check arrow files one at a time, and only copy when missing
             -- this will preserve custom arrows set by the user
@@ -243,12 +285,12 @@ function WeatherUtils:saveWeatherCache(weather_data)
     local cache_file = DataStorage:getDataDir() .. "/cache/weather-lockscreen.json"
     local cache_dir = DataStorage:getDataDir() .. "/cache/"
     util.makePath(cache_dir)
-    
+
     local cache_data = {
         timestamp = os.time(),
         data = weather_data
     }
-    
+
     local json = require("json")
     local f = io.open(cache_file, "w")
     if f then
@@ -265,38 +307,38 @@ function WeatherUtils:loadWeatherCache(get_max_age_func)
     if not f then
         return nil, false
     end
-    
+
     local content = f:read("*all")
     f:close()
-    
+
     local json = require("json")
     local success, cache_data = pcall(json.decode, content)
     if not success or not cache_data or not cache_data.timestamp or not cache_data.data then
         return nil, false
     end
-    
+
     local age = os.time() - cache_data.timestamp
     if age > get_max_age_func() then
         logger.dbg("WeatherLockscreen: Cache too old")
         return nil, false
     end
-    
+
     return cache_data.data, true
 end
 
 function WeatherUtils:clearCache()
     local cache_file = DataStorage:getDataDir() .. "/cache/weather-lockscreen.json"
     local icons_cache_dir = DataStorage:getDataDir() .. "/cache/weather-icons/"
-    
+
     local cleared = false
-    
+
     -- Remove cached weather data
     if util.fileExists(cache_file) then
         os.remove(cache_file)
         logger.dbg("WeatherLockscreen: Removed cached weather data")
         cleared = true
     end
-    
+
     -- Remove cached weather icons directory
     if util.directoryExists(icons_cache_dir) then
         -- Remove all files in the directory
@@ -313,7 +355,7 @@ function WeatherUtils:clearCache()
         logger.dbg("WeatherLockscreen: Removed cached weather icons")
         cleared = true
     end
-    
+
     return cleared
 end
 

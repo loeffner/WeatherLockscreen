@@ -24,8 +24,6 @@ local Font = require("ui/font")
 local Blitbuffer = require("ffi/blitbuffer")
 local ScreenSaverWidget = require("ui/widget/screensaverwidget")
 local InputDialog = require("ui/widget/inputdialog")
-local ffiUtil = require("ffi/util")
-local util = require("util")
 local logger = require("logger")
 local _ = require("gettext")
 local T = require("ffi/util").template
@@ -579,10 +577,7 @@ end
 function WeatherLockscreen:createFallbackWidget()
     logger.dbg("WeatherLockscreen: Creating fallback icon")
 
-    local screen_width = Screen:getWidth()
-    local base_width = 600
-    local scale_factor = math.min(2.5, math.max(1.0, screen_width / base_width))
-    local icon_size = math.floor(WEATHER_ICON_SIZE * scale_factor)
+    local icon_size = Screen:scaleBySize(WEATHER_ICON_SIZE)
 
     local current_hour = tonumber(os.date("%H"))
     local is_daytime = current_hour >= 6 and current_hour < 18
