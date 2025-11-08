@@ -18,15 +18,10 @@ local Blitbuffer = require("ffi/blitbuffer")
 local NightOwlDisplay = {}
 
 function NightOwlDisplay:create(weather_lockscreen, weather_data)
-    local screen_width = Screen:getWidth()
-    local base_width = 600
-    local scale_factor = math.min(2.5, math.max(1.0, screen_width / base_width))
-    
-    -- Typography
-    local header_font_size = math.floor(16 * scale_factor)
-    local moon_font_size = math.floor(22 * scale_factor)
-    local moon_icon_size = math.floor(250 * scale_factor)
-    local header_margin = math.floor(10 * scale_factor)
+    local header_font_size = Screen:scaleBySize(16)
+    local moon_font_size = Screen:scaleBySize(22)
+    local moon_icon_size = Screen:scaleBySize(250)
+    local header_margin = Screen:scaleBySize(10)
     
     -- Header: Location and Timestamp (inverted colors for dark mode)
     local header_group = weather_lockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_LIGHT_GRAY, weather_data.is_cached)
@@ -51,7 +46,7 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     -- Bottom text - moon phase name
     local bottom_text_widget = nil
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
-        local bottom_margin = math.floor(30 * scale_factor)
+        local bottom_margin = Screen:scaleBySize(30)
         bottom_text_widget = FrameContainer:new{
             padding = 0,
             margin = 0,
