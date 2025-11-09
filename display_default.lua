@@ -22,7 +22,7 @@ local DefaultDisplay = {}
 function DefaultDisplay:create(weather_lockscreen, weather_data)
     local screen_height = Screen:getHeight()
     local screen_width = Screen:getWidth()
-    
+
     -- Base sizes for content
     local base_current_icon_size = 300
     local base_hourly_icon_size = 120
@@ -34,12 +34,11 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
     local base_horizontal_spacing = 20
     local header_font_size = 16
     local header_margin = 10
-    local top_bottom_margin = 100
 
     -- Header: Location and Timestamp
     local header_group = weather_lockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data,
         Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
-    
+
     -- Calculate header height
     local header_height = (header_font_size + header_margin) * 2
 
@@ -193,11 +192,24 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
     local content_scale = 1.0
     local weather_group = buildWeatherContent(content_scale)
     local content_height = weather_group:getSize().h
-    local available_height = screen_height - header_height - top_bottom_margin
+    local available_height = screen_height - header_height
 
-    -- If content is too tall, rebuild with reduced scale
-    if content_height > available_height then
-        content_scale = available_height / content_height
+    -- Get user fill percent (default 90)
+    local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+    local min_fill = math.max(50, fill_percent - 5)
+    local max_fill = math.min(100, fill_percent + 5)
+
+    local min_target_height = available_height * (min_fill / 100)
+    local max_target_height = available_height * (max_fill / 100)
+
+    -- Determine the scale factor
+    if content_height > max_target_height then
+        -- Content too large, scale down to max_fill
+        content_scale = max_target_height / content_height
+        weather_group = buildWeatherContent(content_scale)
+    elseif content_height < min_target_height then
+        -- Content too small, scale up to min_fill
+        content_scale = min_target_height / content_height
         weather_group = buildWeatherContent(content_scale)
     end
 
