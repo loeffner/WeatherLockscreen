@@ -252,7 +252,6 @@ function WeatherLockscreen:getSubMenuItems()
             }
         },
     }
-
     -- Conditionally add Cover scaling menu only when reading mode is selected
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style == "reading" then
@@ -288,6 +287,40 @@ function WeatherLockscreen:getSubMenuItems()
                     end,
                 },
             },
+        })
+    end
+
+    -- Conditionally add Cover scaling menu only when reading mode is selected
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+    if display_style ~= "nightowl" then
+        table.insert(menu_items, {
+            text_func = function()
+                local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+                return T(_("Content Fill (%1%)"), fill_percent)
+            end,
+            keep_menu_open = true,
+            callback = function(touchmenu_instance)
+                local SpinWidget = require("ui/widget/spinwidget")
+                local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+                local spin_widget = SpinWidget:new {
+                    title_text = _("Content Fill Percentage"),
+                    info_text = _("How much of the available screen height should be filled (in percent)"),
+                    value = fill_percent,
+                    value_min = 50,
+                    value_max = 100,
+                    value_step = 5,
+                    value_hold_step = 10,
+                    default_value = display_style ~= "reading" and 90 or 60,
+                    unit = "%",
+                    ok_text = _("Set"),
+                    callback = function(spin)
+                        G_reader_settings:saveSetting("weather_fill_percent", tostring(spin.value))
+                        G_reader_settings:flush()
+                        touchmenu_instance:updateItems()
+                    end,
+                }
+                UIManager:show(spin_widget)
+            end,
         })
     end
 
