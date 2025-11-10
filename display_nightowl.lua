@@ -22,10 +22,10 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     local moon_font_size = Screen:scaleBySize(22)
     local moon_icon_size = Screen:scaleBySize(250)
     local header_margin = Screen:scaleBySize(10)
-    
+
     -- Header: Location and Timestamp (inverted colors for dark mode)
     local header_group = weather_lockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_LIGHT_GRAY, weather_data.is_cached)
-    
+
     -- Main content - centered moon icon
     local moon_icon_widget = nil
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
@@ -37,12 +37,13 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
                     file = moon_icon_path,
                     width = moon_icon_size,
                     height = moon_icon_size,
-                    alpha = true,
+                    alpha = false,
+                    original_in_nightmode = true
                 }
             }
         end
     end
-    
+
     -- Bottom text - moon phase name
     local bottom_text_widget = nil
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
@@ -60,10 +61,11 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
                     bold = true,
                     fgcolor = Blitbuffer.COLOR_LIGHT_GRAY,
                 }
-            }
+            },
+            invert = G_reader_settings:isTrue("night_mode")
         }
     end
-    
+
     local content_layers = {}
     if moon_icon_widget then
         table.insert(content_layers, moon_icon_widget)
@@ -79,7 +81,7 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
             }
         })
     end
-    
+
     return OverlapGroup:new{
         dimen = Screen:getSize(),
         unpack(content_layers)
