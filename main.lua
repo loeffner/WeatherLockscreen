@@ -251,12 +251,75 @@ function WeatherLockscreen:getSubMenuItems()
                 }
             }
         },
+        {
+        text = _("Show header"),
+        checked_func = function()
+            return G_reader_settings:nilOrTrue("weather_show_header")
+        end,
+        callback = function()
+            local current = G_reader_settings:nilOrTrue("weather_show_header")
+            G_reader_settings:saveSetting("weather_show_header", not current)
+            G_reader_settings:flush()
+        end,
+        separator = true,
+        }
     }
-    -- Conditionally add Cover scaling menu only when reading mode is selected
+    -- Conditionally add content scaling menu when not in nightowl mode
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+    if display_style ~= "nightowl" then
+        table.insert(menu_items, {
+        text = _("Override scaling"),
+        checked_func = function()
+            return G_reader_settings:nilOrTrue("weather_override_scaling")
+        end,
+        callback = function(touchmenu_instance)
+            local current = G_reader_settings:nilOrTrue("weather_override_scaling")
+            G_reader_settings:saveSetting("weather_override_scaling", not current)
+            touchmenu_instance.item_table = self:getSubMenuItems()
+            touchmenu_instance:updateItems()
+            G_reader_settings:flush()
+        end,
+        })
+        if G_reader_settings:nilOrTrue("weather_override_scaling") then
+            table.insert(menu_items, {
+                text_func = function()
+                    local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+                    return T(_("Content Fill (%1%)"), fill_percent)
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    local SpinWidget = require("ui/widget/spinwidget")
+                    local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+                    local spin_widget = SpinWidget:new {
+                        title_text = _("Content Fill Percentage"),
+                        info_text = _("How much of the available screen height should be filled (in percent)"),
+                        value = fill_percent,
+                        value_min = 30,
+                        value_max = 100,
+                        value_step = 5,
+                        value_hold_step = 10,
+                        default_value = display_style ~= "reading" and 90 or 60,
+                        unit = "%",
+                        ok_text = _("Set"),
+                        callback = function(spin)
+                            G_reader_settings:saveSetting("weather_fill_percent", tostring(spin.value))
+                            G_reader_settings:flush()
+                            touchmenu_instance:updateItems()
+                        end,
+                    }
+                    UIManager:show(spin_widget)
+                end,
+            })
+        end
+    end
+        -- Conditionally add Cover scaling menu only when reading mode is selected
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style == "reading" then
         table.insert(menu_items, {
-            text = _("Cover scaling"),
+            text_func = function()
+                local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or 'stretch'
+                return T(_("Cover scaling (%1)"), cover_scaling)
+            end,
             sub_item_table = {
                 {
                     text = _("Fit to screen"),
@@ -287,56 +350,9 @@ function WeatherLockscreen:getSubMenuItems()
                     end,
                 },
             },
+            separator = true,
         })
     end
-
-    -- Conditionally add content scaling menu when not in nightowl mode
-    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-    if display_style ~= "nightowl" then
-        table.insert(menu_items, {
-            text_func = function()
-                local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
-                return T(_("Content Fill (%1%)"), fill_percent)
-            end,
-            keep_menu_open = true,
-            callback = function(touchmenu_instance)
-                local SpinWidget = require("ui/widget/spinwidget")
-                local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
-                local spin_widget = SpinWidget:new {
-                    title_text = _("Content Fill Percentage"),
-                    info_text = _("How much of the available screen height should be filled (in percent)"),
-                    value = fill_percent,
-                    value_min = 30,
-                    value_max = 100,
-                    value_step = 5,
-                    value_hold_step = 10,
-                    default_value = display_style ~= "reading" and 90 or 60,
-                    unit = "%",
-                    ok_text = _("Set"),
-                    callback = function(spin)
-                        G_reader_settings:saveSetting("weather_fill_percent", tostring(spin.value))
-                        G_reader_settings:flush()
-                        touchmenu_instance:updateItems()
-                    end,
-                }
-                UIManager:show(spin_widget)
-            end,
-        })
-    end
-
-    -- Add remaining menu items
-    table.insert(menu_items, {
-        text = _("Show header"),
-        checked_func = function()
-            return G_reader_settings:nilOrTrue("weather_show_header")
-        end,
-        callback = function()
-            local current = G_reader_settings:nilOrTrue("weather_show_header")
-            G_reader_settings:saveSetting("weather_show_header", not current)
-            G_reader_settings:flush()
-        end,
-        separator = true,
-    })
 
     table.insert(menu_items, {
         text_func = function()

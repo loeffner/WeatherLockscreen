@@ -276,7 +276,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
     local available_height = screen_height - header_height - top_bottom_margin
 
     -- Get user fill percent (default 90)
-    local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
     local min_fill = math.max(50, fill_percent - 5)
     local max_fill = math.min(100, fill_percent + 5)
 

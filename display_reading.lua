@@ -87,7 +87,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     local screen_height = Screen:getHeight()
 
     -- Get user fill percent (default 90)
-    local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
     local min_fill = math.max(50, fill_percent - 5)
     local max_fill = math.min(100, fill_percent + 5)
 
