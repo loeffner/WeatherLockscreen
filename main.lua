@@ -452,7 +452,7 @@ function WeatherLockscreen:patchScreensaver()
                 local bg_color = Blitbuffer.COLOR_WHITE
                 local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
                 if display_style == "nightowl" then
-                    bg_color = Blitbuffer.COLOR_BLACK
+                    bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
                 end
 
                 screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
