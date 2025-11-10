@@ -290,7 +290,7 @@ function WeatherLockscreen:getSubMenuItems()
         })
     end
 
-    -- Conditionally add Cover scaling menu only when reading mode is selected
+    -- Conditionally add content scaling menu when not in nightowl mode
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style ~= "nightowl" then
         table.insert(menu_items, {
@@ -306,7 +306,7 @@ function WeatherLockscreen:getSubMenuItems()
                     title_text = _("Content Fill Percentage"),
                     info_text = _("How much of the available screen height should be filled (in percent)"),
                     value = fill_percent,
-                    value_min = 50,
+                    value_min = 30,
                     value_max = 100,
                     value_step = 5,
                     value_hold_step = 10,
