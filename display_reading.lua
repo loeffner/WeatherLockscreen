@@ -10,8 +10,6 @@ local VerticalGroup = require("ui/widget/verticalgroup")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local VerticalSpan = require("ui/widget/verticalspan")
 local HorizontalSpan = require("ui/widget/horizontalspan")
-local LeftContainer = require("ui/widget/container/leftcontainer")
-local RightContainer = require("ui/widget/container/rightcontainer")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local BottomContainer = require("ui/widget/container/bottomcontainer")
 local OverlapGroup = require("ui/widget/overlapgroup")
@@ -28,9 +26,10 @@ local util = require("util")
 local logger = require("logger")
 local datetime = require("datetime")
 local _ = require("gettext")
-local WeatherUtils = require("utils")
 
 local ReadingDisplay = {}
+
+CARD_WIDTH = 0.8 -- Card width as fraction of screen width
 
 function ReadingDisplay:getDocumentInfo()
     -- Get active ReaderUI instance
@@ -220,7 +219,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                     face = Font:getFace("cfont", temp_font_size),
                 }:getSize().w or 0
                 top_right_width = top_right_width + weather_icon_size
-            local title_width = math.floor(screen_width * 0.9 - top_right_width - 2 * card_padding)
+            local title_width = math.floor(screen_width * CARD_WIDTH - top_right_width - 2 * card_padding)
             table.insert(book_info, TextBoxWidget:new {
                 text = doc_info.title,
                 face = Font:getFace("cfont", title_font_size),
@@ -236,7 +235,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 text = doc_info.authors,
                 face = Font:getFace("cfont", author_font_size),
                 fgcolor = Blitbuffer.COLOR_DARK_GRAY,
-                max_width = math.floor(screen_width * 0.8 - weather_icon_size - spacing - 2 * card_padding),
+                -- max_width = math.floor(screen_width * CARD_WIDTH - 2 * card_padding),
             })
         end
 
@@ -279,7 +278,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         if doc_info.progress then
             local progress_row = HorizontalGroup:new { align = "center" }
 
-            local progress_bar_width = math.floor(screen_width * 0.85 - 2 * card_padding)
+            local progress_bar_width = math.floor(screen_width * (CARD_WIDTH - 0.05) - 2 * card_padding)
             table.insert(progress_row, ProgressWidget:new {
                 width = progress_bar_width,
                 height = math.floor(12 * scale_factor),
@@ -356,7 +355,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         }
 
         local right_width = right_group:getSize().w
-        local spacer_width = math.max(0, screen_width * 0.9 - left_width - right_width - 2 * card_padding)
+        local spacer_width = math.max(0, screen_width * CARD_WIDTH - left_width - right_width - 2 * card_padding)
 
         table.insert(bottom_row, HorizontalSpan:new { width = spacer_width })
         table.insert(bottom_row, right_group)
