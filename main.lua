@@ -270,7 +270,7 @@ function WeatherLockscreen:getSubMenuItems()
         table.insert(menu_items, {
         text = _("Override scaling"),
         checked_func = function()
-            return G_reader_settings:nilOrTrue("weather_override_scaling")
+            return G_reader_settings:readSetting("weather_override_scaling")
         end,
         callback = function(touchmenu_instance)
             local current = G_reader_settings:nilOrTrue("weather_override_scaling")
@@ -280,7 +280,7 @@ function WeatherLockscreen:getSubMenuItems()
             G_reader_settings:flush()
         end,
         })
-        if G_reader_settings:nilOrTrue("weather_override_scaling") then
+        if G_reader_settings:readSetting("weather_override_scaling") then
             table.insert(menu_items, {
                 text_func = function()
                     local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
