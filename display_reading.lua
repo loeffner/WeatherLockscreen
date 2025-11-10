@@ -160,7 +160,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 padding = 0,
                 margin = 0,
                 bordersize = 0,
-                background = Blitbuffer.COLOR_BLACK,
+                background = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK,
                 CenterContainer:new {
                     dimen = Geom:new { w = screen_width, h = screen_height },
                     cover_image,
@@ -185,7 +185,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         header_font_size,
         header_margin,
         weather_data,
-        Blitbuffer.COLOR_WHITE,
+        G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_DARK_GRAY or Blitbuffer.COLOR_LIGHT_GRAY,
         weather_data.is_cached
     )
 
