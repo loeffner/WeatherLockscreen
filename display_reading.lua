@@ -190,11 +190,6 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     )
 
     -- Overlay card at bottom
-    local card_width = math.floor(screen_width * 0.9)
-    local card_max_width = 800
-    if card_width > card_max_width then
-        card_width = card_max_width
-    end
 
     -- Function to build card with a given scale factor
     local function buildCard(scale_factor)
@@ -218,7 +213,14 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         -- Left side: Book title and author
         local book_info = {}
         if doc_info.title then
-            local title_width = math.floor(card_width * 0.55)
+
+            local top_right_width = weather_data.current.temperature and
+                TextWidget:new{
+                    text = weather_data.current.temperature,
+                    face = Font:getFace("cfont", temp_font_size),
+                }:getSize().w or 0
+                top_right_width = top_right_width + weather_icon_size
+            local title_width = math.floor(screen_width * 0.9 - top_right_width - 2 * card_padding)
             table.insert(book_info, TextBoxWidget:new {
                 text = doc_info.title,
                 face = Font:getFace("cfont", title_font_size),
@@ -234,7 +236,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 text = doc_info.authors,
                 face = Font:getFace("cfont", author_font_size),
                 fgcolor = Blitbuffer.COLOR_DARK_GRAY,
-                max_width = math.floor(card_width * 0.55),
+                max_width = math.floor(screen_width * 0.8 - weather_icon_size - spacing - 2 * card_padding),
             })
         end
 
@@ -276,7 +278,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         if doc_info.progress then
             local progress_row = HorizontalGroup:new { align = "center" }
 
-            local progress_bar_width = math.floor(card_width * 0.7)
+            local progress_bar_width = math.floor(screen_width * 0.85 - 2 * card_padding)
             table.insert(progress_row, ProgressWidget:new {
                 width = progress_bar_width,
                 height = math.floor(12 * scale_factor),
@@ -353,7 +355,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         }
 
         local right_width = right_group:getSize().w
-        local spacer_width = math.max(0, card_width - left_width - right_width - card_padding * 2)
+        local spacer_width = math.max(0, screen_width * 0.9 - left_width - right_width - 2 * card_padding)
 
         table.insert(bottom_row, HorizontalSpan:new { width = spacer_width })
         table.insert(bottom_row, right_group)
