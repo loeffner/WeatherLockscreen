@@ -203,6 +203,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
                     width = arrow_size,
                     height = arrow_size,
                     alpha = true,
+                    original_in_nightmode = false
                 }
             else
                 arrow_widget = TextWidget:new{

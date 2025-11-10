@@ -49,6 +49,7 @@ function CardDisplay:create(weather_lockscreen, weather_data)
                 width = icon_size,
                 height = icon_size,
                 alpha = true,
+                original_in_nightmode = false
             })
             table.insert(widgets, VerticalSpan:new{ width = spacing })
         end

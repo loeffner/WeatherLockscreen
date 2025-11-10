@@ -256,6 +256,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 width = weather_icon_size,
                 height = weather_icon_size,
                 alpha = true,
+                original_in_nightmode = false
             })
             table.insert(weather_group, HorizontalSpan:new { width = small_spacing })
         end

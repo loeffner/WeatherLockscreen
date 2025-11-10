@@ -63,6 +63,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
             width = current_icon_size,
             height = current_icon_size,
             alpha = true,
+            original_in_nightmode = false
         }
         table.insert(current_widgets, icon_widget)
 
@@ -114,6 +115,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
                         width = hourly_icon_size,
                         height = hourly_icon_size,
                         alpha = true,
+                        original_in_nightmode = false
                     })
                 end
 
@@ -162,6 +164,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
                         width = hourly_icon_size,
                         height = hourly_icon_size,
                         alpha = true,
+                        original_in_nightmode = false
                     })
                 end
 
@@ -195,7 +198,8 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
     local available_height = screen_height - header_height
 
     -- Get user fill percent (default 90)
-    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and
+        tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
     local min_fill = math.max(50, fill_percent - 5)
     local max_fill = math.min(100, fill_percent + 5)
 
