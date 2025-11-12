@@ -28,7 +28,7 @@ local logger = require("logger")
 local _ = require("gettext")
 local T = require("ffi/util").template
 local WeatherAPI = require("weather_api")
-local WeatherUtils = require("utils")
+local WeatherUtils = require("weather_utils")
 
 local WeatherLockscreen = WidgetContainer:extend {
     name = "weatherlockscreen",
