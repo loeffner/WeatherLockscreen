@@ -13,7 +13,6 @@ local Font = require("ui/font")
 local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
-local WeatherUtils = require("utils")
 
 local CardDisplay = {}
 

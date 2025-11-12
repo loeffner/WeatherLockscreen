@@ -15,13 +15,11 @@ local Font = require("ui/font")
 local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
-local WeatherUtils = require("utils")
 
 local DefaultDisplay = {}
 
 function DefaultDisplay:create(weather_lockscreen, weather_data)
     local screen_height = Screen:getHeight()
-    local screen_width = Screen:getWidth()
 
     -- Base sizes for content
     local base_current_icon_size = 300

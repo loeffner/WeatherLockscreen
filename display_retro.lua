@@ -16,7 +16,6 @@ local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
 local DataStorage = require("datastorage")
-local WeatherUtils = require("utils")
 
 local RetroAnalogDisplay = {}
 

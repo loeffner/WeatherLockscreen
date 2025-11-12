@@ -7,50 +7,9 @@ local DataStorage = require("datastorage")
 local logger = require("logger")
 local ffiUtil = require("ffi/util")
 local util = require("util")
-local Device = require("device")
-local Screen = Device.screen
 
 local WeatherUtils = {}
 
-function WeatherUtils:scaleToScreenHeight(max_height, base_sizes, top_bottom_margin, header_font_size, header_margin)
-    --[[
-        Scales a set of base sizes to fit within available height.
-
-        Args:
-            screen_height: available_height:
-            base_sizes: table with:
-                - elements: array of element heights that will be stacked vertically
-            top_bottom_margin: total margin (top + bottom)
-            header_font_size: fixed header font size
-            header_margin: fixed header margin
-
-        Returns:
-            scale_factor: the factor to apply to all base sizes (1.0 if content fits, <1.0 if scaled down)
-    ]]
-
-    -- Calculate available space
-    local header_height = header_font_size + header_margin * 2
-    local available_height = max_height - header_height - 2 * top_bottom_margin
-
-    -- Calculate total required height
-    local estimated_height = 0
-    for _, element_height in ipairs(base_sizes.elements) do
-        estimated_height = estimated_height + element_height
-    end
-
-    -- Calculate scale factor
-    local scale_factor = 1.0
-    if estimated_height > available_height then
-        scale_factor = available_height / estimated_height
-        logger.dbg("WeatherLockscreen: Content scaled down to:", scale_factor,
-                   "- estimated:", estimated_height, "available:", available_height)
-    else
-        logger.dbg("WeatherLockscreen: Content fits without scaling - estimated:", estimated_height,
-                   "available:", available_height)
-    end
-
-    return scale_factor
-end
 
 function WeatherUtils:formatHourLabel(hour, twelve_hour_clock)
     if twelve_hour_clock then
