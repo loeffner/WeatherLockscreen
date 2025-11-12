@@ -36,9 +36,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
     -- Header: Location and Timestamp
     local header_group = weather_lockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data,
         Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
-
-    -- Calculate header height
-    local header_height = (header_font_size + header_margin) * 2
+    local header_height = header_group:getSize().h
 
     -- Function to build the weather content with a given scale factor
     local function buildWeatherContent(scale_factor)
