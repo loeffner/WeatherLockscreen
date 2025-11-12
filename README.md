@@ -113,7 +113,7 @@ The free tier allows 1 000 000 API calls per month.
 
 <details>
 <summary>Fallback Icons (sun/moon)</summary>
-   
+
 You can customize the fallback sun/moon icons:
 
 1. Create or download `sun.svg` and `moon.svg` icons
@@ -125,7 +125,7 @@ You can customize the fallback sun/moon icons:
 
 <details>
 <summary>Weather not displaying</summary>
-   
+
 - Check your internet connection
 - Ensure your location is entered correctly
 - Check the KOReader log for error messages
@@ -154,18 +154,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Work in Progress
 <details>
 <summary>Done</summary>
-   
+
 - Dark Mode: Currently, the weather icons that are supplied by the API only look good in light mode.
 - Improved Scaling: Make scaling more consistent / configurable
 </details>
 <details>
 <summary>In progress</summary>
-   
-- Bugfixing and final testing before new release
+
 </details>
 <details>
 <summary>Backlog</summary>
-   
+
 - Localization: Support more languages
 - Attempt connecting to wifi: See #1
 - Fallback: A more configurable fallback, when no weather data is available.
@@ -179,7 +178,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [roygbyte/weather.koplugin](https://github.com/roygbyte/weather.koplugin/) - Inspiration for this project
 - [svgrepo.com](https://www.svgrepo.com/) - Provider of the arrows for the wind direction in the Retro Analog view
 
-### My user patches 
+### My user patches
 
 - [loeffner/KOReader.patches](https://github.com/loeffner/KOReader.patches)
 
