@@ -223,7 +223,7 @@ function WeatherLockscreen:getSubMenuItems()
                     text = _("Celsius"),
                     checked_func = function()
                         local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or self
-                        .default_temp_scale
+                            .default_temp_scale
                         return temp_scale == "C"
                     end,
                     keep_menu_open = true,
@@ -238,7 +238,7 @@ function WeatherLockscreen:getSubMenuItems()
                     text = _("Fahrenheit"),
                     checked_func = function()
                         local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or self
-                        .default_temp_scale
+                            .default_temp_scale
                         return temp_scale == "F"
                     end,
                     keep_menu_open = true,
@@ -252,33 +252,34 @@ function WeatherLockscreen:getSubMenuItems()
             }
         },
         {
-        text = _("Show header"),
-        checked_func = function()
-            return G_reader_settings:nilOrTrue("weather_show_header")
-        end,
-        callback = function()
-            local current = G_reader_settings:nilOrTrue("weather_show_header")
-            G_reader_settings:saveSetting("weather_show_header", not current)
-            G_reader_settings:flush()
-        end,
-        separator = true,
+            text = _("Show header"),
+            checked_func = function()
+                return G_reader_settings:nilOrTrue("weather_show_header")
+            end,
+            callback = function()
+                local current = G_reader_settings:nilOrTrue("weather_show_header")
+                G_reader_settings:saveSetting("weather_show_header", not current)
+                G_reader_settings:flush()
+            end,
+            separator = true,
         }
     }
     -- Conditionally add content scaling menu when not in nightowl mode
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style ~= "nightowl" then
         table.insert(menu_items, {
-        text = _("Override scaling"),
-        checked_func = function()
-            return G_reader_settings:readSetting("weather_override_scaling")
-        end,
-        callback = function(touchmenu_instance)
-            local current = G_reader_settings:nilOrTrue("weather_override_scaling")
-            G_reader_settings:saveSetting("weather_override_scaling", not current)
-            touchmenu_instance.item_table = self:getSubMenuItems()
-            touchmenu_instance:updateItems()
-            G_reader_settings:flush()
-        end,
+            text = _("Override scaling"),
+            checked_func = function()
+                return G_reader_settings:readSetting("weather_override_scaling")
+            end,
+            callback = function(touchmenu_instance)
+                local current = G_reader_settings:nilOrTrue("weather_override_scaling")
+                G_reader_settings:saveSetting("weather_override_scaling", not current)
+                touchmenu_instance.item_table = self:getSubMenuItems()
+                touchmenu_instance:updateItems()
+                G_reader_settings:flush()
+            end,
+            separator = not G_reader_settings:readSetting("weather_override_scaling") and display_style ~= "reading",
         })
         if G_reader_settings:readSetting("weather_override_scaling") then
             table.insert(menu_items, {
@@ -309,10 +310,11 @@ function WeatherLockscreen:getSubMenuItems()
                     }
                     UIManager:show(spin_widget)
                 end,
+                separator = display_style ~= "reading",
             })
         end
     end
-        -- Conditionally add Cover scaling menu only when reading mode is selected
+    -- Conditionally add Cover scaling menu only when reading mode is selected
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style == "reading" then
         table.insert(menu_items, {
@@ -452,7 +454,8 @@ function WeatherLockscreen:patchScreensaver()
                 local bg_color = Blitbuffer.COLOR_WHITE
                 local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
                 if display_style == "nightowl" and not fallback then
-                    bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
+                    bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or
+                    Blitbuffer.COLOR_BLACK
                 end
 
                 screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
