@@ -151,21 +151,19 @@ You can customize the fallback sun/moon icons:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Work in Progress
+## Work in Progress for 0.9.2
 <details>
 <summary>Done</summary>
-
-- Dark Mode: Currently, the weather icons that are supplied by the API only look good in light mode.
-- Improved Scaling: Make scaling more consistent / configurable
 </details>
 <details>
 <summary>In progress</summary>
 
+- Localization: Support more languages
 </details>
 <details>
 <summary>Backlog</summary>
 
-- Localization: Support more languages
+- A transparent display mode (either transparent image over weather or transparent weather over image)
 - Attempt connecting to wifi: See #1
 - Fallback: A more configurable fallback, when no weather data is available.
 - More display modes: I am always open for requests.
