@@ -48,6 +48,9 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
           </ul>
         </li>
         <li>Navigate to <b>Settings &gt; Screen  &gt;  Sleep Screen  &gt;  Wallpaper </b></li>
+          <ul>
+            <li>KOReader's "Sleep Screen" option is only exposed if you have ads disabled.</li>
+          </ul>
         <li>Select <b>"Show weather on sleep screen" </b></li>
       </ol>
     </td>
