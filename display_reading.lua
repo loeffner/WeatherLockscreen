@@ -57,13 +57,19 @@ function ReadingDisplay:getDocumentInfo()
     end
 
     -- Get page progress
-    local page_no = (state and state.page) or 1
-    local page_total = doc_settings.doc_pages or 1
-    if page_total <= 0 then page_total = 1 end
-    if page_no < 1 then page_no = 1 end
-    if page_no > page_total then page_no = page_total end
+    local unused, page_current, page_total
+    if ui.pagemap and ui.pagemap:wantsPageLabels() then
+        unused, page_current, page_total = ui.pagemap:getCurrentPageLabel(true)
+    else
+        page_total = doc_settings.doc_pages
+        page_current = (state and state.page) or 1
+    end
 
-    local progress = page_no / page_total
+    if page_total <= 0 or page_total == nil then page_total = 1 end
+    if page_current < 1 then page_current = 1 end
+    if page_current > page_total then page_current = page_total end
+
+    local progress = page_current / page_total
 
     -- Get cover image using BookInfo
     local cover_bb
@@ -74,7 +80,7 @@ function ReadingDisplay:getDocumentInfo()
     return {
         title = title,
         authors = authors,
-        page_no = page_no,
+        page_no = page_current,
         page_total = page_total,
         progress = progress,
         cover_bb = cover_bb,
