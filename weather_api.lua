@@ -9,6 +9,53 @@ local WeatherUtils = require("weather_utils")
 
 local WeatherAPI = {}
 
+-- Static KOReader to WeatherAPI language code mapping
+local weather_lang_map = {
+    ar = "ar",         -- Arabic
+    bg_BG = "bg",      -- Bulgarian
+    bn = "bn",         -- Bengali
+    cs = "cs",         -- Czech
+    da = "da",         -- Danish
+    de = "de",         -- German
+    el = "el",         -- Greek
+    es = "es",         -- Spanish
+    fi = "fi",         -- Finnish
+    fr = "fr",         -- French
+    hi = "hi",         -- Hindi
+    hu = "hu",         -- Hungarian
+    it_IT = "it",      -- Italian
+    ja = "ja",         -- Japanese
+    ko_KR = "ko",      -- Korean
+    nl_NL = "nl",      -- Dutch
+    pl = "pl",         -- Polish
+    pt_PT = "pt",      -- Portuguese
+    pt_BR = "pt",      -- Portuguese (WeatherAPI only supports one pt variant. I think, its better to use it than to default to english)
+    ro = "ro",         -- Romanian
+    ro_MD = "ro",      -- Romanian (WeatherAPI only supports one ro variant. I think, its better to use it than to default to english)
+    ru = "ru",         -- Russian
+    si = "si",         -- Sinhalese
+    sk = "sk",         -- Slovak
+    sr = "sr",         -- Serbian
+    sv = "sv",         -- Swedish
+    ta = "ta",         -- Tamil
+    te = "te",         -- Telugu
+    tr = "tr",         -- Turkish
+    uk = "uk",         -- Ukrainian
+    ur = "ur",         -- Urdu
+    vi = "vi",         -- Vietnamese
+    zh_CN = "zh",      -- Chinese Simplified
+    zh_TW = "zh_tw",   -- Chinese Traditional
+    --  koreader does not support the following languages, but WeatherAPI does, they remain unsupported for now
+    jv = "jv",         -- Javanese
+    mr = "mr",         -- Marathi
+    pa = "pa",         -- Punjabi
+    zh_cmn = "zh_cmn", -- Mandarin
+    zh_hsn = "zh_hsn", -- Xiang
+    zh_wuu = "zh_wuu", -- Wu (Shanghainese)
+    zh_yue = "zh_yue", -- Yue (Cantonese)
+    zu = "zu",         -- Zulu
+}
+
 local function http_request_code(url, sink_table)
     local ltn12 = require("ltn12")
     local sink = ltn12.sink.table(sink_table)
@@ -36,8 +83,14 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
         api_key = weather_lockscreen.default_api_key
     end
 
+    -- Get KOReader language code
+    local lang_locale = G_reader_settings:readSetting("language") or "en"
+    local lang = weather_lang_map[lang_locale] or "en"
+
     logger.dbg("WeatherLockscreen: Using location:", location)
-    logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1,8) .. "...") or "none")
+    logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
+    logger.dbg("WeatherLockscreen: Requested language:", lang_locale)
+    logger.dbg("WeatherLockscreen: Using language:", lang)
 
     if not api_key or api_key == "" then
         logger.warn("WeatherLockscreen: No API key configured")
@@ -54,9 +107,10 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
 
     -- WeatherAPI.com endpoint for forecast
     local url = string.format(
-        "https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no",
+        "https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no&lang=%s",
         api_key,
-        location
+        location,
+        lang
     )
 
     logger.dbg("WeatherLockscreen: Fetching weather from API")
@@ -147,7 +201,7 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
     -- Extract ALL hourly data (for extended displays)
     local hourly_today = {}
     local hourly_tomorrow = {}
-    local target_hours = {6, 12, 18}  -- For basic display
+    local target_hours = { 6, 12, 18 } -- For basic display
 
     if result.forecast and result.forecast.forecastday then
         -- Today's hours
@@ -156,7 +210,7 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
                 local hour = tonumber(hour_data.time:match("(%d+):00$"))
                 if hour then
                     local h_icon_path = self:getIconPath(hour_data.condition.icon)
-                    local h_temp = temp_scale == "C" 
+                    local h_temp = temp_scale == "C"
                         and math.floor(hour_data.temp_c) .. "°"
                         or math.floor(hour_data.temp_f) .. "°"
 
@@ -178,7 +232,7 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
                 local hour = tonumber(hour_data.time:match("(%d+):00$"))
                 if hour then
                     local h_icon_path = self:getIconPath(hour_data.condition.icon)
-                    local h_temp = temp_scale == "C" 
+                    local h_temp = temp_scale == "C"
                         and math.floor(hour_data.temp_c) .. "°"
                         or math.floor(hour_data.temp_f) .. "°"
 
@@ -232,7 +286,7 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
                     if date_str then
                         local year, month, day = date_str:match("(%d+)-(%d+)-(%d+)")
                         if year and month and day then
-                            local time = os.time{year=tonumber(year), month=tonumber(month), day=tonumber(day)}
+                            local time = os.time { year = tonumber(year), month = tonumber(month), day = tonumber(day) }
                             day_name = os.date("%a", time)
                         else
                             day_name = "Day " .. i
@@ -242,10 +296,10 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
                     end
                 end
 
-                local high_temp = temp_scale == "C" 
+                local high_temp = temp_scale == "C"
                     and math.floor(day_data.day.maxtemp_c) .. "°"
                     or math.floor(day_data.day.maxtemp_f) .. "°"
-                local low_temp = temp_scale == "C" 
+                local low_temp = temp_scale == "C"
                     and math.floor(day_data.day.mintemp_c) .. "°"
                     or math.floor(day_data.day.mintemp_f) .. "°"
 
@@ -261,10 +315,10 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
 
     return {
         current = current_data,
-        hourly_today = hourly_today_basic,  -- 6, 12, 18 only for basic display
-        hourly_tomorrow = hourly_tomorrow_basic,  -- 6, 12, 18 only for basic display
-        hourly_today_all = hourly_today,  -- All hours for extended displays
-        hourly_tomorrow_all = hourly_tomorrow,  -- All hours for extended displays
+        hourly_today = hourly_today_basic,       -- 6, 12, 18 only for basic display
+        hourly_tomorrow = hourly_tomorrow_basic, -- 6, 12, 18 only for basic display
+        hourly_today_all = hourly_today,         -- All hours, maybe I will need the at some point
+        hourly_tomorrow_all = hourly_tomorrow,   -- All hours, maybe I will need the at some point
         forecast_days = forecast_days,
         astronomy = astronomy,
     }

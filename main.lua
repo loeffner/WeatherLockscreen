@@ -595,7 +595,7 @@ function WeatherLockscreen:createHeaderWidgets(header_font_size, header_margin, 
             else
                 time_str = hour .. ":" .. min
             end
-            formatted_time = month_name .. " " .. tonumber(day) .. ", " .. time_str
+            formatted_time = _(month_name) .. " " .. tonumber(day) .. ", " .. time_str
         else
             formatted_time = timestamp
         end
