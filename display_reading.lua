@@ -1,6 +1,6 @@
 --[[
     Reading Display Mode for Weather Lockscreen
-    "Hero Cover" style - Large book cover with overlay card containing book info and weather
+    Cover style - Large book cover with overlay card containing book info and weather
 --]]
 
 local ImageWidget = require("ui/widget/imagewidget")
