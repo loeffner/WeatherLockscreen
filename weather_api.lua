@@ -36,8 +36,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
         api_key = weather_lockscreen.default_api_key
     end
 
-    -- Get KOReader language code
-    local lang = nil
+    local lang = "en"
     if WeatherUtils:shouldTranslateWeather() then
         lang = WeatherUtils:koLangAsWeatherAPILang()
     end
@@ -46,9 +45,16 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
     logger.dbg("WeatherLockscreen: Using language:", lang)
 
+    local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getMinDelayBetweenUpdates() end)
+    if cached_data and lang == cached_data.lang then
+        logger.dbg("WeatherLockscreen: Using cache to avoid repeated requests")
+        cached_data.is_cached = true
+        return cached_data
+    end
+
     if not api_key or api_key == "" then
         logger.warn("WeatherLockscreen: No API key configured")
-        local cached_data, is_cached = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
+        local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
         if cached_data then
             cached_data.is_cached = true
         end
@@ -72,7 +78,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     local code, err = http_request_code(url, sink_table)
     if not code then
         logger.warn("WeatherLockscreen: HTTP request failed:", err or "unknown error")
-        local cached_data, is_cached = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
+        local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
         if cached_data then
             cached_data.is_cached = true
         end
@@ -97,7 +103,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     end
 
     -- Try cache if fetch failed
-    local cached_data, is_cached = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
+    local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getCacheMaxAge() end)
     if cached_data then
         cached_data.is_cached = true
     end
@@ -107,6 +113,7 @@ end
 function WeatherAPI:processWeatherData(weather_lockscreen, result)
     local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or "C"
     local twelve_hour_clock = G_reader_settings:isTrue("twelve_hour_clock")
+    local lang = WeatherUtils:shouldTranslateWeather() and WeatherUtils:koLangAsWeatherAPILang() or "en"
 
     -- Process current weather
     local condition = result.current.condition.text
@@ -267,6 +274,7 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
     end
 
     return {
+        lang = lang,
         current = current_data,
         hourly_today = hourly_today_basic,       -- 6, 12, 18 only for basic display
         hourly_tomorrow = hourly_tomorrow_basic, -- 6, 12, 18 only for basic display

@@ -74,6 +74,10 @@ function WeatherUtils:getCacheMaxAge()
     return G_reader_settings:readSetting("weather_cache_max_age") or 3600  -- Default: 1 hour
 end
 
+function WeatherUtils:getMinDelayBetweenUpdates()
+    return G_reader_settings:readSetting("weather_min_update_delay") or 300  -- Default: 10 minutes
+end
+
 -- This function was inspired by Project: Title. Thanks!
 function WeatherUtils:installIcons(plugin_dir_func)
     local icons_path = DataStorage:getDataDir() .. "/icons"
@@ -264,7 +268,7 @@ function WeatherUtils:loadWeatherCache(get_max_age_func)
     local cache_file = DataStorage:getDataDir() .. "/cache/weather-lockscreen.json"
     local f = io.open(cache_file, "r")
     if not f then
-        return nil, false
+        return nil
     end
 
     local content = f:read("*all")
@@ -273,13 +277,13 @@ function WeatherUtils:loadWeatherCache(get_max_age_func)
     local json = require("json")
     local success, cache_data = pcall(json.decode, content)
     if not success or not cache_data or not cache_data.timestamp or not cache_data.data then
-        return nil, false
+        return nil
     end
 
     local age = os.time() - cache_data.timestamp
     if age > get_max_age_func() then
         logger.dbg("WeatherLockscreen: Cache too old")
-        return nil, false
+        return nil
     end
 
     return cache_data.data, true
