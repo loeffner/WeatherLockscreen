@@ -407,6 +407,30 @@ function WeatherLockscreen:getSubMenuItems()
                 end,
             })
         end,
+        separator = true,
+    })
+
+    table.insert(menu_items, {
+        text_func = function()
+            local lang_str = nil
+            if WeatherUtils:koLangAvailable() then
+                lang_str = WeatherUtils:koLangAsWeatherAPILang()
+            else
+                lang_str = G_reader_settings:readSetting("language") .. " unavailable"
+            end
+            return T(_("Use KOReader language setting (%1)"), lang_str)
+        end,
+        enabled_func = function()
+            return WeatherUtils:koLangAsWeatherAPILang() ~= "en"
+        end,
+        checked_func = function()
+            return WeatherUtils:shouldTranslateWeather()
+        end,
+        callback = function()
+            local current = G_reader_settings:nilOrTrue("weather_translate")
+            G_reader_settings:saveSetting("weather_translate", not current)
+            G_reader_settings:flush()
+        end,
     })
 
     return menu_items
