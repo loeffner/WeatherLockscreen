@@ -16,6 +16,7 @@ local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
 local _ = require("gettext")
+local WeatherUtils = require("weather_utils")
 
 local DefaultDisplay = {}
 
@@ -89,7 +90,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
         -- Today's hourly forecast
         if weather_data.hourly_today and #weather_data.hourly_today > 0 then
             table.insert(widgets, TextWidget:new {
-                text = G_reader_settings:readSetting("language") == "en" and "Today" or _(os.date("%A", os.time())),
+                text = WeatherUtils:shouldTranslateWeather() and _(os.date("%A", os.time())) or "Today",
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })
@@ -138,7 +139,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
         -- Tomorrow's hourly forecast
         if weather_data.hourly_tomorrow and #weather_data.hourly_tomorrow > 0 then
             table.insert(widgets, TextWidget:new {
-                text = G_reader_settings:readSetting("language") == "en" and "Tomorrow" or _(os.date("%A", os.time() + 86400)),
+                text = WeatherUtils:shouldTranslateWeather() and _(os.date("%A", os.time() + 86400)) or "Tomorrow",
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })

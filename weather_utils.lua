@@ -318,4 +318,72 @@ function WeatherUtils:clearCache()
     return cleared
 end
 
+function WeatherUtils:koLangAvailable()
+    local lang_ko = G_reader_settings:readSetting("language") or "en"
+    return WeatherUtils.lang_map[lang_ko] ~= nil
+end
+
+function WeatherUtils:koLangAsWeatherAPILang()
+    local lang_locale = G_reader_settings:readSetting("language") or "en"
+    return WeatherUtils.lang_map[lang_locale] or "en"
+end
+
+function WeatherUtils:shouldTranslateWeather()
+    local lang_locale = G_reader_settings:readSetting("language") or "en"
+    local lang_available = WeatherUtils.lang_map[lang_locale] ~= nil
+    local translate_setting = G_reader_settings:nilOrTrue("weather_translate")
+    return lang_available and translate_setting or false
+end
+
+-- Static KOReader to WeatherAPI language code mapping
+WeatherUtils.lang_map = {
+    ar = "ar",         -- Arabic
+    bg_BG = "bg",      -- Bulgarian
+    bn = "bn",         -- Bengali
+    C = "en",          -- C (default to English)
+    cs = "cs",         -- Czech
+    da = "da",         -- Danish
+    de = "de",         -- German
+    el = "el",         -- Greek
+    en_GB = "en",      -- Englush (GB)
+    en_US = "en",      -- Englush (US)
+    es = "es",         -- Spanish
+    fi = "fi",         -- Finnish
+    fr = "fr",         -- French
+    hi = "hi",         -- Hindi
+    hu = "hu",         -- Hungarian
+    it_IT = "it",      -- Italian
+    ja = "ja",         -- Japanese
+    ko_KR = "ko",      -- Korean
+    nl_NL = "nl",      -- Dutch
+    pl = "pl",         -- Polish
+    pt_PT = "pt",      -- Portuguese
+    pt_BR = "pt",      -- Portuguese (WeatherAPI only supports one pt variant. I think, its better to use it than to default to english)
+    ro = "ro",         -- Romanian
+    ro_MD = "ro",      -- Romanian (WeatherAPI only supports one ro variant. I think, its better to use it than to default to english)
+    ru = "ru",         -- Russian
+    si = "si",         -- Sinhalese
+    sk = "sk",         -- Slovak
+    sr = "sr",         -- Serbian
+    sv = "sv",         -- Swedish
+    ta = "ta",         -- Tamil
+    te = "te",         -- Telugu
+    tr = "tr",         -- Turkish
+    uk = "uk",         -- Ukrainian
+    ur = "ur",         -- Urdu
+    vi = "vi",         -- Vietnamese
+    zh_CN = "zh",      -- Chinese Simplified
+    zh_TW = "zh_tw",   -- Chinese Traditional
+    --  koreader does not support the following languages, but WeatherAPI does, they remain unsupported for now
+    jv = "jv",         -- Javanese
+    mr = "mr",         -- Marathi
+    pa = "pa",         -- Punjabi
+    zh_cmn = "zh_cmn", -- Mandarin
+    zh_hsn = "zh_hsn", -- Xiang
+    zh_wuu = "zh_wuu", -- Wu (Shanghainese)
+    zh_yue = "zh_yue", -- Yue (Cantonese)
+    zu = "zu",         -- Zulu
+}
+
+
 return WeatherUtils

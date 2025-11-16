@@ -9,53 +9,6 @@ local WeatherUtils = require("weather_utils")
 
 local WeatherAPI = {}
 
--- Static KOReader to WeatherAPI language code mapping
-local weather_lang_map = {
-    ar = "ar",         -- Arabic
-    bg_BG = "bg",      -- Bulgarian
-    bn = "bn",         -- Bengali
-    cs = "cs",         -- Czech
-    da = "da",         -- Danish
-    de = "de",         -- German
-    el = "el",         -- Greek
-    es = "es",         -- Spanish
-    fi = "fi",         -- Finnish
-    fr = "fr",         -- French
-    hi = "hi",         -- Hindi
-    hu = "hu",         -- Hungarian
-    it_IT = "it",      -- Italian
-    ja = "ja",         -- Japanese
-    ko_KR = "ko",      -- Korean
-    nl_NL = "nl",      -- Dutch
-    pl = "pl",         -- Polish
-    pt_PT = "pt",      -- Portuguese
-    pt_BR = "pt",      -- Portuguese (WeatherAPI only supports one pt variant. I think, its better to use it than to default to english)
-    ro = "ro",         -- Romanian
-    ro_MD = "ro",      -- Romanian (WeatherAPI only supports one ro variant. I think, its better to use it than to default to english)
-    ru = "ru",         -- Russian
-    si = "si",         -- Sinhalese
-    sk = "sk",         -- Slovak
-    sr = "sr",         -- Serbian
-    sv = "sv",         -- Swedish
-    ta = "ta",         -- Tamil
-    te = "te",         -- Telugu
-    tr = "tr",         -- Turkish
-    uk = "uk",         -- Ukrainian
-    ur = "ur",         -- Urdu
-    vi = "vi",         -- Vietnamese
-    zh_CN = "zh",      -- Chinese Simplified
-    zh_TW = "zh_tw",   -- Chinese Traditional
-    --  koreader does not support the following languages, but WeatherAPI does, they remain unsupported for now
-    jv = "jv",         -- Javanese
-    mr = "mr",         -- Marathi
-    pa = "pa",         -- Punjabi
-    zh_cmn = "zh_cmn", -- Mandarin
-    zh_hsn = "zh_hsn", -- Xiang
-    zh_wuu = "zh_wuu", -- Wu (Shanghainese)
-    zh_yue = "zh_yue", -- Yue (Cantonese)
-    zu = "zu",         -- Zulu
-}
-
 local function http_request_code(url, sink_table)
     local ltn12 = require("ltn12")
     local sink = ltn12.sink.table(sink_table)
@@ -84,12 +37,13 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     end
 
     -- Get KOReader language code
-    local lang_locale = G_reader_settings:readSetting("language") or "en"
-    local lang = weather_lang_map[lang_locale] or "en"
+    local lang = nil
+    if WeatherUtils:shouldTranslateWeather() then
+        lang = WeatherUtils:koLangAsWeatherAPILang()
+    end
 
     logger.dbg("WeatherLockscreen: Using location:", location)
     logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
-    logger.dbg("WeatherLockscreen: Requested language:", lang_locale)
     logger.dbg("WeatherLockscreen: Using language:", lang)
 
     if not api_key or api_key == "" then
@@ -101,8 +55,6 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
         return cached_data
     end
 
-    local http = require("socket.http")
-    local ltn12 = require("ltn12")
     local json = require("json")
 
     -- WeatherAPI.com endpoint for forecast
@@ -114,6 +66,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     )
 
     logger.dbg("WeatherLockscreen: Fetching weather from API")
+    logger.dbg("WeatherLockscreen:", url)
 
     local sink_table = {}
     local code, err = http_request_code(url, sink_table)

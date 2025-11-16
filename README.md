@@ -109,6 +109,67 @@ The free tier allows 1 000 000 API calls per month.
 
 <a href="https://www.weatherapi.com/" title="Free Weather API"><img src='https://cdn.weatherapi.com/v4/images/weatherapi_logo.png' alt="Weather data by WeatherAPI.com" border="0"></a>
 
+## Localization
+
+The plugin semi-supports multiple languages. \
+The weekdays and condition text (e.g. "sunny") are available in several languages. You can check the list below for supported languages. \
+This is possible because WeatherAPI provdies the condition in several lanugages, and KOReaders localization includes the days of the week.
+
+Currently, I do not translate other strings like "Temperature" & "Wind" in the Retro Analog display or \
+the moonphases in the Night Owl display.
+
+
+**Fully translated Display Modes**:
+Detailed, Minimal, Cover
+
+**Partially/untranslated Display Modes**:
+Night Owl, Retro Analog
+
+To avoid having partially translated display modes, you can toggle the translation on/off on the settings.
+
+Currently, I do not plan to translate the settings menu. If someone knows, how to properly implement localization and wants to support the plugin, I would welcome a PR. \
+Personally, I am happy that (some of) the lockscreens support several languages.
+
+<details>
+<summary>Supported languages</summary>
+
+    ar = "ar",         -- Arabic
+    bg_BG = "bg",      -- Bulgarian
+    bn = "bn",         -- Bengali
+    cs = "cs",         -- Czech
+    da = "da",         -- Danish
+    de = "de",         -- German
+    el = "el",         -- Greek
+    es = "es",         -- Spanish
+    fi = "fi",         -- Finnish
+    fr = "fr",         -- French
+    hi = "hi",         -- Hindi
+    hu = "hu",         -- Hungarian
+    it_IT = "it",      -- Italian
+    ja = "ja",         -- Japanese
+    ko_KR = "ko",      -- Korean
+    nl_NL = "nl",      -- Dutch
+    pl = "pl",         -- Polish
+    pt_PT = "pt",      -- Portuguese
+    pt_BR = "pt",      -- Portuguese (WeatherAPI only supports one pt variant. I think, its better to use it than to default to english)
+    ro = "ro",         -- Romanian
+    ro_MD = "ro",      -- Romanian (WeatherAPI only supports one ro variant. I think, its better to use it than to default to english)
+    ru = "ru",         -- Russian
+    si = "si",         -- Sinhalese
+    sk = "sk",         -- Slovak
+    sr = "sr",         -- Serbian
+    sv = "sv",         -- Swedish
+    ta = "ta",         -- Tamil
+    te = "te",         -- Telugu
+    tr = "tr",         -- Turkish
+    uk = "uk",         -- Ukrainian
+    ur = "ur",         -- Urdu
+    vi = "vi",         -- Vietnamese
+    zh_CN = "zh",      -- Chinese Simplified
+    zh_TW = "zh_tw",   -- Chinese Traditional
+</details>
+
+
 ## Customization
 
 <details>
@@ -154,11 +215,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Work in Progress for 0.9.2
 <details>
 <summary>Done</summary>
+
+- Localization: Support more languages
 </details>
 <details>
 <summary>In progress</summary>
 
-- Localization: Support more languages
 </details>
 <details>
 <summary>Backlog</summary>

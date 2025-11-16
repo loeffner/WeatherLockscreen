@@ -26,6 +26,7 @@ local util = require("util")
 local logger = require("logger")
 local datetime = require("datetime")
 local _ = require("gettext")
+local WeatherUtils = require("weather_utils")
 
 local ReadingDisplay = {}
 
@@ -312,14 +313,12 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         end
 
         -- Bottom row: Page info (left) and Weather/Location/Time (right)
-        -- I just can't get it aligned with the title. :(
-
         local bottom_row = HorizontalGroup:new { align = "top" }
 
         -- Left: Page numbers
         local page_text = ""
         if doc_info.page_no and doc_info.page_total then
-            page_text = string.format("Page %i of %i", doc_info.page_no, doc_info.page_total)
+            page_text = WeatherUtils:shouldTranslateWeather() and (doc_info.page_no .. " / " .. doc_info.page_total) or string.format("Page %i of %i", doc_info.page_no, doc_info.page_total)
         table.insert(bottom_row, TextWidget:new{
                 text = page_text,
                 face = Font:getFace("cfont", progress_font_size),
