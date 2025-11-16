@@ -44,6 +44,10 @@ function WeatherLockscreen:getCacheMaxAge()
     return WeatherUtils:getCacheMaxAge()
 end
 
+function WeatherLockscreen:getMinDelayBetweenUpdates()
+    return WeatherUtils:getMinDelayBetweenUpdates()
+end
+
 function WeatherLockscreen:getPluginDir()
     return WeatherUtils:getPluginDir()
 end
@@ -424,7 +428,7 @@ function WeatherLockscreen:getSubMenuItems()
             return WeatherUtils:koLangAsWeatherAPILang() ~= "en"
         end,
         checked_func = function()
-            return WeatherUtils:shouldTranslateWeather()
+            return WeatherUtils:shouldTranslateWeather() or WeatherUtils:koLangAsWeatherAPILang() == "en"
         end,
         callback = function()
             local current = G_reader_settings:nilOrTrue("weather_translate")

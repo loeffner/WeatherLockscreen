@@ -330,7 +330,7 @@ end
 
 function WeatherUtils:shouldTranslateWeather()
     local lang_locale = G_reader_settings:readSetting("language") or "en"
-    local lang_available = WeatherUtils.lang_map[lang_locale] ~= nil
+    local lang_available = WeatherUtils.lang_map[lang_locale] ~= nil and WeatherUtils.lang_map[lang_locale] ~= "en"
     local translate_setting = G_reader_settings:readSetting("weather_translate") or false
     return lang_available and translate_setting or false
 end
