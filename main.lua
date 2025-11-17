@@ -36,6 +36,7 @@ local WeatherLockscreen = WidgetContainer:extend {
     default_location = "London",
     default_api_key = "637e03f814b440f782675255250411",
     default_temp_scale = "C",
+    refresh = false,
 }
 
 local WEATHER_ICON_SIZE = 200 -- Size of the weather icon in pixels
@@ -105,6 +106,7 @@ function WeatherLockscreen:getSubMenuItems()
                                     local new_value = input:getInputValue()
                                     G_reader_settings:saveSetting("weather_location", new_value)
                                     G_reader_settings:flush()
+                                    WeatherLockscreen.refresh = true
                                     logger.dbg("WeatherLockscreen: Saved location:", new_value)
                                     UIManager:close(input)
                                     touchmenu_instance:updateItems()
@@ -234,6 +236,7 @@ function WeatherLockscreen:getSubMenuItems()
                     callback = function(touchmenu_instance)
                         G_reader_settings:saveSetting("weather_temp_scale", "C")
                         G_reader_settings:flush()
+                        WeatherLockscreen.refresh = true
                         logger.dbg("WeatherLockscreen: Saved temp scale: C")
                         touchmenu_instance:updateItems()
                     end,
@@ -248,6 +251,7 @@ function WeatherLockscreen:getSubMenuItems()
                     keep_menu_open = true,
                     callback = function(touchmenu_instance)
                         G_reader_settings:saveSetting("weather_temp_scale", "F")
+                        WeatherLockscreen.refresh = true
                         G_reader_settings:flush()
                         logger.dbg("WeatherLockscreen: Saved temp scale: F")
                         touchmenu_instance:updateItems()

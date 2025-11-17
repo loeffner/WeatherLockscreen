@@ -30,6 +30,7 @@ local function http_request_code(url, sink_table)
 end
 
 function WeatherAPI:fetchWeatherData(weather_lockscreen)
+    local refresh_required = weather_lockscreen.refresh or false
     local location = G_reader_settings:readSetting("weather_location") or weather_lockscreen.default_location
     local api_key = G_reader_settings:readSetting("weather_api_key")
     if not api_key or api_key == "" then
@@ -45,11 +46,13 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
     logger.dbg("WeatherLockscreen: Using language:", lang)
 
-    local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getMinDelayBetweenUpdates() end)
-    if cached_data and lang == cached_data.lang then
-        logger.dbg("WeatherLockscreen: Using cache to avoid repeated requests")
-        cached_data.is_cached = true
-        return cached_data
+    if not refresh_required then
+        local cached_data = WeatherUtils:loadWeatherCache(function() return weather_lockscreen:getMinDelayBetweenUpdates() end)
+        if cached_data and lang == cached_data.lang then
+            logger.dbg("WeatherLockscreen: Using cache to avoid repeated requests")
+            cached_data.is_cached = true
+            return cached_data
+        end
     end
 
     if not api_key or api_key == "" then
@@ -94,6 +97,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
             local weather_data = self:processWeatherData(result)
             WeatherUtils:saveWeatherCache(weather_data)
             weather_data.is_cached = false
+            weather_lockscreen.refresh = false
             return weather_data
         else
             logger.warn("WeatherLockscreen: Failed to parse weather data")
