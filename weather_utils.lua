@@ -75,7 +75,7 @@ function WeatherUtils:getCacheMaxAge()
 end
 
 function WeatherUtils:getMinDelayBetweenUpdates()
-    return G_reader_settings:readSetting("weather_min_update_delay") or 600  -- Default: 10 minutes
+    return G_reader_settings:readSetting("weather_min_update_delay") or 1800  -- Default: 30 minutes
 end
 
 -- This function was inspired by Project: Title. Thanks!
