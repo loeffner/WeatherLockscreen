@@ -96,6 +96,8 @@ The plugin offers several display formats to customize your lockscreen:
 ## How It Works
 
 1. **Data Fetching**: Weather data is automatically fetched from WeatherAPI.com when your device enters sleep mode
+   * To avoid unnecessary api calls, the data is only refreshed, if the cached data is older than 30 minutes.
+   * Changing the location, the temperature unit or deleting the cache forces an update.
 2. **Caching**: Data is cached locally for a configurable amount of time (1h - 24h)
 3. **Offline Mode**: If the API request fails or no internet connection is available, the plugin uses cached data
 4. **Fallback Display**: If no cached data is available, displays a sun/moon icon based on the current time of day
@@ -127,7 +129,7 @@ Night Owl, Retro Analog
 
 To avoid having partially translated display modes, you can toggle the translation on/off on the settings.
 
-Currently, I do not plan to translate the settings menu. If someone knows, how to properly implement localization and wants to support the plugin, I would welcome a PR. \
+If someone knows, how to properly implement localization and wants to support the plugin, I would welcome a PR. \
 Personally, I am happy that (some of) the lockscreens support several languages.
 
 <details>
@@ -171,6 +173,13 @@ Personally, I am happy that (some of) the lockscreens support several languages.
 
 
 ## Customization
+
+<details>
+<summary>Displayed hours in "Detailed" display</summary>
+
+You can find a user patch to modify the hours here:
+[2-weather-detailed-view-hours.lua](https://github.com/loeffner/KOReader.patches?tab=readme-ov-file#-2-weather-detailed-view-hourslua)
+</details>
 
 <details>
 <summary>Fallback Icons (sun/moon)</summary>
