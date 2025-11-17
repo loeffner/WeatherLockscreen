@@ -322,6 +322,8 @@ function WeatherUtils:clearCache()
     return cleared
 end
 
+WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
+
 function WeatherUtils:koLangAvailable()
     local lang_ko = G_reader_settings:readSetting("language") or "en"
     return WeatherUtils.lang_map[lang_ko] ~= nil

@@ -88,7 +88,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
         table.insert(widgets, VerticalSpan:new { width = vertical_spacing })
 
         -- Today's hourly forecast
-        if weather_data.hourly_today and #weather_data.hourly_today > 0 then
+        if weather_data.hourly_today_all and #weather_data.hourly_today_all > 0 then
             table.insert(widgets, TextWidget:new {
                 text = WeatherUtils:shouldTranslateWeather() and _(os.date("%A", os.time())) or "Today",
                 face = Font:getFace("cfont", label_font_size),
@@ -96,36 +96,48 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
             })
 
             local today_row = {}
-            for i, hour_data in ipairs(weather_data.hourly_today) do
-                if i > 1 then
-                    table.insert(today_row, HorizontalSpan:new { width = horizontal_spacing })
+            for i = 1, #weather_data.hourly_today_all do
+                local hour_data = weather_data.hourly_today_all[i]
+                -- Filter the hours to show
+                local show_hour = false
+                for j = 1, #WeatherUtils.target_hours do
+                    local target_hour = WeatherUtils.target_hours[j]
+                    if hour_data.hour_num == target_hour then
+                        show_hour = true
+                        break
+                    end
                 end
+                if show_hour then
+                    if #today_row > 1 then
+                        table.insert(today_row, HorizontalSpan:new { width = horizontal_spacing })
+                    end
 
-                local hour_widgets = {}
-                table.insert(hour_widgets, TextWidget:new {
-                    text = hour_data.hour,
-                    face = Font:getFace("cfont", hour_font_size),
-                })
+                    local hour_widgets = {}
+                    table.insert(hour_widgets, TextWidget:new {
+                        text = hour_data.hour,
+                        face = Font:getFace("cfont", hour_font_size),
+                    })
 
-                if hour_data.icon_path then
-                    table.insert(hour_widgets, ImageWidget:new {
-                        file = hour_data.icon_path,
-                        width = hourly_icon_size,
-                        height = hourly_icon_size,
-                        alpha = true,
-                        original_in_nightmode = false
+                    if hour_data.icon_path then
+                        table.insert(hour_widgets, ImageWidget:new {
+                            file = hour_data.icon_path,
+                            width = hourly_icon_size,
+                            height = hourly_icon_size,
+                            alpha = true,
+                            original_in_nightmode = false
+                        })
+                    end
+
+                    table.insert(hour_widgets, TextWidget:new {
+                        text = hour_data.temperature,
+                        face = Font:getFace("cfont", hour_font_size),
+                    })
+
+                    table.insert(today_row, VerticalGroup:new {
+                        align = "center",
+                        unpack(hour_widgets)
                     })
                 end
-
-                table.insert(hour_widgets, TextWidget:new {
-                    text = hour_data.temperature,
-                    face = Font:getFace("cfont", hour_font_size),
-                })
-
-                table.insert(today_row, VerticalGroup:new {
-                    align = "center",
-                    unpack(hour_widgets)
-                })
             end
 
             table.insert(widgets, HorizontalGroup:new {
@@ -137,7 +149,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
         end
 
         -- Tomorrow's hourly forecast
-        if weather_data.hourly_tomorrow and #weather_data.hourly_tomorrow > 0 then
+        if weather_data.hourly_tomorrow_all and #weather_data.hourly_tomorrow_all > 0 then
             table.insert(widgets, TextWidget:new {
                 text = WeatherUtils:shouldTranslateWeather() and _(os.date("%A", os.time() + 86400)) or "Tomorrow",
                 face = Font:getFace("cfont", label_font_size),
@@ -145,36 +157,48 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
             })
 
             local tomorrow_row = {}
-            for i, hour_data in ipairs(weather_data.hourly_tomorrow) do
-                if i > 1 then
-                    table.insert(tomorrow_row, HorizontalSpan:new { width = horizontal_spacing })
+            for i = 1, #weather_data.hourly_tomorrow_all do
+                local hour_data = weather_data.hourly_tomorrow_all[i]
+                -- Filter the hours to show
+                local show_hour = false
+                for j = 1, #WeatherUtils.target_hours do
+                    local target_hour = WeatherUtils.target_hours[j]
+                    if hour_data.hour_num == target_hour then
+                        show_hour = true
+                        break
+                    end
                 end
+                if show_hour then
+                    if #tomorrow_row > 1 then
+                        table.insert(tomorrow_row, HorizontalSpan:new { width = horizontal_spacing })
+                    end
 
-                local hour_widgets = {}
-                table.insert(hour_widgets, TextWidget:new {
-                    text = hour_data.hour,
-                    face = Font:getFace("cfont", hour_font_size),
-                })
+                    local hour_widgets = {}
+                    table.insert(hour_widgets, TextWidget:new {
+                        text = hour_data.hour,
+                        face = Font:getFace("cfont", hour_font_size),
+                    })
 
-                if hour_data.icon_path then
-                    table.insert(hour_widgets, ImageWidget:new {
-                        file = hour_data.icon_path,
-                        width = hourly_icon_size,
-                        height = hourly_icon_size,
-                        alpha = true,
-                        original_in_nightmode = false
+                    if hour_data.icon_path then
+                        table.insert(hour_widgets, ImageWidget:new {
+                            file = hour_data.icon_path,
+                            width = hourly_icon_size,
+                            height = hourly_icon_size,
+                            alpha = true,
+                            original_in_nightmode = false
+                        })
+                    end
+
+                    table.insert(hour_widgets, TextWidget:new {
+                        text = hour_data.temperature,
+                        face = Font:getFace("cfont", hour_font_size),
+                    })
+
+                    table.insert(tomorrow_row, VerticalGroup:new {
+                        align = "center",
+                        unpack(hour_widgets)
                     })
                 end
-
-                table.insert(hour_widgets, TextWidget:new {
-                    text = hour_data.temperature,
-                    face = Font:getFace("cfont", hour_font_size),
-                })
-
-                table.insert(tomorrow_row, VerticalGroup:new {
-                    align = "center",
-                    unpack(hour_widgets)
-                })
             end
 
             table.insert(widgets, HorizontalGroup:new {

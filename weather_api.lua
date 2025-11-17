@@ -91,7 +91,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
 
         if success and result and result.current and not result.error then
             logger.dbg("WeatherLockscreen: Weather data received successfully")
-            local weather_data = self:processWeatherData(weather_lockscreen, result)
+            local weather_data = self:processWeatherData(result)
             WeatherUtils:saveWeatherCache(weather_data)
             weather_data.is_cached = false
             return weather_data
@@ -110,7 +110,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     return cached_data
 end
 
-function WeatherAPI:processWeatherData(weather_lockscreen, result)
+function WeatherAPI:processWeatherData(result)
     local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or "C"
     local twelve_hour_clock = G_reader_settings:isTrue("twelve_hour_clock")
     local lang = WeatherUtils:shouldTranslateWeather() and WeatherUtils:koLangAsWeatherAPILang() or "en"
@@ -161,7 +161,6 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
     -- Extract ALL hourly data (for extended displays)
     local hourly_today = {}
     local hourly_tomorrow = {}
-    local target_hours = { 6, 12, 18 } -- For basic display
 
     if result.forecast and result.forecast.forecastday then
         -- Today's hours
@@ -204,27 +203,6 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
                         condition = hour_data.condition.text,
                     })
                 end
-            end
-        end
-    end
-
-    -- Filter for basic display (6, 12, 18 only)
-    local hourly_today_basic = {}
-    for _, h in ipairs(hourly_today) do
-        for _, target_hour in ipairs(target_hours) do
-            if h.hour_num == target_hour then
-                table.insert(hourly_today_basic, h)
-                break
-            end
-        end
-    end
-
-    local hourly_tomorrow_basic = {}
-    for _, h in ipairs(hourly_tomorrow) do
-        for _, target_hour in ipairs(target_hours) do
-            if h.hour_num == target_hour then
-                table.insert(hourly_tomorrow_basic, h)
-                break
             end
         end
     end
@@ -276,10 +254,8 @@ function WeatherAPI:processWeatherData(weather_lockscreen, result)
     return {
         lang = lang,
         current = current_data,
-        hourly_today = hourly_today_basic,       -- 6, 12, 18 only for basic display
-        hourly_tomorrow = hourly_tomorrow_basic, -- 6, 12, 18 only for basic display
-        hourly_today_all = hourly_today,         -- All hours, maybe I will need the at some point
-        hourly_tomorrow_all = hourly_tomorrow,   -- All hours, maybe I will need the at some point
+        hourly_today_all = hourly_today,
+        hourly_tomorrow_all = hourly_tomorrow,
         forecast_days = forecast_days,
         astronomy = astronomy,
     }
