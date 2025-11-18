@@ -15,27 +15,21 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "Today"
-msgstr "Heute"
-
-msgid "Tomorrow"
-msgstr "Morgen"
-
-msgid "TEMPERATURE"
-msgstr "TEMPERATUR"
-
-msgid "WIND"
-msgstr "WIND"
-
-msgid "HUMIDITY"
-msgstr "LUFTFEUCHTIGKEIT"
-
-msgid "Page %1 of %2"
-msgstr "Seite %1 von %2"
+# ==============================================================================
+# Plugin Metadata (_meta.lua)
+# ==============================================================================
 
 msgid "Weather Lockscreen"
 msgstr "Weather Lockscreen"
 
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "Zeigt Wetterinformationen auf dem Sperrbildschirm an. Wählen Sie die Wetter-Option im Menü Sperrbildschirm > Hintergrundbild, um sie zu aktivieren."
+
+# ==============================================================================
+# Main Menu (main.lua)
+# ==============================================================================
+
+# Location Settings
 msgid "Location"
 msgstr "Standort"
 
@@ -54,6 +48,7 @@ msgstr "Abbrechen"
 msgid "Save"
 msgstr "Speichern"
 
+# Display Style Settings
 msgid "Display Style (%1)"
 msgstr "Anzeigestil (%1)"
 
@@ -72,6 +67,7 @@ msgstr "Retro Analog"
 msgid "Cover"
 msgstr "Cover"
 
+# Temperature Scale Settings
 msgid "Temperature Scale (°%1)"
 msgstr "Temperaturskala (°%1)"
 
@@ -81,6 +77,7 @@ msgstr "Celsius"
 msgid "Fahrenheit"
 msgstr "Fahrenheit"
 
+# Display Settings
 msgid "Show header"
 msgstr "Kopfzeile anzeigen"
 
@@ -108,6 +105,7 @@ msgstr "An Bildschirm anpassen"
 msgid "Stretch to fill"
 msgstr "Strecken"
 
+# Cache Settings
 msgid "Cache duration (%1 %2)"
 msgstr "Cache-Dauer (%1 %2)"
 
@@ -138,8 +136,62 @@ msgstr "Cache geleert"
 msgid "No cache to clear"
 msgstr "Kein Cache zum Löschen"
 
+# Language Settings
 msgid "Use KOReader language setting (%1)"
 msgstr "KOReader-Spracheinstellung verwenden (%1)"
 
-msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
-msgstr "Zeigt Wetterinformationen auf dem Sperrbildschirm an. Wählen Sie die Wetter-Option im Menü Sperrbildschirm > Hintergrundbild, um sie zu aktivieren."
+msgid "Show weather on sleep screen"
+msgstr "Wetter auf Sperrbildschirm anzeigen"
+
+# ==============================================================================
+# Display Views
+# ==============================================================================
+
+# Weather API (weather_api.lua)
+msgid "Today"
+msgstr "Heute"
+
+msgid "Tomorrow"
+msgstr "Morgen"
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr "TEMPERATUR"
+
+msgid "WIND"
+msgstr "WIND"
+
+msgid "HUMIDITY"
+msgstr "LUFTFEUCHTIGKEIT"
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr "Seite %1 von %2"
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+msgid "New Moon"
+msgstr "Neumond"
+
+msgid "Waxing Crescent"
+msgstr "Zunehmende Sichel"
+
+msgid "First Quarter"
+msgstr "Erstes Viertel"
+
+msgid "Waxing Gibbous"
+msgstr "Zunehmender Mond"
+
+msgid "Full Moon"
+msgstr "Vollmond"
+
+msgid "Waning Gibbous"
+msgstr "Abnehmender Mond"
+
+msgid "Last Quarter"
+msgstr "Letztes Viertel"
+
+msgid "Third Quarter"
+msgstr "Drittes Viertel"
+
+msgid "Waning Crescent"
+msgstr "Abnehmende Sichel"

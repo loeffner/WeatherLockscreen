@@ -6,6 +6,7 @@
 local DataStorage = require("datastorage")
 local logger = require("logger")
 local WeatherUtils = require("weather_utils")
+local _ = require("l10n/gettext")
 
 local WeatherAPI = {}
 
@@ -202,9 +203,9 @@ function WeatherAPI:processWeatherData(result)
             if day_data and day_data.day then
                 local day_name
                 if i == 1 then
-                    day_name = "Today"
+                    day_name = _("Today")
                 elseif i == 2 then
-                    day_name = "Tomorrow"
+                    day_name = _("Tomorrow")
                 else
                     -- Parse date and get day name
                     local date_str = day_data.date

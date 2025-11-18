@@ -84,11 +84,11 @@ Some strings are already translated by other sources:
 
 2. **Day names** (e.g., "Monday", "Tuesday")
    - Provided by KOReader's `os.date()` function
-   - Already localized by the system
+   - Already localized by koreader
 
 3. **Month abbreviations** (e.g., "Jan", "Feb")
    - Provided by KOReader's `os.date()` function
-   - Already localized by the system
+   - Already localized by koreader
 
 ## Testing Translations
 

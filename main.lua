@@ -25,7 +25,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local ScreenSaverWidget = require("ui/widget/screensaverwidget")
 local InputDialog = require("ui/widget/inputdialog")
 local logger = require("logger")
-local _ = require("gettext")
+local _ = require("l10n/gettext")
 local T = require("ffi/util").template
 local WeatherAPI = require("weather_api")
 local WeatherUtils = require("weather_utils")
@@ -612,8 +612,9 @@ function WeatherLockscreen:createHeaderWidgets(header_font_size, header_margin, 
         local year, month, day, hour, min = timestamp:match("(%d+)-(%d+)-(%d+) (%d+):(%d+)")
         local formatted_time = ""
         if year and month and day and hour and min then
-            local month_names = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" }
-            local month_name = month_names[tonumber(month)] or month
+            -- Use os.date for localized month abbreviation
+            local time_obj = os.time{year=tonumber(year), month=tonumber(month), day=tonumber(day)}
+            local date_str = os.date("%b %d", time_obj)
             local twelve_hour_clock = G_reader_settings:isTrue("twelve_hour_clock")
             local hour_num = tonumber(hour)
             local time_str
@@ -625,7 +626,7 @@ function WeatherLockscreen:createHeaderWidgets(header_font_size, header_margin, 
             else
                 time_str = hour .. ":" .. min
             end
-            formatted_time = _(month_name) .. " " .. tonumber(day) .. ", " .. time_str
+            formatted_time = date_str .. ", " .. time_str
         else
             formatted_time = timestamp
         end

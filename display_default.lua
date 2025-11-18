@@ -15,7 +15,7 @@ local Font = require("ui/font")
 local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
-local _ = require("gettext")
+local _ = require("l10n/gettext")
 local WeatherUtils = require("weather_utils")
 
 local DefaultDisplay = {}

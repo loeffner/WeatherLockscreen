@@ -14,6 +14,7 @@ local Font = require("ui/font")
 local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
+local WeatherUtils = require("weather_utils")
 
 local NightOwlDisplay = {}
 
@@ -48,6 +49,7 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     local bottom_text_widget = nil
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
         local bottom_margin = Screen:scaleBySize(30)
+        local translated_phase = WeatherUtils:translateMoonPhase(weather_data.astronomy.moon_phase)
         bottom_text_widget = FrameContainer:new{
             padding = 0,
             margin = 0,
@@ -56,7 +58,7 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
             CenterContainer:new{
                 dimen = { w = Screen:getWidth(), h = moon_font_size + bottom_margin * 2 },
                 TextWidget:new{
-                    text = weather_data.astronomy.moon_phase,
+                    text = translated_phase,
                     face = Font:getFace("cfont", moon_font_size),
                     bold = true,
                     fgcolor = Blitbuffer.COLOR_LIGHT_GRAY,

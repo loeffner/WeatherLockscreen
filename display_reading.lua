@@ -25,7 +25,8 @@ local Geom = require("ui/geometry")
 local util = require("util")
 local logger = require("logger")
 local datetime = require("datetime")
-local _ = require("gettext")
+local _ = require("l10n/gettext")
+local T = require("ffi/util").template
 local WeatherUtils = require("weather_utils")
 
 local ReadingDisplay = {}
@@ -314,7 +315,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         -- Left: Page numbers
         local page_text = ""
         if doc_info.page_no and doc_info.page_total then
-            page_text = WeatherUtils:shouldTranslateWeather() and (doc_info.page_no .. " / " .. doc_info.page_total) or string.format("Page %i of %i", doc_info.page_no, doc_info.page_total)
+            page_text = T(_("Page %1 of %2"), doc_info.page_no, doc_info.page_total)
         table.insert(bottom_row, TextWidget:new{
                 text = page_text,
                 face = Font:getFace("cfont", progress_font_size),

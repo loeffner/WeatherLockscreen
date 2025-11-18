@@ -3,6 +3,7 @@
     Vintage weather station with gauges
 --]]
 
+local _ = require("l10n/gettext")
 local ImageWidget = require("ui/widget/imagewidget")
 local TextWidget = require("ui/widget/textwidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
@@ -67,7 +68,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
             local gauge_widgets = {}
 
             table.insert(gauge_widgets, TextWidget:new{
-                text = "HUMIDITY",
+                text = _("HUMIDITY"),
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })
@@ -147,13 +148,13 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
             -- Row 1: Labels (TEMPERATURE | WIND)
             local labels_row = {}
             table.insert(labels_row, TextWidget:new{
-                text = "TEMPERATURE",
+                text = _("TEMPERATURE"),
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })
             table.insert(labels_row, HorizontalSpan:new{ width = spacing * 3 })
             table.insert(labels_row, TextWidget:new{
-                text = "WIND",
+                text = _("WIND"),
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })

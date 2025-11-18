@@ -1,4 +1,4 @@
-local _ = require("gettext")
+local _ = require("l10n/gettext")
 return {
     name = "weatherlockscreen",
     fullname = _("Weather Lockscreen"),
