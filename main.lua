@@ -38,7 +38,6 @@ function WeatherLockscreen:init()
     WeatherUtils:installIcons()
     self.ui.menu:registerToMainMenu(self)
     self:patchScreensaver()
-    self:schedulePeriodicRefresh()
 end
 
 function WeatherLockscreen:getPeriodicRefreshInterval()
@@ -50,6 +49,12 @@ function WeatherLockscreen:schedulePeriodicRefresh()
     if self.periodic_refresh_task then
         UIManager:unschedule(self.periodic_refresh_task)
         self.periodic_refresh_task = nil
+    end
+
+    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+    if wifi_turn_on == false then
+        logger.dbg("WeatherLockscreen: Periodic refresh disabled due to Wi-Fi action setting")
+        return
     end
 
     local interval = self:getPeriodicRefreshInterval()
@@ -84,12 +89,9 @@ function WeatherLockscreen:performPeriodicRefresh()
             logger.dbg("WeatherLockscreen: WiFi enabled successfully")
             self:doPeriodicRefresh()
         end, function()
-            logger.warn("WeatherLockscreen: Failed to enable WiFi, using cached data")
-            -- Still try to refresh with cached data
-            self:doPeriodicRefresh()
+            logger.warn("WeatherLockscreen: Failed to enable WiFi")
         end)
     else
-        logger.dbg("WeatherLockscreen: Already connected to network")
         self:doPeriodicRefresh()
     end
 end
@@ -100,61 +102,10 @@ function WeatherLockscreen:doPeriodicRefresh()
     -- Force refresh by setting the flag
     self.refresh = true
 
-    -- Fetch new weather data
-    local weather_data = self:fetchWeatherData()
-
-    if weather_data and weather_data.current then
-        logger.dbg("WeatherLockscreen: Weather data refreshed successfully")
-
-        -- If device is currently in sleep mode, update the screen
-        if Device.screen_saver_mode then
-            logger.dbg("WeatherLockscreen: Device in sleep mode, updating screen")
-            local Screensaver = require("ui/screensaver")
-            if Screensaver.screensaver_widget then
-                -- Close existing screensaver widget
-                UIManager:close(Screensaver.screensaver_widget)
-                Screensaver.screensaver_widget = nil
-            end
-
-            -- Create new weather widget
-            local weather_widget, fallback = self:createWeatherWidget()
-            if weather_widget then
-                local bg_color = Blitbuffer.COLOR_WHITE
-                if fallback then
-                    bg_color = Blitbuffer.COLOR_GRAY_E
-                end
-
-                Screensaver.screensaver_widget = ScreenSaverWidget:new {
-                    widget = weather_widget,
-                    background = bg_color,
-                }
-                Screensaver.screensaver_widget.modal = true
-                Screensaver.screensaver_widget.dithered = true
-                UIManager:show(Screensaver.screensaver_widget)
-
-                -- Ensure backlight stays off
-                if Device:hasFrontlight() then
-                    local powerd = Device:getPowerDevice()
-                    if powerd and powerd.fl_intensity and powerd.fl_intensity > 0 then
-                        -- Save current brightness
-                        local saved_intensity = powerd.fl_intensity
-                        -- Turn off frontlight
-                        powerd:setIntensity(0)
-                        -- Restore after screen update
-                        UIManager:nextTick(function()
-                            if Device.screen_saver_mode then
-                                powerd:setIntensity(0)
-                            else
-                                powerd:setIntensity(saved_intensity)
-                            end
-                        end)
-                    end
-                end
-            end
-        end
-    else
-        logger.warn("WeatherLockscreen: Failed to refresh weather data")
-    end
+    -- Use the normal screensaver flow to ensure proper unlock behavior
+    local Screensaver = require("ui/screensaver")
+    Screensaver.screensaver_type = "weather"
+    Screensaver:show(Screensaver)
 end
 
 function WeatherLockscreen:addToMainMenu(menu_items)
@@ -511,14 +462,22 @@ function WeatherLockscreen:getSubMenuItems()
 
     table.insert(menu_items, {
         text_func = function()
+            local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
             local interval = self:getPeriodicRefreshInterval()
-            if interval == 0 then
-                return _("Periodic refresh (Off)")
-            elseif interval < 3600 then
-                return T(_("Periodic refresh (%1 min)"), interval / 60)
-            else
-                return T(_("Periodic refresh (%1 h)"), interval / 3600)
+            if wifi_turn_on == false then
+                return _("Enable 'Turn on Wi-Fi' for periodic refresh")
             end
+            if interval == 0 then
+                return _("Refresh (Off)")
+            elseif interval < 3600 then
+                return T(_("Refresh every %1 min"), interval / 60)
+            else
+                return T(_("Refresh every %1h"), interval / 3600)
+            end
+        end,
+        enabled_func = function()
+            local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+            return wifi_turn_on ~= false
         end,
         sub_item_table = {
             {
@@ -529,7 +488,28 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 0)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
+                    touchmenu_instance:updateItems()
+                end,
+            },
+            {
+                text = _("1 minutes"),
+                checked_func = function()
+                    return self:getPeriodicRefreshInterval() == 60
+                end,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("weather_periodic_refresh", 60)
+                    G_reader_settings:flush()
+                    touchmenu_instance:updateItems()
+                end,
+            },
+            {
+                text = _("3 minutes"),
+                checked_func = function()
+                    return self:getPeriodicRefreshInterval() == 180
+                end,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("weather_periodic_refresh", 180)
+                    G_reader_settings:flush()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -541,7 +521,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 1800)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -553,7 +532,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 3600)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -565,7 +543,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 10800)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -577,7 +554,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 21600)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -589,7 +565,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 43200)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -601,7 +576,6 @@ function WeatherLockscreen:getSubMenuItems()
                 callback = function(touchmenu_instance)
                     G_reader_settings:saveSetting("weather_periodic_refresh", 86400)
                     G_reader_settings:flush()
-                    self:schedulePeriodicRefresh()
                     touchmenu_instance:updateItems()
                 end,
             },
@@ -808,16 +782,17 @@ function WeatherLockscreen:createWeatherWidget()
 end
 
 function WeatherLockscreen:onSuspend()
-    -- Don't cancel the task on suspend - let it run while sleeping
-    logger.dbg("WeatherLockscreen: Device suspending, periodic refresh will continue")
+    self:schedulePeriodicRefresh()
+    logger.dbg("WeatherLockscreen: Device suspended")
 end
 
 function WeatherLockscreen:onResume()
     -- Reschedule if needed after resume
     logger.dbg("WeatherLockscreen: Device resuming")
-    if self:getPeriodicRefreshInterval() > 0 and not self.periodic_refresh_task then
-        logger.dbg("WeatherLockscreen: Rescheduling periodic refresh after resume")
-        self:schedulePeriodicRefresh()
+    if self.periodic_refresh_task then
+        logger.dbg("WeatherLockscreen: Cancelling periodic refresh on resume")
+        UIManager:unschedule(self.periodic_refresh_task)
+        self.periodic_refresh_task = nil
     end
 end
 
