@@ -276,10 +276,10 @@ function WeatherLockscreen:getSubMenuItems()
         table.insert(menu_items, {
             text = _("Override scaling"),
             checked_func = function()
-                return G_reader_settings:readSetting("weather_override_scaling")
+                return G_reader_settings:readSetting("weather_override_scaling") or false
             end,
             callback = function(touchmenu_instance)
-                local current = G_reader_settings:nilOrTrue("weather_override_scaling")
+                local current = G_reader_settings:readSetting("weather_override_scaling") or false
                 G_reader_settings:saveSetting("weather_override_scaling", not current)
                 touchmenu_instance.item_table = self:getSubMenuItems()
                 touchmenu_instance:updateItems()
@@ -433,7 +433,7 @@ function WeatherLockscreen:getSubMenuItems()
             return WeatherUtils:shouldTranslateWeather() or WeatherUtils:koLangAsWeatherAPILang() == "en"
         end,
         callback = function()
-            local current = G_reader_settings:nilOrTrue("weather_translate")
+            local current = G_reader_settings:readSetting("weather_translate") or false
             G_reader_settings:saveSetting("weather_translate", not current)
             G_reader_settings:flush()
         end,
