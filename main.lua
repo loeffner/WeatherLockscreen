@@ -10,6 +10,7 @@
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local UIManager = require("ui/uimanager")
 local Device = require("device")
+local WakeupMgr = require("device/wakeupmgr")
 local Screen = Device.screen
 local DataStorage = require("datastorage")
 local ImageWidget = require("ui/widget/imagewidget")
@@ -31,6 +32,8 @@ local WeatherLockscreen = WidgetContainer:extend {
     default_temp_scale = "C",
     refresh = false,
     periodic_refresh_task = nil,
+    wakeup_mgr = nil,
+    rtc_wakeup_scheduled = false,
 }
 
 function WeatherLockscreen:init()
@@ -38,6 +41,15 @@ function WeatherLockscreen:init()
     self.ui.menu:registerToMainMenu(self)
     self:patchDofile()
     self:patchScreensaver()
+    -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
+    -- Otherwise create our own
+    if Device.wakeup_mgr then
+        self.wakeup_mgr = Device.wakeup_mgr
+        logger.dbg("WeatherLockscreen: Using device WakeupMgr")
+    else
+        self.wakeup_mgr = WakeupMgr:new()
+        logger.dbg("WeatherLockscreen: Created new WakeupMgr")
+    end
 end
 
 function WeatherLockscreen:getPeriodicRefreshInterval()
@@ -49,6 +61,12 @@ function WeatherLockscreen:schedulePeriodicRefresh()
     if self.periodic_refresh_task then
         UIManager:unschedule(self.periodic_refresh_task)
         self.periodic_refresh_task = nil
+    end
+
+    -- Cancel any existing RTC wakeup
+    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
+        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
+        self.rtc_wakeup_scheduled = false
     end
 
     local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
@@ -63,37 +81,47 @@ function WeatherLockscreen:schedulePeriodicRefresh()
         return
     end
 
-    logger.dbg("WeatherLockscreen: Scheduling periodic refresh every", interval, "seconds")
+    -- Try RTC scheduling if WakeupMgr is available
+    if self.wakeup_mgr then
+        logger.info("WeatherLockscreen: Scheduling RTC-based periodic refresh every", interval, "seconds")
 
-    self.periodic_refresh_task = function()
-        logger.dbg("WeatherLockscreen: Periodic refresh triggered")
-        self:performPeriodicRefresh()
-        -- Reschedule the next refresh
-        self:schedulePeriodicRefresh()
+        -- Add task to WakeupMgr queue
+        -- On Kindle, this will be picked up by powerd during ReadyToSuspend
+        self.wakeup_mgr:addTask(interval, function()
+            logger.info("WeatherLockscreen: RTC periodic refresh triggered")
+            self:performPeriodicRefresh()
+        end)
+        self.rtc_wakeup_scheduled = true
+    else
+        -- Fallback to UIManager if WakeupMgr unavailable
+        logger.warn("WeatherLockscreen: WakeupMgr not available, using UIManager scheduling")
+        logger.warn("WeatherLockscreen: Periodic refresh will only work when device is awake")
+        self.periodic_refresh_task = function()
+            logger.dbg("WeatherLockscreen: UIManager periodic refresh triggered")
+            self:performPeriodicRefresh()
+            self:schedulePeriodicRefresh()
+        end
+        UIManager:scheduleIn(interval, self.periodic_refresh_task)
     end
-
-    UIManager:scheduleIn(interval, self.periodic_refresh_task)
 end
 
 function WeatherLockscreen:performPeriodicRefresh()
     logger.dbg("WeatherLockscreen: Starting periodic weather refresh")
 
-    -- Check if we should try to connect to network
-    local NetworkMgr = require("ui/network/manager")
-    local was_connected = NetworkMgr:isConnected()
+    -- Prevent device from suspending while we're fetching weather
+    UIManager:preventStandby()
+    logger.dbg("WeatherLockscreen: Prevented suspend during network operation")
 
-    if not was_connected then
-        logger.dbg("WeatherLockscreen: Not connected, attempting silent connection...")
-        -- Try to turn on WiFi without user prompts
-        NetworkMgr:turnOnWifi(function()
-            logger.dbg("WeatherLockscreen: WiFi enabled successfully")
-            self:doPeriodicRefresh()
-        end, function()
-            logger.warn("WeatherLockscreen: Failed to enable WiFi")
-        end)
-    else
+    -- Use NetworkMgr's runWhenConnected to guarantee connectivity
+    -- This handles all connection logic and only runs callback when truly connected
+    local NetworkMgr = require("ui/network/manager")
+    NetworkMgr:runWhenConnected(function()
+        logger.dbg("WeatherLockscreen: Network connection guaranteed, fetching weather")
         self:doPeriodicRefresh()
-    end
+        -- Allow device to suspend again after operation completes
+        UIManager:allowStandby()
+        logger.dbg("WeatherLockscreen: Re-enabled suspend after weather fetch")
+    end)
 end
 
 function WeatherLockscreen:doPeriodicRefresh()
@@ -102,10 +130,11 @@ function WeatherLockscreen:doPeriodicRefresh()
     -- Force refresh by setting the flag
     self.refresh = true
 
-    -- Use the normal screensaver flow to ensure proper unlock behavior
-    local Screensaver = require("ui/screensaver")
-    Screensaver.screensaver_type = "weather"
-    Screensaver:show(Screensaver)
+    -- Fetch weather data silently without showing screensaver
+    self:fetchWeatherData()
+
+    -- Reschedule the next RTC wakeup
+    self:schedulePeriodicRefresh()
 end
 
 function WeatherLockscreen:addToMainMenu(menu_items)
@@ -317,15 +346,26 @@ function WeatherLockscreen:createWeatherWidget()
 end
 
 function WeatherLockscreen:onSuspend()
+    logger.dbg("WeatherLockscreen: Device suspending")
     self:schedulePeriodicRefresh()
-    logger.dbg("WeatherLockscreen: Device suspended")
 end
 
 function WeatherLockscreen:onResume()
-    -- Reschedule if needed after resume
     logger.dbg("WeatherLockscreen: Device resuming")
+
+    -- Check if we woke up due to an RTC alarm and execute the action
+    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
+        local was_scheduled = self.wakeup_mgr:wakeupAction()
+        if was_scheduled then
+            logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
+        else
+            logger.dbg("WeatherLockscreen: Manual wakeup, not from RTC alarm")
+        end
+    end
+
+    -- Only cancel UIManager tasks, keep RTC tasks running
     if self.periodic_refresh_task then
-        logger.dbg("WeatherLockscreen: Cancelling periodic refresh on resume")
+        logger.dbg("WeatherLockscreen: Cancelling UIManager periodic refresh on resume")
         UIManager:unschedule(self.periodic_refresh_task)
         self.periodic_refresh_task = nil
     end
@@ -334,9 +374,16 @@ end
 function WeatherLockscreen:onCloseWidget()
     -- Clean up scheduled task when plugin is closed
     if self.periodic_refresh_task then
-        logger.dbg("WeatherLockscreen: Cancelling periodic refresh on close")
+        logger.dbg("WeatherLockscreen: Cancelling UIManager periodic refresh on close")
         UIManager:unschedule(self.periodic_refresh_task)
         self.periodic_refresh_task = nil
+    end
+
+    -- Cancel RTC wakeup tasks on close
+    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
+        logger.dbg("WeatherLockscreen: Cancelling RTC periodic refresh on close")
+        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
+        self.rtc_wakeup_scheduled = false
     end
 end
 
