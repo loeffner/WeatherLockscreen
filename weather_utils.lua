@@ -471,6 +471,18 @@ end
 
 WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
 
+function WeatherUtils:wifiEnableActionTurnOn()
+    local wifi_enable_action = G_reader_settings:readSetting("wifi_enable_action") or "prompt"
+    return wifi_enable_action == "turn_on"
+end
+
+function WeatherUtils:periodic_refresh_enabled()
+    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+    local interval = self:getPeriodicRefreshInterval()
+    return not wifi_turn_on or interval == 0
+end
+
+
 function WeatherUtils:koLangAsWeatherAPILang()
     local lang_locale = G_reader_settings:readSetting("language") or "en"
     return WeatherUtils.lang_map[lang_locale] or "en"
