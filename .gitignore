@@ -15,3 +15,7 @@ tmp_*
 
 # IDE/Editor files
 .vscode/
+
+# Compiled translation files (should be included in releases)
+# Uncomment if you want to regenerate .mo files on each build
+# l10n/*.mo
