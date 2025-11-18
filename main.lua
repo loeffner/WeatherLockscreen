@@ -128,6 +128,7 @@ function WeatherLockscreen:getSubMenuItems()
                     reading = _("Cover"),
                     retro = _("Retro Analog"),
                     nightowl = _("Night Owl"),
+                    forecast = _("Forecast"),
                 }
                 return T(_("Display Style (%1)"), style_names[display_style])
             end,
@@ -211,6 +212,23 @@ function WeatherLockscreen:getSubMenuItems()
                         G_reader_settings:saveSetting("weather_display_style", "reading")
                         G_reader_settings:flush()
                         logger.dbg("WeatherLockscreen: Saved display style: reading")
+                        if touchmenu_instance then
+                            touchmenu_instance.item_table = self:getSubMenuItems()
+                            touchmenu_instance:updateItems()
+                        end
+                    end,
+                },
+                {
+                    text = _("Forecast"),
+                    checked_func = function()
+                        local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+                        return display_style == "forecast"
+                    end,
+                    keep_menu_open = true,
+                    callback = function(touchmenu_instance)
+                        G_reader_settings:saveSetting("weather_display_style", "forecast")
+                        G_reader_settings:flush()
+                        logger.dbg("WeatherLockscreen: Saved display style: forecast")
                         if touchmenu_instance then
                             touchmenu_instance.item_table = self:getSubMenuItems()
                             touchmenu_instance:updateItems()
@@ -718,6 +736,8 @@ function WeatherLockscreen:createWeatherWidget()
         display_module = require("display_retro")
     elseif display_style == "reading" then
         display_module = require("display_reading")
+    elseif display_style == "forecast" then
+        display_module = require("display_forecast")
     else
         display_module = require("display_default")
     end

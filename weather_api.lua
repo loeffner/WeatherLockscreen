@@ -68,7 +68,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
 
     -- WeatherAPI.com endpoint for forecast
     local url = string.format(
-        "https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no&lang=%s",
+        "https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=3&aqi=no&alerts=no&lang=%s",
         api_key,
         location,
         lang
