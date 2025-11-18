@@ -1,0 +1,230 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-11-18 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# ==============================================================================
+# Plugin Metadata (_meta.lua)
+# ==============================================================================
+
+msgid "Weather Lockscreen"
+msgstr ""
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr ""
+
+# ==============================================================================
+# Main Menu (main.lua)
+# ==============================================================================
+
+# Location Settings
+msgid "Location"
+msgstr ""
+
+msgid "Location (%1)"
+msgstr ""
+
+msgid "Format: %1"
+msgstr ""
+
+msgid "Enter your postal code or city name"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+# Display Style Settings
+msgid "Display Style (%1)"
+msgstr ""
+
+msgid "Detailed"
+msgstr ""
+
+msgid "Minimal"
+msgstr ""
+
+msgid "Night Owl"
+msgstr ""
+
+msgid "Retro Analog"
+msgstr ""
+
+msgid "Cover"
+msgstr ""
+
+# Temperature Scale Settings
+msgid "Temperature Scale (°%1)"
+msgstr ""
+
+msgid "Celsius"
+msgstr ""
+
+msgid "Fahrenheit"
+msgstr ""
+
+# Display Settings
+msgid "Show header"
+msgstr ""
+
+msgid "Override scaling"
+msgstr ""
+
+msgid "Content Fill (%1%)"
+msgstr ""
+
+msgid "Content Fill Percentage"
+msgstr ""
+
+msgid "How much of the available screen height should be filled (in percent)"
+msgstr ""
+
+msgid "Set"
+msgstr ""
+
+msgid "Cover scaling (%1)"
+msgstr ""
+
+msgid "Fit to screen"
+msgstr ""
+
+msgid "Stretch to fill"
+msgstr ""
+
+# Cache Settings
+msgid "Cache duration (%1 %2)"
+msgstr ""
+
+msgid "hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "Cache duration"
+msgstr ""
+
+msgid "How long weather data should remain cached"
+msgstr ""
+
+msgid "Clear cache"
+msgstr ""
+
+msgid "Clear cached weather data and icons?"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Cache cleared"
+msgstr ""
+
+msgid "No cache to clear"
+msgstr ""
+
+# Periodic Refresh Settings
+msgid "Periodic refresh (Off)"
+msgstr ""
+
+msgid "Periodic refresh (%1 min)"
+msgstr ""
+
+msgid "Periodic refresh (%1 h)"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "30 minutes"
+msgstr ""
+
+msgid "1 hour"
+msgstr ""
+
+msgid "3 hours"
+msgstr ""
+
+msgid "6 hours"
+msgstr ""
+
+msgid "12 hours"
+msgstr ""
+
+msgid "24 hours"
+msgstr ""
+
+# Language Settings
+msgid "Use KOReader language setting (%1)"
+msgstr ""
+
+msgid "Show weather on sleep screen"
+msgstr ""
+
+# ==============================================================================
+# Display Views
+# ==============================================================================
+
+# Weather API (weather_api.lua)
+msgid "Today"
+msgstr ""
+
+msgid "Tomorrow"
+msgstr ""
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr ""
+
+msgid "WIND"
+msgstr ""
+
+msgid "HUMIDITY"
+msgstr ""
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr ""
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+msgid "New Moon"
+msgstr ""
+
+msgid "Waxing Crescent"
+msgstr ""
+
+msgid "First Quarter"
+msgstr ""
+
+msgid "Waxing Gibbous"
+msgstr ""
+
+msgid "Full Moon"
+msgstr ""
+
+msgid "Waning Gibbous"
+msgstr ""
+
+msgid "Last Quarter"
+msgstr ""
+
+msgid "Third Quarter"
+msgstr ""
+
+msgid "Waning Crescent"
+msgstr ""
