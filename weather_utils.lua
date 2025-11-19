@@ -101,7 +101,6 @@ function WeatherUtils:getMoonPhaseIcon(moon_phase)
         ["Full Moon"] = "full_moon.svg",
         ["Waning Gibbous"] = "waning_gibbous.svg",
         ["Last Quarter"] = "last_quarter.svg",
-        ["Third Quarter"] = "last_quarter.svg",
         ["Waning Crescent"] = "waning_crescent.svg",
     }
 
@@ -128,23 +127,9 @@ function WeatherUtils:translateMoonPhase(moon_phase)
         return nil
     end
 
-    -- Translate moon phase names using plugin localization
+    -- Translate moon phase name using plugin localization
     local _ = require("l10n/gettext")
-
-    -- Map of English moon phases to translatable strings
-    local phase_translations = {
-        ["New Moon"] = _("New Moon"),
-        ["Waxing Crescent"] = _("Waxing Crescent"),
-        ["First Quarter"] = _("First Quarter"),
-        ["Waxing Gibbous"] = _("Waxing Gibbous"),
-        ["Full Moon"] = _("Full Moon"),
-        ["Waning Gibbous"] = _("Waning Gibbous"),
-        ["Last Quarter"] = _("Last Quarter"),
-        ["Third Quarter"] = _("Third Quarter"),
-        ["Waning Crescent"] = _("Waning Crescent"),
-    }
-
-    return phase_translations[moon_phase] or moon_phase
+    return _(moon_phase)
 end
 
 function WeatherUtils:getPluginDir()

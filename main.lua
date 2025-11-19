@@ -13,14 +13,8 @@ local Device = require("device")
 local Screen = Device.screen
 local DataStorage = require("datastorage")
 local ImageWidget = require("ui/widget/imagewidget")
-local TextWidget = require("ui/widget/textwidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local CenterContainer = require("ui/widget/container/centercontainer")
-local LeftContainer = require("ui/widget/container/leftcontainer")
-local RightContainer = require("ui/widget/container/rightcontainer")
-local OverlapGroup = require("ui/widget/overlapgroup")
-local FrameContainer = require("ui/widget/container/framecontainer")
-local Font = require("ui/font")
 local Blitbuffer = require("ffi/blitbuffer")
 local ScreenSaverWidget = require("ui/widget/screensaverwidget")
 local InputDialog = require("ui/widget/inputdialog")
@@ -38,8 +32,6 @@ local WeatherLockscreen = WidgetContainer:extend {
     default_temp_scale = "C",
     refresh = false,
 }
-
-local WEATHER_ICON_SIZE = 200 -- Size of the weather icon in pixels
 
 function WeatherLockscreen:init()
     WeatherUtils:installIcons()
@@ -534,7 +526,7 @@ end
 function WeatherLockscreen:createFallbackWidget()
     logger.dbg("WeatherLockscreen: Creating fallback icon")
 
-    local icon_size = Screen:scaleBySize(WEATHER_ICON_SIZE)
+    local icon_size = Screen:scaleBySize(200)
 
     local current_hour = tonumber(os.date("%H"))
     local is_daytime = current_hour >= 6 and current_hour < 18
