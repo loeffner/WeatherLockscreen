@@ -116,27 +116,28 @@ The free tier allows 1 000 000 API calls per month.
 
 ## Localization
 
-The plugin semi-supports multiple languages. \
-The weekdays and condition text (e.g. "sunny") are available in several languages. You can check the list below for supported languages. \
-This is possible because WeatherAPI provdies the condition in several lanugages, and KOReaders localization includes the days of the week.
+The plugin supports multiple languages through a hybrid localization approach:
 
-Currently, I do not translate other strings like "Temperature" & "Wind" in the Retro Analog display or \
-the moonphases in the Night Owl display.
+### What Gets Translated and How
 
+1. **Weather Conditions** - Automatically translated by WeatherAPI in 40+ languages (see list below)
+2. **Day/Month Names** and a few other common words/phrases - Use KOReader's system localization
+3. **Plugin UI Strings** - Menu items, settings, and display labels are translated via `.po` files
 
-**Fully translated Display Modes**:
-Detailed, Minimal, Cover
+### Current Translation Status
 
-**Partially/untranslated Display Modes**:
-Night Owl, Retro Analog
+**Fully Translated Languages:**
+- 🇩🇪 German (de) - Complete
 
-To avoid having partially translated display modes, you can toggle the translation on/off on the settings.
+**English (en)** - Default language (no translation needed)
 
-If someone knows, how to properly implement localization and wants to support the plugin, I would welcome a PR. \
-Personally, I am happy that (some of) the lockscreens support several languages.
+### Contributing Translations
+
+I welcome translation contributions! The plugin uses standard gettext `.po` files for localization.
+If you want to contribute, but don't know how, feel free to open an issue.
 
 <details>
-<summary>Supported languages</summary>
+<summary>Supported languages by WeatherAPI</summary>
 
     ar = "ar",         -- Arabic
     bg_BG = "bg",      -- Bulgarian
@@ -233,7 +234,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 <summary>In progress</summary>
 
 - Localization: Support more languages
-- Periodically refresh the lockscreen
+- Periodically refresh the lockscreen (its not easy, let me tell you that!)
 - Attempt connecting to wifi: See #1
 </details>
 <details>

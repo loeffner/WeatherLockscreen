@@ -11,21 +11,24 @@ echo "Compiling translation files..."
 mkdir -p l10n
 
 # Compile each .po file to .mo
-for po_file in l10n/*.po; do
-    if [ -f "$po_file" ]; then
-        # Get the language code (filename without extension)
-        lang=$(basename "$po_file" .po)
+for lang_dir in l10n/*/; do
+    if [ -d "$lang_dir" ]; then
+        po_file="${lang_dir}koreader.po"
+        if [ -f "$po_file" ]; then
+            # Get the language code (directory name)
+            lang=$(basename "$lang_dir")
 
-        # Output .mo file
-        mo_file="l10n/${lang}.mo"
+            # Output .mo file in same directory
+            mo_file="${lang_dir}koreader.mo"
 
-        echo "Compiling ${po_file} -> ${mo_file}"
-        msgfmt -o "$mo_file" "$po_file"
+            echo "Compiling ${po_file} -> ${mo_file}"
+            msgfmt -o "$mo_file" "$po_file"
 
-        if [ $? -eq 0 ]; then
-            echo "✓ Successfully compiled $lang"
-        else
-            echo "✗ Failed to compile $lang"
+            if [ $? -eq 0 ]; then
+                echo "✓ Successfully compiled $lang"
+            else
+                echo "✗ Failed to compile $lang"
+            fi
         fi
     fi
 done

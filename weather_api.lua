@@ -38,10 +38,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
         api_key = weather_lockscreen.default_api_key
     end
 
-    local lang = "en"
-    if WeatherUtils:shouldTranslateWeather() then
-        lang = WeatherUtils:koLangAsWeatherAPILang()
-    end
+    local lang = WeatherUtils:koLangAsWeatherAPILang()
 
     logger.dbg("WeatherLockscreen: Using location:", location)
     logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
@@ -117,7 +114,7 @@ end
 
 function WeatherAPI:processWeatherData(result)
     local twelve_hour_clock = G_reader_settings:isTrue("twelve_hour_clock")
-    local lang = WeatherUtils:shouldTranslateWeather() and WeatherUtils:koLangAsWeatherAPILang() or "en"
+    local lang = WeatherUtils:koLangAsWeatherAPILang() or "en"
 
     -- Process current weather
     local condition = result.current.condition.text

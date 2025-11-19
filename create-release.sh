@@ -7,6 +7,10 @@ OUTPUT_FILE="weatherlockscreen.koplugin-${VERSION}.zip"
 
 echo "Creating release archive: $OUTPUT_FILE"
 
+# Compile translations
+echo "Compiling translations..."
+./compile_translations.sh
+
 # Create temporary directory
 TEMP_DIR=$(mktemp -d)
 PLUGIN_DIR="$TEMP_DIR/weatherlockscreen.koplugin"

@@ -127,10 +127,10 @@ function WeatherUtils:translateMoonPhase(moon_phase)
     if not moon_phase then
         return nil
     end
-    
+
     -- Translate moon phase names using plugin localization
     local _ = require("l10n/gettext")
-    
+
     -- Map of English moon phases to translatable strings
     local phase_translations = {
         ["New Moon"] = _("New Moon"),
@@ -143,7 +143,7 @@ function WeatherUtils:translateMoonPhase(moon_phase)
         ["Third Quarter"] = _("Third Quarter"),
         ["Waning Crescent"] = _("Waning Crescent"),
     }
-    
+
     return phase_translations[moon_phase] or moon_phase
 end
 
@@ -408,21 +408,9 @@ end
 
 WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
 
-function WeatherUtils:koLangAvailable()
-    local lang_ko = G_reader_settings:readSetting("language") or "en"
-    return WeatherUtils.lang_map[lang_ko] ~= nil
-end
-
 function WeatherUtils:koLangAsWeatherAPILang()
     local lang_locale = G_reader_settings:readSetting("language") or "en"
     return WeatherUtils.lang_map[lang_locale] or "en"
-end
-
-function WeatherUtils:shouldTranslateWeather()
-    local lang_locale = G_reader_settings:readSetting("language") or "en"
-    local lang_available = WeatherUtils.lang_map[lang_locale] ~= nil and WeatherUtils.lang_map[lang_locale] ~= "en"
-    local translate_setting = G_reader_settings:readSetting("weather_translate") or false
-    return lang_available and translate_setting or false
 end
 
 -- Static KOReader to WeatherAPI language code mapping

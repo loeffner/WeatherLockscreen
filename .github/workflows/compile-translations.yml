@@ -1,0 +1,59 @@
+name: Compile Translations
+
+on:
+  push:
+    paths:
+      - 'l10n/**/*.po'
+      - 'l10n/template.pot'
+    branches: [ main, proper-licalization ]
+  pull_request:
+    paths:
+      - 'l10n/**/*.po'
+      - 'l10n/template.pot'
+
+jobs:
+  compile:
+    name: Compile .po files to .mo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install gettext
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+
+      - name: Compile translations
+        run: |
+          echo "Compiling translation files..."
+          ./compile_translations.sh
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [[ -n $(git status --porcelain l10n/**/*.mo) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in .mo files"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes in .mo files"
+          fi
+
+      - name: Commit compiled translations
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add l10n/**/*.mo
+          git commit -m "chore: compile translations [skip ci]"
+
+      - name: Push changes
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

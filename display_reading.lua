@@ -128,7 +128,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         return fallback_module:create(weather_lockscreen, weather_data)
     end
 
-    -- Background: Large book cover fitted or stretched to screen
+    -- Background: Large book cover fitted or zoom to fill the screen
     local background_widget
     if doc_info.cover_bb then
         local cover_bb = doc_info.cover_bb
@@ -140,11 +140,11 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
 
         -- Scale cover based on preference
         local scale
-        if cover_scaling == "stretch" then
-            -- Stretch to fill screen (may crop)
+        if cover_scaling == "zoom" then
+            -- Zoom to fill screen (may crop)
             scale = math.max(screen_width / cover_width, screen_height / cover_height)
         else
-            -- Fit to screen (no stretching - maintains aspect ratio)
+            -- Fit to screen (no cropping)
             scale = math.min(screen_width / cover_width, screen_height / cover_height)
         end
 

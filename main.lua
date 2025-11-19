@@ -79,7 +79,7 @@ function WeatherLockscreen:getSubMenuItems()
             text = _("Location"),
             text_func = function()
                 local location = G_reader_settings:readSetting("weather_location") or self.default_location
-                return T(_("Location (%1)"), location)
+                return T(_("Location") .. " (" .. location .. ")")
             end,
             keep_menu_open = true,
             callback = function(touchmenu_instance)
@@ -222,7 +222,7 @@ function WeatherLockscreen:getSubMenuItems()
         {
             text_func = function()
                 local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or self.default_temp_scale
-                return T(_("Temperature Scale (°%1)"), temp_scale)
+                return T(_("Temperature Scale") .. " (°" .. temp_scale .. ")")
             end,
             sub_item_table = {
                 {
@@ -299,7 +299,7 @@ function WeatherLockscreen:getSubMenuItems()
                     local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
                     local spin_widget = SpinWidget:new {
                         title_text = _("Content Fill Percentage"),
-                        info_text = _("How much of the available screen height should be filled (in percent)"),
+                        info_text = _("How much of the available screen height should be filled?"),
                         value = fill_percent,
                         value_min = 30,
                         value_max = 130,
@@ -307,7 +307,7 @@ function WeatherLockscreen:getSubMenuItems()
                         value_hold_step = 10,
                         default_value = display_style ~= "reading" and 90 or 60,
                         unit = "%",
-                        ok_text = _("Set"),
+                        ok_text = _("Save"),
                         callback = function(spin)
                             G_reader_settings:saveSetting("weather_fill_percent", tostring(spin.value))
                             G_reader_settings:flush()
@@ -325,8 +325,8 @@ function WeatherLockscreen:getSubMenuItems()
     if display_style == "reading" then
         table.insert(menu_items, {
             text_func = function()
-                local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or 'stretch'
-                return T(_("Cover scaling (%1)"), cover_scaling)
+                local cover_scaling = _(G_reader_settings:readSetting("weather_cover_scaling") or 'zoom')
+                return T(_("Cover scaling") ..  " (" .. cover_scaling .. ")")
             end,
             sub_item_table = {
                 {
@@ -339,21 +339,21 @@ function WeatherLockscreen:getSubMenuItems()
                     callback = function(touchmenu_instance)
                         G_reader_settings:saveSetting("weather_cover_scaling", "fit")
                         G_reader_settings:flush()
-                        logger.dbg("WeatherLockscreen: Saved cover scaling: fit")
+                        logger.dbg("WeatherLockscreen: Saved cover scaling: zoom")
                         touchmenu_instance:updateItems()
                     end,
                 },
                 {
-                    text = _("Stretch to fill"),
+                    text = _("Zoom to fill"),
                     checked_func = function()
                         local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
-                        return cover_scaling == "stretch"
+                        return cover_scaling == "zoom"
                     end,
                     keep_menu_open = true,
                     callback = function(touchmenu_instance)
-                        G_reader_settings:saveSetting("weather_cover_scaling", "stretch")
+                        G_reader_settings:saveSetting("weather_cover_scaling", "zoom")
                         G_reader_settings:flush()
-                        logger.dbg("WeatherLockscreen: Saved cover scaling: stretch")
+                        logger.dbg("WeatherLockscreen: Saved cover scaling: zoom")
                         touchmenu_instance:updateItems()
                     end,
                 },
@@ -366,7 +366,7 @@ function WeatherLockscreen:getSubMenuItems()
         text_func = function()
             local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
             local hour_text = current_hours == 1 and _("hour") or _("hours")
-            return T(_("Cache duration (%1 %2)"), current_hours, hour_text)
+            return T(_("Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")")
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
@@ -374,14 +374,14 @@ function WeatherLockscreen:getSubMenuItems()
             local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
             local spin_widget = SpinWidget:new {
                 title_text = _("Cache duration"),
-                info_text = _("How long weather data should remain cached"),
+                info_text = _("How long should weather data remain cached?"),
                 value = current_hours,
                 value_min = 1,
                 value_max = 24,
                 value_step = 1,
                 value_hold_step = 2,
                 unit = _("hours"),
-                ok_text = _("Set"),
+                ok_text = _("Save"),
                 callback = function(spin)
                     G_reader_settings:saveSetting("weather_cache_max_age", spin.value * 3600)
                     G_reader_settings:flush()
@@ -399,7 +399,7 @@ function WeatherLockscreen:getSubMenuItems()
             local ConfirmBox = require("ui/widget/confirmbox")
             UIManager:show(ConfirmBox:new {
                 text = _("Clear cached weather data and icons?"),
-                ok_text = _("Clear"),
+                ok_text = _("Delete"),
                 ok_callback = function()
                     if self:clearCache() then
                         UIManager:show(require("ui/widget/notification"):new {
@@ -414,29 +414,6 @@ function WeatherLockscreen:getSubMenuItems()
             })
         end,
         separator = true,
-    })
-
-    table.insert(menu_items, {
-        text_func = function()
-            local lang_str = nil
-            if WeatherUtils:koLangAvailable() then
-                lang_str = WeatherUtils:koLangAsWeatherAPILang()
-            else
-                lang_str = G_reader_settings:readSetting("language") .. " unavailable"
-            end
-            return T(_("Use KOReader language setting (%1)"), lang_str)
-        end,
-        enabled_func = function()
-            return WeatherUtils:koLangAsWeatherAPILang() ~= "en"
-        end,
-        checked_func = function()
-            return WeatherUtils:shouldTranslateWeather() or WeatherUtils:koLangAsWeatherAPILang() == "en"
-        end,
-        callback = function()
-            local current = G_reader_settings:readSetting("weather_translate") or false
-            G_reader_settings:saveSetting("weather_translate", not current)
-            G_reader_settings:flush()
-        end,
     })
 
     return menu_items
