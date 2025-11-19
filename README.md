@@ -229,17 +229,19 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 <details>
 <summary>Done</summary>
 
+- Localization: Framework
+- Localization: German translation
 </details>
+
 <details>
 <summary>In progress</summary>
 
-- Localization: Support more languages
-- Periodically refresh the lockscreen (its not easy, let me tell you that!)
-- Attempt connecting to wifi: See #1
 </details>
 <details>
 <summary>Backlog</summary>
 
+- Periodically refresh the lockscreen (its not easy, let me tell you that!)
+- Attempt connecting to wifi: See #1
 - More display modes: I am always open for requests.
 - A transparent display mode (either transparent image over weather or transparent weather over image)
 - Fallback: A more configurable fallback, when no weather data is available.
