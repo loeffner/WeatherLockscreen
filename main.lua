@@ -35,6 +35,9 @@ local WeatherLockscreen = WidgetContainer:extend {
     periodic_refresh_task = nil,
     wakeup_mgr = nil,
     rtc_wakeup_scheduled = false,
+    hourglass_widget = nil,
+    loading_widget = nil,
+    saved_frontlight_intensity = nil,
 }
 
 function WeatherLockscreen:init()
@@ -155,13 +158,16 @@ function WeatherLockscreen:patchScreensaver()
         if screensaver_instance.screensaver_type == "weather" then
             logger.dbg("WeatherLockscreen: Weather screensaver activated")
 
+            -- Schedule periodic refresh when screen locks
+            plugin_instance:schedulePeriodicRefresh()
+
             -- Close any existing screensaver widget
             if screensaver_instance.screensaver_widget then
                 UIManager:close(screensaver_instance.screensaver_widget)
                 screensaver_instance.screensaver_widget = nil
             end
 
-            -- Set device to screen saver mode
+            -- Set device to screen saver mode first
             Device.screen_saver_mode = true
 
             -- Handle rotation if needed
@@ -174,12 +180,23 @@ function WeatherLockscreen:patchScreensaver()
                 Device.orig_rotation_mode = nil
             end
 
-            -- Create weather widget
-            -- Use willRerunWhenOnline to wait for network if needed
-            local NetworkMgr = require("ui/network/manager")
-            logger.dbg("WeatherLockscreen: Creating widget (will wait for network if needed)")
-            NetworkMgr:goOnlineToRun(function()
-                logger.dbg("WeatherLockscreen: Network available, creating widget")
+            -- Show loading icon while fetching weather data
+            screensaver_instance.hourglass_widget = plugin_instance:createLoadingWidget()
+            if screensaver_instance.hourglass_widget then
+                UIManager:show(screensaver_instance.hourglass_widget, "full")
+                logger.dbg("WeatherLockscreen: Loading widget displayed")
+            end
+
+            -- Define function to create and show weather widget
+            local function screensaverShow()
+                -- Close loading widget first
+                if screensaver_instance.hourglass_widget then
+                    UIManager:close(screensaver_instance.hourglass_widget)
+                    screensaver_instance.hourglass_widget = nil
+                    logger.dbg("WeatherLockscreen: Loading widget closed")
+                end
+
+                logger.dbg("WeatherLockscreen: Creating widget")
                 local weather_widget, fallback = plugin_instance:createWeatherWidget()
 
                 if weather_widget then
@@ -188,7 +205,7 @@ function WeatherLockscreen:patchScreensaver()
                     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
                     if display_style == "nightowl" and not fallback then
                         bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or
-                        Blitbuffer.COLOR_BLACK
+                            Blitbuffer.COLOR_BLACK
                     end
 
                     screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
@@ -206,7 +223,41 @@ function WeatherLockscreen:patchScreensaver()
                     screensaver_instance.screensaver_type = "disable"
                     Screensaver._orig_show_before_weather(screensaver_instance)
                 end
-            end)
+            end
+            -- Create weather widget
+            if WeatherUtils:wifiEnableActionTurnOn() then
+                -- TODO: See if we want to use the cache before turning on the wifi (needs refactoring)
+                logger.dbg("WeatherLockscreen: Creating widget (will wait for network if needed)")
+                local NetworkMgr = require("ui/network/manager")
+
+                -- Here we do black magic to make everything look nice.
+                -- Suppress NetworkMgr info notifications during weather screensaver
+                -- We need to override UIManager:show to catch InfoMessage widgets
+                local orig_uimanager_show = UIManager.show
+                UIManager.show = function(self, widget, refresh_type, refresh_region, x, y)
+                    -- Suppress InfoMessage widgets with network-related text
+                    local InfoMessage = require("ui/widget/infomessage")
+                    if widget and widget.text and type(widget) == "table" and widget.modal ~= nil then
+                        -- Check if it's an InfoMessage by duck-typing (has text and modal properties)
+                        local text_lower = widget.text:lower()
+                        if text_lower:find("connect") or text_lower:find("wi%-fi") or text_lower:find("network") or text_lower:find("waiting") then
+                            logger.dbg("WeatherLockscreen: Suppressed network info message:", widget.text)
+                            return
+                        end
+                    end
+                    return orig_uimanager_show(self, widget, refresh_type, refresh_region, x, y)
+                end
+
+                NetworkMgr:goOnlineToRun(function()
+                    -- Restore original UIManager:show function
+                    UIManager.show = orig_uimanager_show
+                    logger.dbg("WeatherLockscreen: Network is online, showing screensaver")
+                    screensaverShow()
+                end)
+            else
+                logger.dbg("WeatherLockscreen: Creating widget (will not wait for network)")
+                screensaverShow()
+            end
         else
             logger.dbg("WeatherLockscreen: Non-weather screensaver activated, calling original show")
             Screensaver._orig_show_before_weather(screensaver_instance)
@@ -312,6 +363,46 @@ function WeatherLockscreen:createFallbackWidget()
     }
 end
 
+function WeatherLockscreen:createLoadingWidget()
+    logger.dbg("WeatherLockscreen: Creating loading icon")
+
+    local icon_size = Screen:scaleBySize(200)
+
+    local icon_filename = "hourglass.svg"
+    local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
+
+    local f = io.open(icon_path, "r")
+    if f then
+        f:close()
+    else
+        logger.warn("WeatherLockscreen: Loading icon file not found:", icon_path)
+        return nil
+    end
+
+    local icon_widget = ImageWidget:new {
+        file = icon_path,
+        width = icon_size,
+        height = icon_size,
+        alpha = true,
+        original_in_nightmode = false
+    }
+
+    local FrameContainer = require("ui/widget/container/framecontainer")
+    return FrameContainer:new {
+        background = Blitbuffer.COLOR_WHITE,
+        bordersize = 0,
+        width = Screen:getWidth(),
+        height = Screen:getHeight(),
+        CenterContainer:new {
+            dimen = Screen:getSize(),
+            VerticalGroup:new {
+                align = "center",
+                icon_widget,
+            },
+        },
+    }
+end
+
 function WeatherLockscreen:createWeatherWidget()
     logger.dbg("WeatherLockscreen: Creating widget")
     local weather_data = self:fetchWeatherData()
@@ -346,11 +437,27 @@ end
 
 function WeatherLockscreen:onSuspend()
     logger.dbg("WeatherLockscreen: Device suspending")
+
+    -- Save current frontlight intensity before suspend (only if not already saved)
+    if Device:hasFrontlight() and not self.saved_frontlight_intensity then
+        local Powerd = Device:getPowerDevice()
+        self.saved_frontlight_intensity = Powerd:frontlightIntensity()
+        logger.dbg("WeatherLockscreen: Saved frontlight intensity on suspend:", self.saved_frontlight_intensity)
+        Powerd:setIntensity(0)
+        logger.dbg("WeatherLockscreen: Frontlight turned off")
+    end
+
     self:schedulePeriodicRefresh()
 end
 
 function WeatherLockscreen:onResume()
     logger.dbg("WeatherLockscreen: Device resuming")
+
+    -- Cancel any existing RTC wakeup
+    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
+        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
+        self.rtc_wakeup_scheduled = false
+    end
 
     -- Check if we woke up due to an RTC alarm and execute the action
     if self.simulated_wakeup then
@@ -359,10 +466,24 @@ function WeatherLockscreen:onResume()
         -- Force refresh by setting the flag
         self.refresh = true
         logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
+
+        -- Close any existing loading widget
+        if self.loading_widget then
+            UIManager:close(self.loading_widget)
+            self.loading_widget = nil
+            logger.dbg("WeatherLockscreen: Closed existing loading widget")
+        end
+
+        -- Show loading widget during refresh
+        self.loading_widget = self:createLoadingWidget()
+        if self.loading_widget then
+            UIManager:show(self.loading_widget, "full")
+            logger.dbg("WeatherLockscreen: Loading widget displayed during RTC refresh")
+        end
+
         -- Trigger suspend again after refresh completes
         UIManager:scheduleIn(20, function()
             logger.info("WeatherLockscreen: Triggering suspend after refresh")
-
             -- Simulate button press again to trigger suspend
             local haslipc, lipc = pcall(require, "liblipclua")
             if haslipc then
@@ -379,6 +500,21 @@ function WeatherLockscreen:onResume()
         end)
     else
         logger.dbg("WeatherLockscreen: Manual wakeup, not from RTC alarm")
+        -- Close any existing loading widget
+        if self.loading_widget then
+            UIManager:close(self.loading_widget)
+            self.loading_widget = nil
+            logger.dbg("WeatherLockscreen: Closed existing loading widget")
+        end
+
+        -- Restore frontlight intensity on real button press and reset saved value
+        if Device:hasFrontlight() and self.saved_frontlight_intensity then
+            local Powerd = Device:getPowerDevice()
+            Powerd:setIntensity(self.saved_frontlight_intensity)
+            logger.dbg("WeatherLockscreen: Restored frontlight intensity to:", self.saved_frontlight_intensity)
+            self.saved_frontlight_intensity = nil
+            logger.dbg("WeatherLockscreen: Reset saved frontlight intensity")
+        end
     end
 
     -- Only cancel UIManager tasks, keep RTC tasks running

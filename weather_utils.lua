@@ -153,6 +153,7 @@ function WeatherUtils:installIcons()
     local icons_list = {
         "sun",
         "moon",
+        "hourglass",
     }
 
     -- Moon phase icons (used in night owl mode)
