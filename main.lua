@@ -31,6 +31,7 @@ local WeatherLockscreen = WidgetContainer:extend {
     default_api_key = "637e03f814b440f782675255250411",
     default_temp_scale = "C",
     refresh = false,
+    simulated_wakeup = false,
     periodic_refresh_task = nil,
     wakeup_mgr = nil,
     rtc_wakeup_scheduled = false,
@@ -106,35 +107,26 @@ function WeatherLockscreen:schedulePeriodicRefresh()
 end
 
 function WeatherLockscreen:performPeriodicRefresh()
-    logger.dbg("WeatherLockscreen: Starting periodic weather refresh")
+    logger.info("WeatherLockscreen: performPeriodicRefresh called")
 
-    -- Prevent device from suspending while we're fetching weather
-    UIManager:preventStandby()
-    logger.dbg("WeatherLockscreen: Prevented suspend during network operation")
+    -- Simulate button press to trigger proper WiFi initialization
+    -- But keep the device in screensaver mode to prevent screen from turning on
+    logger.info("WeatherLockscreen: Simulating button press for WiFi initialization...")
 
-    -- Use NetworkMgr's runWhenConnected to guarantee connectivity
-    -- This handles all connection logic and only runs callback when truly connected
-    local NetworkMgr = require("ui/network/manager")
-    NetworkMgr:runWhenConnected(function()
-        logger.dbg("WeatherLockscreen: Network connection guaranteed, fetching weather")
-        self:doPeriodicRefresh()
-        -- Allow device to suspend again after operation completes
-        UIManager:allowStandby()
-        logger.dbg("WeatherLockscreen: Re-enabled suspend after weather fetch")
-    end)
-end
+    local haslipc, lipc = pcall(require, "liblipclua")
+    if haslipc then
+        local lipc_handle = lipc.init("com.github.koreader.weatherlockscreen")
+        if lipc_handle then
+            lipc_handle:set_int_property("com.lab126.powerd", "powerButton", 1)
+            lipc_handle:close()
+            logger.info("WeatherLockscreen: Button press simulated via lipc")
+        end
+    else
+        os.execute("powerd_test -p")
+        logger.info("WeatherLockscreen: Button press simulated via powerd_test")
+    end
 
-function WeatherLockscreen:doPeriodicRefresh()
-    logger.dbg("WeatherLockscreen: Fetching weather data for periodic refresh")
-
-    -- Force refresh by setting the flag
-    self.refresh = true
-
-    -- Fetch weather data silently without showing screensaver
-    self:fetchWeatherData()
-
-    -- Reschedule the next RTC wakeup
-    self:schedulePeriodicRefresh()
+    self.simulated_wakeup = true
 end
 
 function WeatherLockscreen:addToMainMenu(menu_items)
@@ -183,37 +175,44 @@ function WeatherLockscreen:patchScreensaver()
             end
 
             -- Create weather widget
-            local weather_widget, fallback = plugin_instance:createWeatherWidget()
+            -- Use willRerunWhenOnline to wait for network if needed
+            local NetworkMgr = require("ui/network/manager")
+            logger.dbg("WeatherLockscreen: Creating widget (will wait for network if needed)")
+            NetworkMgr:goOnlineToRun(function()
+                logger.dbg("WeatherLockscreen: Network available, creating widget")
+                local weather_widget, fallback = plugin_instance:createWeatherWidget()
 
-            if weather_widget then
-                local bg_color = Blitbuffer.COLOR_WHITE
-                local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-                if display_style == "nightowl" and not fallback then
-                    bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or
-                    Blitbuffer.COLOR_BLACK
+                if weather_widget then
+                    logger.dbg("WeatherLockscreen: Weather widget created successfully")
+                    local bg_color = Blitbuffer.COLOR_WHITE
+                    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+                    if display_style == "nightowl" and not fallback then
+                        bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or
+                        Blitbuffer.COLOR_BLACK
+                    end
+
+                    screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
+                        widget = weather_widget,
+                        background = bg_color,
+                        covers_fullscreen = true,
+                    }
+                    screensaver_instance.screensaver_widget.modal = true
+                    screensaver_instance.screensaver_widget.dithered = true
+
+                    UIManager:show(screensaver_instance.screensaver_widget, "full")
+                    logger.dbg("WeatherLockscreen: Widget displayed")
+                else
+                    logger.warn("WeatherLockscreen: Failed to create widget, falling back")
+                    screensaver_instance.screensaver_type = "disable"
+                    Screensaver._orig_show_before_weather(screensaver_instance)
                 end
-
-                screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
-                    widget = weather_widget,
-                    background = bg_color,
-                    covers_fullscreen = true,
-                }
-                screensaver_instance.screensaver_widget.modal = true
-                screensaver_instance.screensaver_widget.dithered = true
-
-                UIManager:show(screensaver_instance.screensaver_widget, "full")
-                logger.dbg("WeatherLockscreen: Widget displayed")
-            else
-                logger.warn("WeatherLockscreen: Failed to create widget, falling back")
-                screensaver_instance.screensaver_type = "disable"
-                Screensaver._orig_show_before_weather(screensaver_instance)
-            end
+            end)
         else
+            logger.dbg("WeatherLockscreen: Non-weather screensaver activated, calling original show")
             Screensaver._orig_show_before_weather(screensaver_instance)
         end
     end
 end
-
 
 function WeatherLockscreen:patchDofile()
     -- Patch the screensaver menu to add weather option
@@ -354,13 +353,32 @@ function WeatherLockscreen:onResume()
     logger.dbg("WeatherLockscreen: Device resuming")
 
     -- Check if we woke up due to an RTC alarm and execute the action
-    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
-        local was_scheduled = self.wakeup_mgr:wakeupAction()
-        if was_scheduled then
-            logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
-        else
-            logger.dbg("WeatherLockscreen: Manual wakeup, not from RTC alarm")
-        end
+    if self.simulated_wakeup then
+        -- Reset the flag
+        self.simulated_wakeup = false
+        -- Force refresh by setting the flag
+        self.refresh = true
+        logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
+        -- Trigger suspend again after refresh completes
+        UIManager:scheduleIn(20, function()
+            logger.info("WeatherLockscreen: Triggering suspend after refresh")
+
+            -- Simulate button press again to trigger suspend
+            local haslipc, lipc = pcall(require, "liblipclua")
+            if haslipc then
+                local lipc_handle = lipc.init("com.github.koreader.weatherlockscreen")
+                if lipc_handle then
+                    lipc_handle:set_int_property("com.lab126.powerd", "powerButton", 1)
+                    lipc_handle:close()
+                    logger.info("WeatherLockscreen: Suspend triggered via lipc")
+                end
+            else
+                os.execute("powerd_test -p")
+                logger.info("WeatherLockscreen: Suspend triggered via powerd_test")
+            end
+        end)
+    else
+        logger.dbg("WeatherLockscreen: Manual wakeup, not from RTC alarm")
     end
 
     -- Only cancel UIManager tasks, keep RTC tasks running
