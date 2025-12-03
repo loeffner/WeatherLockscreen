@@ -32,7 +32,6 @@ local WeatherLockscreen = WidgetContainer:extend {
     default_temp_scale = "C",
     refresh = false,
     simulated_wakeup = false,
-    periodic_refresh_task = nil,
     wakeup_mgr = nil,
     rtc_wakeup_scheduled = false,
     hourglass_widget = nil,
@@ -54,82 +53,6 @@ function WeatherLockscreen:init()
         self.wakeup_mgr = WakeupMgr:new()
         logger.dbg("WeatherLockscreen: Created new WakeupMgr")
     end
-end
-
-function WeatherLockscreen:getPeriodicRefreshInterval()
-    return G_reader_settings:readSetting("weather_periodic_refresh") or 0
-end
-
-function WeatherLockscreen:schedulePeriodicRefresh()
-    -- Cancel any existing scheduled refresh
-    if self.periodic_refresh_task then
-        UIManager:unschedule(self.periodic_refresh_task)
-        self.periodic_refresh_task = nil
-    end
-
-    -- Cancel any existing RTC wakeup
-    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
-        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
-        self.rtc_wakeup_scheduled = false
-    end
-
-    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
-    if wifi_turn_on == false then
-        logger.dbg("WeatherLockscreen: Periodic refresh disabled due to Wi-Fi action setting")
-        return
-    end
-
-    local interval = self:getPeriodicRefreshInterval()
-    if interval == 0 then
-        logger.dbg("WeatherLockscreen: Periodic refresh disabled")
-        return
-    end
-
-    -- Try RTC scheduling if WakeupMgr is available
-    if self.wakeup_mgr then
-        logger.info("WeatherLockscreen: Scheduling RTC-based periodic refresh every", interval, "seconds")
-
-        -- Add task to WakeupMgr queue
-        -- On Kindle, this will be picked up by powerd during ReadyToSuspend
-        self.wakeup_mgr:addTask(interval, function()
-            logger.info("WeatherLockscreen: RTC periodic refresh triggered")
-            self:performPeriodicRefresh()
-        end)
-        self.rtc_wakeup_scheduled = true
-    else
-        -- Fallback to UIManager if WakeupMgr unavailable
-        logger.warn("WeatherLockscreen: WakeupMgr not available, using UIManager scheduling")
-        logger.warn("WeatherLockscreen: Periodic refresh will only work when device is awake")
-        self.periodic_refresh_task = function()
-            logger.dbg("WeatherLockscreen: UIManager periodic refresh triggered")
-            self:performPeriodicRefresh()
-            self:schedulePeriodicRefresh()
-        end
-        UIManager:scheduleIn(interval, self.periodic_refresh_task)
-    end
-end
-
-function WeatherLockscreen:performPeriodicRefresh()
-    logger.info("WeatherLockscreen: performPeriodicRefresh called")
-
-    -- Simulate button press to trigger proper WiFi initialization
-    -- But keep the device in screensaver mode to prevent screen from turning on
-    logger.info("WeatherLockscreen: Simulating button press for WiFi initialization...")
-
-    local haslipc, lipc = pcall(require, "liblipclua")
-    if haslipc then
-        local lipc_handle = lipc.init("com.github.koreader.weatherlockscreen")
-        if lipc_handle then
-            lipc_handle:set_int_property("com.lab126.powerd", "powerButton", 1)
-            lipc_handle:close()
-            logger.info("WeatherLockscreen: Button press simulated via lipc")
-        end
-    else
-        os.execute("powerd_test -p")
-        logger.info("WeatherLockscreen: Button press simulated via powerd_test")
-    end
-
-    self.simulated_wakeup = true
 end
 
 function WeatherLockscreen:addToMainMenu(menu_items)
@@ -435,6 +358,42 @@ function WeatherLockscreen:createWeatherWidget()
     return display_module:create(self, weather_data), fallback
 end
 
+function WeatherLockscreen:schedulePeriodicRefresh()
+    -- Cancel any existing RTC wakeup
+    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
+        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
+        self.rtc_wakeup_scheduled = false
+    end
+
+    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+    if wifi_turn_on == false then
+        logger.dbg("WeatherLockscreen: Periodic refresh disabled due to Wi-Fi action setting")
+        return
+    end
+
+    local interval = WeatherUtils:getPeriodicRefreshInterval()
+    if interval == 0 then
+        logger.dbg("WeatherLockscreen: Periodic refresh disabled")
+        return
+    end
+
+    -- Try RTC scheduling if WakeupMgr is available
+    if self.wakeup_mgr then
+        logger.info("WeatherLockscreen: Scheduling RTC-based periodic refresh every", interval, "seconds")
+
+        -- Add task to WakeupMgr queue
+        -- On Kindle, this will be picked up by powerd during ReadyToSuspend
+        self.wakeup_mgr:addTask(interval, function()
+            logger.info("WeatherLockscreen: RTC periodic refresh triggered")
+            WeatherUtils:toggleSuspend()
+            self.simulated_wakeup = true
+        end)
+        self.rtc_wakeup_scheduled = true
+    else
+        logger.warn("WeatherLockscreen: WakeupMgr not available")
+    end
+end
+
 function WeatherLockscreen:onSuspend()
     logger.dbg("WeatherLockscreen: Device suspending")
 
@@ -446,8 +405,6 @@ function WeatherLockscreen:onSuspend()
         Powerd:setIntensity(0)
         logger.dbg("WeatherLockscreen: Frontlight turned off")
     end
-
-    self:schedulePeriodicRefresh()
 end
 
 function WeatherLockscreen:onResume()
@@ -482,21 +439,9 @@ function WeatherLockscreen:onResume()
         end
 
         -- Trigger suspend again after refresh completes
-        UIManager:scheduleIn(20, function()
+        UIManager:scheduleIn(10, function()
             logger.info("WeatherLockscreen: Triggering suspend after refresh")
-            -- Simulate button press again to trigger suspend
-            local haslipc, lipc = pcall(require, "liblipclua")
-            if haslipc then
-                local lipc_handle = lipc.init("com.github.koreader.weatherlockscreen")
-                if lipc_handle then
-                    lipc_handle:set_int_property("com.lab126.powerd", "powerButton", 1)
-                    lipc_handle:close()
-                    logger.info("WeatherLockscreen: Suspend triggered via lipc")
-                end
-            else
-                os.execute("powerd_test -p")
-                logger.info("WeatherLockscreen: Suspend triggered via powerd_test")
-            end
+            WeatherUtils:toggleSuspend()
         end)
     else
         logger.dbg("WeatherLockscreen: Manual wakeup, not from RTC alarm")
@@ -516,23 +461,9 @@ function WeatherLockscreen:onResume()
             logger.dbg("WeatherLockscreen: Reset saved frontlight intensity")
         end
     end
-
-    -- Only cancel UIManager tasks, keep RTC tasks running
-    if self.periodic_refresh_task then
-        logger.dbg("WeatherLockscreen: Cancelling UIManager periodic refresh on resume")
-        UIManager:unschedule(self.periodic_refresh_task)
-        self.periodic_refresh_task = nil
-    end
 end
 
 function WeatherLockscreen:onCloseWidget()
-    -- Clean up scheduled task when plugin is closed
-    if self.periodic_refresh_task then
-        logger.dbg("WeatherLockscreen: Cancelling UIManager periodic refresh on close")
-        UIManager:unschedule(self.periodic_refresh_task)
-        self.periodic_refresh_task = nil
-    end
-
     -- Cancel RTC wakeup tasks on close
     if self.rtc_wakeup_scheduled and self.wakeup_mgr then
         logger.dbg("WeatherLockscreen: Cancelling RTC periodic refresh on close")
