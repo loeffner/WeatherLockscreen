@@ -1,0 +1,182 @@
+# Spanish translation for WeatherLockscreen
+# Copyright (C) 2025 Jeustin Bejarano
+# This file is distributed under the same license as the WeatherLockscreen package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Jeustin Bejarano\n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 3.8\n"
+
+# ==============================================================================
+# Plugin Metadata (_meta.lua)
+# ==============================================================================
+msgid "Weather Lockscreen"
+msgstr "Weather Lockscreen"
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "Muestra la información del clima en la pantalla de suspensión. Selecciona la opción Clima en Pantalla de suspensión > Fondo para activarlo."
+
+# ==============================================================================
+# Main Menu (main.lua)
+# ==============================================================================
+# Location Settings
+msgid "Location"
+msgstr "Ubicación"
+
+msgid "Format: %1"
+msgstr "Formato: %1"
+
+msgid "Enter your postal code or city name"
+msgstr "Ingresa tu código postal o nombre de ciudad"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Save"
+msgstr "Guardar"
+
+# Display Style Settings
+msgid "Display Style (%1)"
+msgstr "Estilo de visualización (%1)"
+
+msgid "Detailed"
+msgstr "Detallado"
+
+msgid "Minimal"
+msgstr "Minimalista"
+
+msgid "Night Owl"
+msgstr "Night Owl"
+
+msgid "Retro Analog"
+msgstr "Retro Analógico"
+
+msgid "Cover"
+msgstr "Portada"
+
+# Temperature Scale Settings
+msgid "Temperature Scale"
+msgstr "Escala de temperatura"
+
+msgid "Celsius"
+msgstr "Celsius"
+
+msgid "Fahrenheit"
+msgstr "Fahrenheit"
+
+# Display Settings
+msgid "Show header"
+msgstr "Mostrar encabezado"
+
+msgid "Override scaling"
+msgstr "Forzar escalado"
+
+msgid "Content Fill (%1%)"
+msgstr "Relleno de contenido (%1%)"
+
+msgid "Content Fill Percentage"
+msgstr "Porcentaje de relleno de contenido"
+
+msgid "How much of the available screen height should be filled?"
+msgstr "¿Qué porcentaje de la altura disponible debe utilizarse?"
+
+msgid "Cover scaling"
+msgstr "Escalado de la portada"
+
+msgid "Fit to screen"
+msgstr "Ajustar a la pantalla"
+
+msgid "Zoom to fill"
+msgstr "Zoom para llenar"
+
+msgid "fit"
+msgstr "ajustar"
+
+# Cache Settings
+msgid "hour"
+msgstr "hora"
+
+msgid "hours"
+msgstr "horas"
+
+msgid "Cache duration"
+msgstr "Duración del caché"
+
+msgid "How long should weather data remain cached?"
+msgstr "¿Cuánto tiempo deben permanecer en caché los datos del clima?"
+
+msgid "Clear cache"
+msgstr "Limpiar caché"
+
+msgid "Clear cached weather data and icons?"
+msgstr "¿Limpiar los datos e íconos almacenados en caché?"
+
+msgid "Cache cleared"
+msgstr "Caché eliminada"
+
+msgid "No cache to clear"
+msgstr "No hay caché para limpiar"
+
+msgid "Show weather on sleep screen"
+msgstr "Mostrar clima en la pantalla de suspensión"
+
+# ==============================================================================
+# Display Views
+# ==============================================================================
+# Weather API (weather_api.lua)
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Tomorrow"
+msgstr "Mañana"
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr "TEMPERATURA"
+
+msgid "WIND"
+msgstr "VIENTO"
+
+msgid "HUMIDITY"
+msgstr "HUMEDAD"
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr "Página %1 de %2"
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+msgid "New Moon"
+msgstr "Luna nueva"
+
+msgid "Waxing Crescent"
+msgstr "Luna creciente"
+
+msgid "First Quarter"
+msgstr "Cuarto creciente"
+
+msgid "Waxing Gibbous"
+msgstr "Gibosa creciente"
+
+msgid "Full Moon"
+msgstr "Luna llena"
+
+msgid "Waning Gibbous"
+msgstr "Gibosa menguante"
+
+msgid "Last Quarter"
+msgstr "Cuarto menguante"
+
+msgid "Third Quarter"
+msgstr "Tercer cuarto"
+
+msgid "Waning Crescent"
+msgstr "Luna menguante"
