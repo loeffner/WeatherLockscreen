@@ -44,14 +44,35 @@ function WeatherLockscreen:init()
     self.ui.menu:registerToMainMenu(self)
     self:patchDofile()
     self:patchScreensaver()
-    -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
-    -- Otherwise create our own
-    if Device.wakeup_mgr then
-        self.wakeup_mgr = Device.wakeup_mgr
-        logger.dbg("WeatherLockscreen: Using device WakeupMgr")
+
+    -- Check if device supports RTC wakeup for periodic refresh
+    self.can_schedule_wakeup = Device:isKindle() or Device:isKobo()
+
+    if self.can_schedule_wakeup then
+        -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
+        -- Otherwise create our own
+        if Device.wakeup_mgr then
+            self.wakeup_mgr = Device.wakeup_mgr
+            logger.dbg("WeatherLockscreen: Using device WakeupMgr")
+        else
+            -- For Kobo, detect dodgy RTC (i.MX5 devices)
+            local dodgy_rtc = false
+            if Device:isKobo() then
+                local f = io.open("/sys/class/rtc/rtc0/name", "r")
+                if f then
+                    local rtc_name = f:read("*line")
+                    f:close()
+                    if rtc_name == "pmic_rtc" then
+                        dodgy_rtc = true
+                        logger.info("WeatherLockscreen: Detected dodgy RTC (i.MX5), will chain alarms if needed")
+                    end
+                end
+            end
+            self.wakeup_mgr = WakeupMgr:new{dodgy_rtc = dodgy_rtc}
+            logger.dbg("WeatherLockscreen: Created new WakeupMgr")
+        end
     else
-        self.wakeup_mgr = WakeupMgr:new()
-        logger.dbg("WeatherLockscreen: Created new WakeupMgr")
+        logger.warn("WeatherLockscreen: Device does not support RTC wakeup, periodic refresh unavailable")
     end
 end
 
