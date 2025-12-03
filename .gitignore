@@ -18,3 +18,6 @@ tmp_*
 
 # logfiles
 *.log/
+
+# Development notes
+changes.md
