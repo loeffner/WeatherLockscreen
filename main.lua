@@ -37,6 +37,10 @@ local WeatherLockscreen = WidgetContainer:extend {
     hourglass_widget = nil,
     loading_widget = nil,
     saved_frontlight_intensity = nil,
+    -- Dashboard mode support
+    dashboard_mode_enabled = false,
+    dashboard_refresh_task = nil,
+    dashboard_widget = nil,
 }
 
 function WeatherLockscreen:init()
@@ -46,9 +50,9 @@ function WeatherLockscreen:init()
     self:patchScreensaver()
 
     -- Check if device supports RTC wakeup for periodic refresh
-    self.can_schedule_wakeup = Device:isKindle() or Device:isKobo()
+    local can_schedule_wakeup = WeatherUtils:canScheduleWakeup()
 
-    if self.can_schedule_wakeup then
+    if can_schedule_wakeup then
         -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
         -- Otherwise create our own
         if Device.wakeup_mgr then
@@ -72,7 +76,12 @@ function WeatherLockscreen:init()
             logger.dbg("WeatherLockscreen: Created new WakeupMgr")
         end
     else
-        logger.warn("WeatherLockscreen: Device does not support RTC wakeup, periodic refresh unavailable")
+        logger.info("WeatherLockscreen: RTC wakeup not available, dashboard mode available for all devices")
+    end
+
+    -- Dashboard mode refresh task (must be instance-specific for UIManager)
+    self.dashboard_refresh_task = function()
+        self:showDashboardWidget()
     end
 end
 
@@ -86,22 +95,212 @@ function WeatherLockscreen:addToMainMenu(menu_items)
     }
 end
 
-function WeatherLockscreen:setPeriodicRefreshInterval(interval, touchmenu_instance)
-    if interval == 0 or WeatherUtils:periodicRefreshEnabled() then
-        G_reader_settings:saveSetting("weather_periodic_refresh", interval)
+function WeatherLockscreen:setPeriodicRefreshInterval(interval, type, touchmenu_instance)
+    if interval == 0 or WeatherUtils:periodicRefreshEnabled(type) then
+        if type == "rtc" then
+            G_reader_settings:saveSetting("weather_periodic_refresh_rtc", interval)
+        else
+            G_reader_settings:saveSetting("weather_periodic_refresh_dashboard", interval)
+        end
         G_reader_settings:flush()
         touchmenu_instance:updateItems()
     else
         local ConfirmBox = require("ui/widget/confirmbox")
+        if type == "rtc" then
+            warning_msg = _("Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?")
+        else
+            warning_msg = _("The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?")
+        end
         UIManager:show(ConfirmBox:new{
-            text = _("Periodic refresh will wake the device from sleep to update weather data. This will increase power consumption.\n\nContinue?"),
+            text = warning_msg,
             ok_text = _("Enable"),
             ok_callback = function()
-                G_reader_settings:saveSetting("weather_periodic_refresh", interval)
+                if type == "rtc" then
+                    G_reader_settings:saveSetting("weather_periodic_refresh_rtc", interval)
+                else
+                    G_reader_settings:saveSetting("weather_periodic_refresh_dashboard", interval)
+                end
                 G_reader_settings:flush()
                 touchmenu_instance:updateItems()
             end,
         })
+    end
+end
+
+function WeatherLockscreen:startDashboardMode()
+    if self.dashboard_mode_enabled then
+        logger.info("WeatherLockscreen: Dashboard mode already active")
+        return
+    end
+
+    logger.info("WeatherLockscreen: Starting dashboard mode")
+    self.dashboard_mode_enabled = true
+
+    -- Prevent device from auto-suspending
+    UIManager:preventStandby()
+    logger.info("WeatherLockscreen: Device sleep prevented")
+
+    -- Suspend frontlight intensity
+    WeatherUtils:suspendFrontlight(self)
+
+    -- Show weather widget immediately
+    self:showDashboardWidget()
+end
+
+function WeatherLockscreen:stopDashboardMode()
+    if not self.dashboard_mode_enabled then
+        logger.dbg("WeatherLockscreen: Dashboard mode already stopped")
+        return
+    end
+
+    logger.info("WeatherLockscreen: Stopping dashboard mode")
+
+    -- Restore frontlight intensity
+    WeatherUtils:resumeFrontlight(self)
+
+    -- Unschedule any pending refresh
+    if self.dashboard_refresh_task then
+        UIManager:unschedule(self.dashboard_refresh_task)
+    end
+
+    -- Close the dashboard widget
+    if self.dashboard_widget then
+        UIManager:close(self.dashboard_widget)
+        self.dashboard_widget = nil
+    end
+
+    self.dashboard_mode_enabled = false
+
+    -- Re-enable auto-suspend
+    UIManager:allowStandby()
+    logger.info("WeatherLockscreen: Device sleep re-enabled")
+end
+
+function WeatherLockscreen:showDashboardWidget()
+    if not self.dashboard_mode_enabled then
+        logger.dbg("WeatherLockscreen: Dashboard mode disabled, not showing widget")
+        return
+    end
+
+    logger.info("WeatherLockscreen: Showing dashboard widget")
+
+    -- Close existing widget if any
+    if self.dashboard_widget then
+        UIManager:close(self.dashboard_widget)
+        self.dashboard_widget = nil
+        logger.dbg("WeatherLockscreen: Closed existing dashboard widget")
+    end
+
+    -- Force refresh to fetch new data
+    self.refresh = true
+
+    -- Create weather widget
+    local weather_widget, fallback = self:createWeatherWidget()
+    if not weather_widget then
+        logger.warn("WeatherLockscreen: Failed to create weather widget")
+        self:stopDashboardMode()
+        return
+    end
+
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+    local bg_color = Blitbuffer.COLOR_WHITE
+    if display_style == "nightowl" and not fallback then
+        bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
+    end
+
+    -- Create a simple background container instead of ScreenSaverWidget
+    local FrameContainer = require("ui/widget/container/framecontainer")
+    local background_widget = FrameContainer:new {
+        background = bg_color,
+        bordersize = 0,
+        width = Screen:getWidth(),
+        height = Screen:getHeight(),
+        dithered = true,
+        weather_widget,
+    }
+
+    -- Wrap in InputContainer to handle tap/key events (like TRMNL does)
+    local InputContainer = require("ui/widget/container/inputcontainer")
+    local Geom = require("ui/geometry")
+    local GestureRange = require("ui/gesturerange")
+    local Input = Device.input
+
+    local screen_width = Screen:getWidth()
+    local screen_height = Screen:getHeight()
+
+    -- Capture self for closures
+    local plugin_instance = self
+
+    self.dashboard_widget = InputContainer:new {
+        dimen = {
+            x = 0,
+            y = 0,
+            w = screen_width,
+            h = screen_height,
+        },
+        background_widget,
+    }
+
+    -- Add tap handler to close and stop dashboard mode (anonymous function like TRMNL)
+    self.dashboard_widget.onTapClose = function()
+        logger.info("WeatherLockscreen: Dashboard dismissed by tap")
+        plugin_instance:stopDashboardMode()
+        return true
+    end
+
+    -- Add key press handler for non-touch devices (anonymous function like TRMNL)
+    self.dashboard_widget.onAnyKeyPressed = function()
+        logger.info("WeatherLockscreen: Dashboard dismissed by key press")
+        plugin_instance:stopDashboardMode()
+        return true
+    end
+
+    -- Register tap gesture for touch devices
+    if Device:isTouchDevice() then
+        self.dashboard_widget.ges_events = {
+            TapClose = {
+                GestureRange:new {
+                    ges = "tap",
+                    range = Geom:new {
+                        x = 0, y = 0,
+                        w = screen_width,
+                        h = screen_height,
+                    }
+                }
+            }
+        }
+    end
+
+    -- Register key events for non-touch devices
+    if Device:hasKeys() then
+        self.dashboard_widget.key_events = {
+            AnyKeyPressed = { { Input.group.Any } }
+        }
+    end
+
+    UIManager:show(self.dashboard_widget)
+
+    -- Trigger screen refresh (like TRMNL does)
+    UIManager:setDirty(self.dashboard_widget, "full")
+    UIManager:forceRePaint()
+    logger.info("WeatherLockscreen: Dashboard widget displayed")
+
+    -- Schedule next refresh
+    self:scheduleNextDashboardRefresh()
+end
+
+function WeatherLockscreen:scheduleNextDashboardRefresh()
+    if not self.dashboard_mode_enabled then
+        return
+    end
+
+    local interval = WeatherUtils:getPeriodicRefreshInterval("dashboard")
+    if interval > 0 then
+        logger.info("WeatherLockscreen: Scheduling next dashboard refresh in", interval, "seconds")
+        UIManager:scheduleIn(interval, self.dashboard_refresh_task)
+    else
+        logger.warn("WeatherLockscreen: Dashboard mode enabled but interval is 0, stopping")
+        self:stopDashboardMode()
     end
 end
 
@@ -411,7 +610,7 @@ function WeatherLockscreen:schedulePeriodicRefresh()
         return
     end
 
-    local interval = WeatherUtils:getPeriodicRefreshInterval()
+    local interval = WeatherUtils:getPeriodicRefreshInterval("rtc")
     if interval == 0 then
         logger.dbg("WeatherLockscreen: Periodic refresh disabled")
         return
@@ -437,13 +636,13 @@ end
 function WeatherLockscreen:onSuspend()
     logger.dbg("WeatherLockscreen: Device suspending")
 
-    -- Save current frontlight intensity before suspend (only if not already saved)
-    if Device:hasFrontlight() and not self.saved_frontlight_intensity then
-        local Powerd = Device:getPowerDevice()
-        self.saved_frontlight_intensity = Powerd:frontlightIntensity()
-        logger.dbg("WeatherLockscreen: Saved frontlight intensity on suspend:", self.saved_frontlight_intensity)
-        Powerd:setIntensity(0)
-        logger.dbg("WeatherLockscreen: Frontlight turned off")
+    -- Unschedule dashboard mode task during suspend
+    if self.dashboard_mode_enabled and self.dashboard_refresh_task then
+        UIManager:unschedule(self.dashboard_refresh_task)
+        logger.dbg("WeatherLockscreen: Dashboard refresh task unscheduled for suspend")
+    else
+        -- Save current frontlight intensity and turn off
+        WeatherUtils:suspendFrontlight(self)
     end
 end
 
@@ -492,18 +691,21 @@ function WeatherLockscreen:onResume()
             logger.dbg("WeatherLockscreen: Closed existing loading widget")
         end
 
-        -- Restore frontlight intensity on real button press and reset saved value
-        if Device:hasFrontlight() and self.saved_frontlight_intensity then
-            local Powerd = Device:getPowerDevice()
-            Powerd:setIntensity(self.saved_frontlight_intensity)
-            logger.dbg("WeatherLockscreen: Restored frontlight intensity to:", self.saved_frontlight_intensity)
-            self.saved_frontlight_intensity = nil
-            logger.dbg("WeatherLockscreen: Reset saved frontlight intensity")
+        if self.dashboard_mode_enabled and self.dashboard_refresh_task then
+            self:stopDashboardMode()
+        else
+            -- Resume frontlight intensity
+            WeatherUtils:resumeFrontlight(self)
         end
     end
 end
 
 function WeatherLockscreen:onCloseWidget()
+    -- Stop dashboard mode
+    if self.dashboard_mode_enabled then
+        self:stopDashboardMode()
+    end
+
     -- Cancel RTC wakeup tasks on close
     if self.rtc_wakeup_scheduled and self.wakeup_mgr then
         logger.dbg("WeatherLockscreen: Cancelling RTC periodic refresh on close")

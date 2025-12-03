@@ -476,14 +476,54 @@ function WeatherUtils:wifiEnableActionTurnOn()
     return wifi_enable_action == "turn_on"
 end
 
-function WeatherUtils:getPeriodicRefreshInterval()
-    return G_reader_settings:readSetting("weather_periodic_refresh") or 0
+function WeatherUtils:getPeriodicRefreshInterval(type)
+    if type == "rtc" then
+        return G_reader_settings:readSetting("weather_periodic_refresh_rtc") or 0
+    end
+    return G_reader_settings:readSetting("weather_periodic_refresh_dashboard") or 0
 end
 
-function WeatherUtils:periodicRefreshEnabled()
-    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
-    local interval = WeatherUtils:getPeriodicRefreshInterval()
-    return wifi_turn_on and interval > 0
+function WeatherUtils:canScheduleWakeup()
+    local Device = require("device")
+    return Device:isKindle() or Device:isKobo()
+end
+
+function WeatherUtils:periodicRefreshSupported()
+    return WeatherUtils:canScheduleWakeup()
+end
+
+function WeatherUtils:periodicRefreshEnabled(type)
+    print("WeatherUtils:periodicRefreshEnabled called with type:", type)
+    if type == "rtc" then
+        return WeatherUtils:periodicRefreshSupported() and WeatherUtils:getPeriodicRefreshInterval(type) > 0
+    else
+        return WeatherUtils:getPeriodicRefreshInterval(type) > 0
+    end
+end
+
+-- Save current frontlight intensity and turn off
+function WeatherUtils:suspendFrontlight(plugin_instance)
+    local Device = require("device")
+    if Device:hasFrontlight() and not plugin_instance.saved_frontlight_intensity then
+        local Powerd = Device:getPowerDevice()
+        plugin_instance.saved_frontlight_intensity = Powerd:frontlightIntensity()
+        logger.dbg("WeatherLockscreen: Saved frontlight intensity:", plugin_instance.saved_frontlight_intensity)
+        Powerd:setIntensity(0)
+        logger.dbg("WeatherLockscreen: Frontlight turned off")
+    end
+end
+
+-- Resume frontlight intensity
+function WeatherUtils:resumeFrontlight(plugin_instance)
+    local Device = require("device")
+    -- Restore frontlight intensity on real button press and reset saved value
+    if Device:hasFrontlight() and plugin_instance.saved_frontlight_intensity then
+        local Powerd = Device:getPowerDevice()
+        Powerd:setIntensity(plugin_instance.saved_frontlight_intensity)
+        logger.dbg("WeatherLockscreen: Restored frontlight intensity to:", plugin_instance.saved_frontlight_intensity)
+        plugin_instance.saved_frontlight_intensity = nil
+        logger.dbg("WeatherLockscreen: Reset saved frontlight intensity")
+    end
 end
 
 -- Trigger device suspend/resume via power device API
