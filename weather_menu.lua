@@ -445,6 +445,9 @@ function WeatherMenu:getPeriodicRefreshMenuItem(plugin_instance)
     local WeatherUtils = require("weather_utils")
     return {
         text_func = function()
+            if not plugin_instance.can_schedule_wakeup then
+                return _("Refresh (Unsupported device)")
+            end
             local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
             local interval = WeatherUtils:getPeriodicRefreshInterval()
             if wifi_turn_on == false then
@@ -459,6 +462,9 @@ function WeatherMenu:getPeriodicRefreshMenuItem(plugin_instance)
             end
         end,
         enabled_func = function()
+            if not plugin_instance.can_schedule_wakeup then
+                return false
+            end
             local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
             return wifi_turn_on ~= false
         end,
