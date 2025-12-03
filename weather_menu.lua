@@ -40,6 +40,7 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
 
     table.insert(menu_items, self:getCacheDurationMenuItem())
     table.insert(menu_items, self:getClearCacheMenuItem(plugin_instance))
+    table.insert(menu_items, self:getPeriodicRefreshMenuItem(plugin_instance))
 
     return menu_items
 end
@@ -436,6 +437,53 @@ function WeatherMenu:getClearCacheMenuItem(plugin_instance)
                     end
                 end,
             })
+        end,
+    }
+end
+
+function WeatherMenu:getPeriodicRefreshMenuItem(plugin_instance)
+    local WeatherUtils = require("weather_utils")
+    return {
+        text_func = function()
+            local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+            local interval = WeatherUtils:getPeriodicRefreshInterval()
+            if wifi_turn_on == false then
+                return _("Enable 'Turn on Wi-Fi' for periodic refresh")
+            end
+            if interval == 0 then
+                return _("Refresh (Off)")
+            elseif interval < 3600 then
+                return T(_("Refresh every %1 min"), interval / 60)
+            else
+                return T(_("Refresh every %1h"), interval / 3600)
+            end
+        end,
+        enabled_func = function()
+            local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+            return wifi_turn_on ~= false
+        end,
+        sub_item_table = {
+            self:getPeriodicRefreshOption(plugin_instance, 0, _("Off")),
+            self:getPeriodicRefreshOption(plugin_instance, 180, _("3 minutes")),
+            self:getPeriodicRefreshOption(plugin_instance, 1800, _("30 minutes")),
+            self:getPeriodicRefreshOption(plugin_instance, 3600, _("1 hour")),
+            self:getPeriodicRefreshOption(plugin_instance, 10800, _("3 hours")),
+            self:getPeriodicRefreshOption(plugin_instance, 21600, _("6 hours")),
+            self:getPeriodicRefreshOption(plugin_instance, 43200, _("12 hours")),
+        },
+        separator = true,
+    }
+end
+
+function WeatherMenu:getPeriodicRefreshOption(plugin_instance, interval, label)
+    local WeatherUtils = require("weather_utils")
+    return {
+        text = label,
+        checked_func = function()
+            return WeatherUtils:getPeriodicRefreshInterval() == interval
+        end,
+        callback = function(touchmenu_instance)
+            plugin_instance:setPeriodicRefreshInterval(interval, touchmenu_instance)
         end,
     }
 end

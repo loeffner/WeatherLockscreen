@@ -65,6 +65,25 @@ function WeatherLockscreen:addToMainMenu(menu_items)
     }
 end
 
+function WeatherLockscreen:setPeriodicRefreshInterval(interval, touchmenu_instance)
+    if interval == 0 or WeatherUtils:periodicRefreshEnabled() then
+        G_reader_settings:saveSetting("weather_periodic_refresh", interval)
+        G_reader_settings:flush()
+        touchmenu_instance:updateItems()
+    else
+        local ConfirmBox = require("ui/widget/confirmbox")
+        UIManager:show(ConfirmBox:new{
+            text = _("Periodic refresh will wake the device from sleep to update weather data. This will increase power consumption.\n\nContinue?"),
+            ok_text = _("Enable"),
+            ok_callback = function()
+                G_reader_settings:saveSetting("weather_periodic_refresh", interval)
+                G_reader_settings:flush()
+                touchmenu_instance:updateItems()
+            end,
+        })
+    end
+end
+
 function WeatherLockscreen:patchScreensaver()
     -- Store reference to self for use in closures
     local plugin_instance = self
