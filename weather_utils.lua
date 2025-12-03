@@ -470,24 +470,36 @@ function WeatherUtils:createHeaderWidgets(header_font_size, header_margin, weath
     }
 end
 
-WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
 
 function WeatherUtils:wifiEnableActionTurnOn()
     local wifi_enable_action = G_reader_settings:readSetting("wifi_enable_action") or "prompt"
     return wifi_enable_action == "turn_on"
 end
 
-function WeatherUtils:periodic_refresh_enabled()
-    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
-    local interval = self:getPeriodicRefreshInterval()
-    return not wifi_turn_on or interval == 0
+function WeatherUtils:getPeriodicRefreshInterval()
+    return G_reader_settings:readSetting("weather_periodic_refresh") or 0
 end
 
+function WeatherUtils:periodicRefreshEnabled()
+    local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
+    local interval = WeatherUtils:getPeriodicRefreshInterval()
+    return wifi_turn_on and interval > 0
+end
+
+-- Trigger device suspend/resume via power device API
+function WeatherUtils:toggleSuspend()
+    local Device = require("device")
+    local Powerd = Device:getPowerDevice()
+    Powerd:toggleSuspend()
+    logger.info("WeatherLockscreen: Suspend triggered via toggleSuspend()")
+end
 
 function WeatherUtils:koLangAsWeatherAPILang()
     local lang_locale = G_reader_settings:readSetting("language") or "en"
     return WeatherUtils.lang_map[lang_locale] or "en"
 end
+
+WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
 
 -- Static KOReader to WeatherAPI language code mapping
 WeatherUtils.lang_map = {
@@ -538,6 +550,5 @@ WeatherUtils.lang_map = {
     zh_yue = "zh_yue", -- Yue (Cantonese)
     zu = "zu",         -- Zulu
 }
-
 
 return WeatherUtils
