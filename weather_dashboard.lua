@@ -105,13 +105,15 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
     end
 
-    -- Create a simple background container instead of ScreenSaverWidget
+    -- Create background container matching ScreenSaverWidget's internal FrameContainer structure
     local background_widget = FrameContainer:new {
-        background = bg_color,
+        radius = 0,
         bordersize = 0,
+        padding = 0,
+        margin = 0,
+        background = bg_color,
         width = Screen:getWidth(),
         height = Screen:getHeight(),
-        dithered = true,
         weather_widget,
     }
 

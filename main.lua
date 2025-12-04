@@ -9,14 +9,9 @@
 
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local UIManager = require("ui/uimanager")
-local PluginShare = require("pluginshare")
 local Device = require("device")
 local WakeupMgr = require("device/wakeupmgr")
 local Screen = Device.screen
-local DataStorage = require("datastorage")
-local ImageWidget = require("ui/widget/imagewidget")
-local VerticalGroup = require("ui/widget/verticalgroup")
-local CenterContainer = require("ui/widget/container/centercontainer")
 local Blitbuffer = require("ffi/blitbuffer")
 local ScreenSaverWidget = require("ui/widget/screensaverwidget")
 local logger = require("logger")
