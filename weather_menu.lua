@@ -39,7 +39,7 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
         table.insert(menu_items, self:getCoverScalingMenuItem())
     end
 
-    table.insert(menu_items, self:getCacheMenuItem())
+    table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
     table.insert(menu_items, self:getRtcModeMenuItem(plugin_instance))
     table.insert(menu_items, self:getDashboardModeMenuItem(plugin_instance))
 
@@ -382,7 +382,7 @@ function WeatherMenu:getCoverScalingMenuItem()
     }
 end
 
-function WeatherMenu:getCacheMenuItem()
+function WeatherMenu:getCacheMenuItem(plugin_instance)
     return {
         text = _("Cache Settings"),
         sub_item_table = {
@@ -452,7 +452,7 @@ function WeatherMenu:getCacheMenuItem()
                         text = _("Clear cached weather data and icons?"),
                         ok_text = _("Delete"),
                         ok_callback = function()
-                            if plugin_instance:clearCache() then
+                            if WeatherUtils:clearCache() then
                                 UIManager:show(require("ui/widget/notification"):new {
                                     text = _("Cache cleared"),
                                 })

@@ -188,7 +188,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     end
 
     -- Header with location and time (if enabled)
-    local header_group = weather_lockscreen:createHeaderWidgets(
+    local header_group = WeatherUtils:createHeaderWidgets(
         header_font_size,
         header_margin,
         weather_data,
