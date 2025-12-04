@@ -39,6 +39,9 @@ function WeatherDashboard:start(weather_lockscreen)
     -- Suspend frontlight intensity
     WeatherUtils:suspendFrontlight(weather_lockscreen)
 
+    -- Start periodic AutoSuspend timer reset (every 3 minutes to stay ahead of Kindle's 4-minute t1 check)
+    self:scheduleAutosuspendReset(weather_lockscreen)
+
     -- Show weather widget immediately
     self:showWidget(weather_lockscreen)
 end
@@ -50,6 +53,9 @@ function WeatherDashboard:stop(weather_lockscreen)
     end
 
     logger.info("WeatherLockscreen: Stopping dashboard mode")
+
+    -- Stop periodic AutoSuspend timer reset
+    self:unscheduleAutosuspendReset(weather_lockscreen)
 
     -- Restore frontlight intensity
     WeatherUtils:resumeFrontlight(weather_lockscreen)
@@ -253,11 +259,42 @@ function WeatherDashboard:scheduleNextRefresh(weather_lockscreen)
     end
 end
 
+-- Schedule periodic AutoSuspend timer reset every 3 minutes
+-- This prevents AutoSuspend's Kindle t1 timer (checks every 4 min) from calculating negative delays
+function WeatherDashboard:scheduleAutosuspendReset(weather_lockscreen)
+    if not weather_lockscreen.autosuspend_reset_task then
+        weather_lockscreen.autosuspend_reset_task = function()
+            if weather_lockscreen.dashboard_mode_enabled then
+                UIManager:broadcastEvent(require("ui/event"):new("InputEvent"))
+                logger.dbg("WeatherLockscreen: Broadcast InputEvent to reset AutoSuspend timers")
+                -- Reschedule for 3 minutes later
+                UIManager:scheduleIn(180, weather_lockscreen.autosuspend_reset_task)
+            end
+        end
+    end
+
+    -- Broadcast immediately and schedule first check in 3 minutes
+    UIManager:broadcastEvent(require("ui/event"):new("InputEvent"))
+    logger.dbg("WeatherLockscreen: Initial InputEvent broadcast, scheduling periodic resets every 3 minutes")
+    UIManager:scheduleIn(180, weather_lockscreen.autosuspend_reset_task)
+end
+
+-- Unschedule the periodic AutoSuspend timer reset
+function WeatherDashboard:unscheduleAutosuspendReset(weather_lockscreen)
+    if weather_lockscreen.autosuspend_reset_task then
+        UIManager:unschedule(weather_lockscreen.autosuspend_reset_task)
+        logger.dbg("WeatherLockscreen: Unscheduled AutoSuspend timer reset task")
+    end
+end
+
 function WeatherDashboard:onSuspend(weather_lockscreen)
-    -- Unschedule dashboard mode task during suspend
-    if weather_lockscreen.dashboard_mode_enabled and weather_lockscreen.dashboard_refresh_task then
-        UIManager:unschedule(weather_lockscreen.dashboard_refresh_task)
-        logger.dbg("WeatherLockscreen: Dashboard refresh task unscheduled for suspend")
+    -- Unschedule dashboard mode tasks during suspend
+    if weather_lockscreen.dashboard_mode_enabled then
+        if weather_lockscreen.dashboard_refresh_task then
+            UIManager:unschedule(weather_lockscreen.dashboard_refresh_task)
+            logger.dbg("WeatherLockscreen: Dashboard refresh task unscheduled for suspend")
+        end
+        self:unscheduleAutosuspendReset(weather_lockscreen)
         return true -- Indicates dashboard handled suspend
     end
     return false
