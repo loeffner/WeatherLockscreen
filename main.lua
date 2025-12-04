@@ -9,6 +9,7 @@
 
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local UIManager = require("ui/uimanager")
+local PluginShare = require("pluginshare")
 local Device = require("device")
 local WakeupMgr = require("device/wakeupmgr")
 local Screen = Device.screen
@@ -137,6 +138,7 @@ function WeatherLockscreen:startDashboardMode()
     self.dashboard_mode_enabled = true
 
     -- Prevent device from auto-suspending
+    PluginShare.pause_auto_suspend = true
     UIManager:preventStandby()
     logger.info("WeatherLockscreen: Device sleep prevented")
 
@@ -172,6 +174,7 @@ function WeatherLockscreen:stopDashboardMode()
     self.dashboard_mode_enabled = false
 
     -- Re-enable auto-suspend
+    PluginShare.pause_auto_suspend = false
     UIManager:allowStandby()
     logger.info("WeatherLockscreen: Device sleep re-enabled")
 end
@@ -478,18 +481,6 @@ function WeatherLockscreen:patchDofile()
     end
 end
 
-function WeatherLockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data, text_color, is_cached)
-    return WeatherUtils:createHeaderWidgets(header_font_size, header_margin, weather_data, text_color, is_cached)
-end
-
-function WeatherLockscreen:fetchWeatherData()
-    return WeatherAPI:fetchWeatherData(self)
-end
-
-function WeatherLockscreen:clearCache()
-    return WeatherUtils:clearCache()
-end
-
 function WeatherLockscreen:createFallbackWidget()
     logger.dbg("WeatherLockscreen: Creating fallback icon")
 
@@ -567,7 +558,7 @@ end
 
 function WeatherLockscreen:createWeatherWidget()
     logger.dbg("WeatherLockscreen: Creating widget")
-    local weather_data = self:fetchWeatherData()
+    local weather_data = WeatherAPI:fetchWeatherData()
     local fallback = false
 
     if not weather_data or not weather_data.current or not weather_data.current.icon_path then

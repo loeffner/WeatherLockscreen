@@ -88,7 +88,7 @@ function CardDisplay:create(weather_lockscreen, weather_data)
     local content_height = weather_group:getSize().h
 
     -- Calculate header height
-    local header_group = weather_lockscreen:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
+    local header_group = WeatherUtils:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
     local header_height = header_group:getSize().h
 
     -- Calculate available height
