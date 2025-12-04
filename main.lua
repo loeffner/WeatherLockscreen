@@ -10,6 +10,7 @@
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local UIManager = require("ui/uimanager")
 local Device = require("device")
+local Dispatcher = require("dispatcher")
 local WakeupMgr = require("device/wakeupmgr")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
@@ -40,7 +41,17 @@ local WeatherLockscreen = WidgetContainer:extend {
     dashboard_widget = nil,
 }
 
+function WeatherLockscreen:onDispatcherRegisterActions()
+    Dispatcher:registerAction("weather_dashboard_toggle", {
+        category = "none",
+        event = "ToggleWeatherDashboard",
+        title = _("Weather dashboard"),
+        general = true,
+    })
+end
+
 function WeatherLockscreen:init()
+    self:onDispatcherRegisterActions()
     WeatherUtils:installIcons()
     self.ui.menu:registerToMainMenu(self)
     self:patchDofile()
@@ -80,6 +91,16 @@ function WeatherLockscreen:init()
     self.dashboard_refresh_task = function()
         WeatherDashboard:showWidget(self)
     end
+end
+
+function WeatherLockscreen:onToggleWeatherDashboard()
+    logger.info("WeatherLockscreen: Dashboard toggle triggered")
+    if self.dashboard_mode_enabled then
+        WeatherDashboard:stop(self)
+    else
+        WeatherDashboard:start(self)
+    end
+    return true
 end
 
 function WeatherLockscreen:addToMainMenu(menu_items)
