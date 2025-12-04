@@ -28,6 +28,7 @@ local datetime = require("datetime")
 local _ = require("l10n/gettext")
 local T = require("ffi/util").template
 local WeatherUtils = require("weather_utils")
+local DisplayHelper = require("display_helper")
 
 local ReadingDisplay = {}
 
@@ -188,7 +189,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     end
 
     -- Header with location and time (if enabled)
-    local header_group = WeatherUtils:createHeaderWidgets(
+    local header_group = DisplayHelper:createHeaderWidgets(
         header_font_size,
         header_margin,
         weather_data,
