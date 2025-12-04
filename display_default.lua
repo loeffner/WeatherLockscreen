@@ -17,6 +17,7 @@ local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
 local _ = require("l10n/gettext")
 local WeatherUtils = require("weather_utils")
+local DisplayHelper = require("display_helper")
 
 local DefaultDisplay = {}
 
@@ -36,7 +37,7 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
     local header_margin = 10
 
     -- Header: Location and Timestamp
-    local header_group = WeatherUtils:createHeaderWidgets(header_font_size, header_margin, weather_data,
+    local header_group = DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data,
         Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
     local header_height = header_group:getSize().h
 
