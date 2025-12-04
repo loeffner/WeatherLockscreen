@@ -517,7 +517,8 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
         hold_callback = function()
             local interval = WeatherUtils:getPeriodicRefreshInterval("dashboard")
             if interval > 0 then
-                plugin_instance:startDashboardMode()
+                local WeatherDashboard = require("weather_dashboard")
+                WeatherDashboard:start(plugin_instance)
             end
         end,
         -- Tap to open interval settings
