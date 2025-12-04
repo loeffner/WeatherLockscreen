@@ -15,6 +15,7 @@ local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
 local WeatherUtils = require("weather_utils")
+local DisplayHelper = require("display_helper")
 
 local NightOwlDisplay = {}
 
@@ -25,7 +26,7 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     local header_margin = Screen:scaleBySize(10)
 
     -- Header: Location and Timestamp (inverted colors for dark mode)
-    local header_group = WeatherUtils:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_LIGHT_GRAY, weather_data.is_cached)
+    local header_group = DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_LIGHT_GRAY, weather_data.is_cached)
 
     -- Main content - centered moon icon
     local moon_icon_widget = nil

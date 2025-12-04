@@ -25,6 +25,7 @@ local WeatherAPI = require("weather_api")
 local WeatherUtils = require("weather_utils")
 local WeatherMenu = require("weather_menu")
 local WeatherDashboard = require("weather_dashboard")
+local DisplayHelper = require("display_helper")
 
 local WeatherLockscreen = WidgetContainer:extend {
     name = "weatherlockscreen",
@@ -167,7 +168,7 @@ function WeatherLockscreen:patchScreensaver()
             end
 
             -- Show loading icon while fetching weather data
-            screensaver_instance.hourglass_widget = plugin_instance:createLoadingWidget()
+            screensaver_instance.hourglass_widget = DisplayHelper:createLoadingWidget()
             if screensaver_instance.hourglass_widget then
                 UIManager:show(screensaver_instance.hourglass_widget, "full")
                 logger.dbg("WeatherLockscreen: Loading widget displayed")
@@ -302,90 +303,15 @@ function WeatherLockscreen:patchDofile()
     end
 end
 
-function WeatherLockscreen:createFallbackWidget()
-    logger.dbg("WeatherLockscreen: Creating fallback icon")
-
-    local icon_size = Screen:scaleBySize(200)
-
-    local current_hour = tonumber(os.date("%H"))
-    local is_daytime = current_hour >= 6 and current_hour < 18
-
-    local icon_filename = is_daytime and "sun.svg" or "moon.svg"
-    local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
-
-    local f = io.open(icon_path, "r")
-    if f then
-        f:close()
-    else
-        return nil
-    end
-
-    local icon_widget = ImageWidget:new {
-        file = icon_path,
-        width = icon_size,
-        height = icon_size,
-        alpha = true,
-        original_in_nightmode = false
-    }
-
-    return CenterContainer:new {
-        dimen = Screen:getSize(),
-        VerticalGroup:new {
-            align = "center",
-            icon_widget,
-        },
-    }
-end
-
-function WeatherLockscreen:createLoadingWidget()
-    logger.dbg("WeatherLockscreen: Creating loading icon")
-
-    local icon_size = Screen:scaleBySize(200)
-
-    local icon_filename = "hourglass.svg"
-    local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
-
-    local f = io.open(icon_path, "r")
-    if f then
-        f:close()
-    else
-        logger.warn("WeatherLockscreen: Loading icon file not found:", icon_path)
-        return nil
-    end
-
-    local icon_widget = ImageWidget:new {
-        file = icon_path,
-        width = icon_size,
-        height = icon_size,
-        alpha = true,
-        original_in_nightmode = false
-    }
-
-    local FrameContainer = require("ui/widget/container/framecontainer")
-    return FrameContainer:new {
-        background = Blitbuffer.COLOR_WHITE,
-        bordersize = 0,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        CenterContainer:new {
-            dimen = Screen:getSize(),
-            VerticalGroup:new {
-                align = "center",
-                icon_widget,
-            },
-        },
-    }
-end
-
 function WeatherLockscreen:createWeatherWidget()
     logger.dbg("WeatherLockscreen: Creating widget")
-    local weather_data = WeatherAPI:fetchWeatherData()
+    local weather_data = WeatherAPI:fetchWeatherData(self)
     local fallback = false
 
     if not weather_data or not weather_data.current or not weather_data.current.icon_path then
         logger.warn("WeatherLockscreen: No weather data available, trying fallback")
         fallback = true
-        return self:createFallbackWidget(), fallback
+        return DisplayHelper:createFallbackWidget(), fallback
     end
 
     -- Check display style setting
@@ -480,7 +406,7 @@ function WeatherLockscreen:onResume()
         end
 
         -- Show loading widget during refresh
-        self.loading_widget = self:createLoadingWidget()
+        self.loading_widget = DisplayHelper:createLoadingWidget()
         if self.loading_widget then
             UIManager:show(self.loading_widget, "full")
             logger.dbg("WeatherLockscreen: Loading widget displayed during RTC refresh")
