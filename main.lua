@@ -48,6 +48,12 @@ function WeatherLockscreen:onDispatcherRegisterActions()
         title = _("Weather dashboard"),
         general = true,
     })
+    Dispatcher:registerAction("weather_clear_cache", {
+        category = "none",
+        event = "ClearWeatherCache",
+        title = _("Clear weather cache"),
+        general = true,
+    })
 end
 
 function WeatherLockscreen:init()
@@ -99,6 +105,25 @@ function WeatherLockscreen:onToggleWeatherDashboard()
         WeatherDashboard:stop(self)
     else
         WeatherDashboard:start(self)
+    end
+    return true
+end
+
+function WeatherLockscreen:onClearWeatherCache()
+    logger.info("WeatherLockscreen: Clear cache triggered")
+    local UIManager = require("ui/uimanager")
+    local InfoMessage = require("ui/widget/infomessage")
+
+    if WeatherUtils:clearCache() then
+        UIManager:show(InfoMessage:new{
+            text = _("Weather cache cleared"),
+            timeout = 2,
+        })
+    else
+        UIManager:show(InfoMessage:new{
+            text = _("No cache to clear"),
+            timeout = 2,
+        })
     end
     return true
 end
@@ -252,7 +277,7 @@ function WeatherLockscreen:patchScreensaver()
                 end
 
                 NetworkMgr:goOnlineToRun(function()
-                    -- Restore original UIManager:show function
+                    -- Restore original UIManager:show function (which was patched to suppress network messages)
                     UIManager.show = orig_uimanager_show
                     logger.dbg("WeatherLockscreen: Network is online, showing screensaver")
                     screensaverShow()

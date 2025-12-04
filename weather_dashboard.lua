@@ -88,99 +88,154 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         logger.dbg("WeatherLockscreen: Closed existing dashboard widget")
     end
 
+    -- Close any existing loading widget
+    if weather_lockscreen.loading_widget then
+        UIManager:close(weather_lockscreen.loading_widget)
+        weather_lockscreen.loading_widget = nil
+    end
+
+    -- Show loading icon while fetching weather data
+    local DisplayHelper = require("display_helper")
+    weather_lockscreen.loading_widget = DisplayHelper:createLoadingWidget()
+    if weather_lockscreen.loading_widget then
+        UIManager:show(weather_lockscreen.loading_widget, "full")
+        logger.dbg("WeatherLockscreen: Loading widget displayed")
+    end
+
     -- Force refresh to fetch new data
     weather_lockscreen.refresh = true
 
-    -- Create weather widget
-    local weather_widget, fallback = weather_lockscreen:createWeatherWidget()
-    if not weather_widget then
-        logger.warn("WeatherLockscreen: Failed to create weather widget")
-        self:stop(weather_lockscreen)
-        return
-    end
+    -- Define function to create and show dashboard widget
+    local function dashboardShow()
+        -- Close loading widget first
+        if weather_lockscreen.loading_widget then
+            UIManager:close(weather_lockscreen.loading_widget)
+            weather_lockscreen.loading_widget = nil
+            logger.dbg("WeatherLockscreen: Loading widget closed")
+        end
 
-    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-    local bg_color = Blitbuffer.COLOR_WHITE
-    if display_style == "nightowl" and not fallback then
-        bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
-    end
+        local weather_widget, fallback = weather_lockscreen:createWeatherWidget()
+        if not weather_widget then
+            logger.warn("WeatherLockscreen: Failed to create weather widget")
+            self:stop(weather_lockscreen)
+            return
+        end
 
-    -- Create background container matching ScreenSaverWidget's internal FrameContainer structure
-    local background_widget = FrameContainer:new {
-        radius = 0,
-        bordersize = 0,
-        padding = 0,
-        margin = 0,
-        background = bg_color,
-        width = Screen:getWidth(),
-        height = Screen:getHeight(),
-        weather_widget,
-    }
+        local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+        local bg_color = Blitbuffer.COLOR_WHITE
+        if display_style == "nightowl" and not fallback then
+            bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or Blitbuffer.COLOR_BLACK
+        end
 
-    local Input = Device.input
-    local screen_width = Screen:getWidth()
-    local screen_height = Screen:getHeight()
+        -- Create background container matching ScreenSaverWidget's internal FrameContainer structure
+        local background_widget = FrameContainer:new {
+            radius = 0,
+            bordersize = 0,
+            padding = 0,
+            margin = 0,
+            background = bg_color,
+            width = Screen:getWidth(),
+            height = Screen:getHeight(),
+            weather_widget,
+        }
 
-    -- Capture references for closures
-    local plugin_instance = weather_lockscreen
-    local dashboard_module = self
+        local Input = Device.input
+        local screen_width = Screen:getWidth()
+        local screen_height = Screen:getHeight()
 
-    weather_lockscreen.dashboard_widget = InputContainer:new {
-        dimen = {
-            x = 0,
-            y = 0,
-            w = screen_width,
-            h = screen_height,
-        },
-        background_widget,
-    }
+        -- Capture references for closures
+        local plugin_instance = weather_lockscreen
+        local dashboard_module = self
 
-    -- Add tap handler to close and stop dashboard mode (anonymous function like TRMNL)
-    weather_lockscreen.dashboard_widget.onTapClose = function()
-        logger.info("WeatherLockscreen: Dashboard dismissed by tap")
-        dashboard_module:stop(plugin_instance)
-        return true
-    end
+        weather_lockscreen.dashboard_widget = InputContainer:new {
+            dimen = {
+                x = 0,
+                y = 0,
+                w = screen_width,
+                h = screen_height,
+            },
+            background_widget,
+        }
 
-    -- Add key press handler for non-touch devices (anonymous function like TRMNL)
-    weather_lockscreen.dashboard_widget.onAnyKeyPressed = function()
-        logger.info("WeatherLockscreen: Dashboard dismissed by key press")
-        dashboard_module:stop(plugin_instance)
-        return true
-    end
+        -- Add tap handler to close and stop dashboard mode (anonymous function like TRMNL)
+        weather_lockscreen.dashboard_widget.onTapClose = function()
+            logger.info("WeatherLockscreen: Dashboard dismissed by tap")
+            dashboard_module:stop(plugin_instance)
+            return true
+        end
 
-    -- Register tap gesture for touch devices
-    if Device:isTouchDevice() then
-        weather_lockscreen.dashboard_widget.ges_events = {
-            TapClose = {
-                GestureRange:new {
-                    ges = "tap",
-                    range = Geom:new {
-                        x = 0, y = 0,
-                        w = screen_width,
-                        h = screen_height,
+        -- Add key press handler for non-touch devices (anonymous function like TRMNL)
+        weather_lockscreen.dashboard_widget.onAnyKeyPressed = function()
+            logger.info("WeatherLockscreen: Dashboard dismissed by key press")
+            dashboard_module:stop(plugin_instance)
+            return true
+        end
+
+        -- Register tap gesture for touch devices
+        if Device:isTouchDevice() then
+            weather_lockscreen.dashboard_widget.ges_events = {
+                TapClose = {
+                    GestureRange:new {
+                        ges = "tap",
+                        range = Geom:new {
+                            x = 0, y = 0,
+                            w = screen_width,
+                            h = screen_height,
+                        }
                     }
                 }
             }
-        }
+        end
+
+        -- Register key events for non-touch devices
+        if Device:hasKeys() then
+            weather_lockscreen.dashboard_widget.key_events = {
+                AnyKeyPressed = { { Input.group.Any } }
+            }
+        end
+
+        UIManager:show(weather_lockscreen.dashboard_widget)
+
+        -- Trigger screen refresh (like TRMNL does)
+        UIManager:setDirty(weather_lockscreen.dashboard_widget, "full")
+        UIManager:forceRePaint()
+        logger.info("WeatherLockscreen: Dashboard widget displayed")
+
+        -- Schedule next refresh
+        self:scheduleNextRefresh(weather_lockscreen)
     end
 
-    -- Register key events for non-touch devices
-    if Device:hasKeys() then
-        weather_lockscreen.dashboard_widget.key_events = {
-            AnyKeyPressed = { { Input.group.Any } }
-        }
+    -- Create weather widget
+    if WeatherUtils:wifiEnableActionTurnOn() then
+        logger.dbg("WeatherLockscreen: Creating dashboard widget (will wait for network if needed)")
+        local NetworkMgr = require("ui/network/manager")
+
+        -- Suppress NetworkMgr info notifications during dashboard display
+        local orig_uimanager_show = UIManager.show
+        UIManager.show = function(self, widget, refresh_type, refresh_region, x, y)
+            -- Suppress InfoMessage widgets with network-related text
+            local InfoMessage = require("ui/widget/infomessage")
+            if widget and widget.text and type(widget) == "table" and widget.modal ~= nil then
+                -- Check if it's an InfoMessage by duck-typing (has text and modal properties)
+                local text_lower = widget.text:lower()
+                if text_lower:find("connect") or text_lower:find("wi%-fi") or text_lower:find("network") or text_lower:find("waiting") then
+                    logger.dbg("WeatherLockscreen: Suppressed network info message:", widget.text)
+                    return
+                end
+            end
+            return orig_uimanager_show(self, widget, refresh_type, refresh_region, x, y)
+        end
+
+        NetworkMgr:goOnlineToRun(function()
+            -- Restore original UIManager:show function
+            UIManager.show = orig_uimanager_show
+            logger.dbg("WeatherLockscreen: Network is online, showing dashboard")
+            dashboardShow()
+        end)
+    else
+        logger.dbg("WeatherLockscreen: Creating dashboard widget (will not wait for network)")
+        dashboardShow()
     end
-
-    UIManager:show(weather_lockscreen.dashboard_widget)
-
-    -- Trigger screen refresh (like TRMNL does)
-    UIManager:setDirty(weather_lockscreen.dashboard_widget, "full")
-    UIManager:forceRePaint()
-    logger.info("WeatherLockscreen: Dashboard widget displayed")
-
-    -- Schedule next refresh
-    self:scheduleNextRefresh(weather_lockscreen)
 end
 
 function WeatherDashboard:scheduleNextRefresh(weather_lockscreen)
