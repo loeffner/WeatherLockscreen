@@ -498,6 +498,7 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 10800, _("3 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 21600, _("6 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 43200, _("12 hours")),
+            self:getCustomIntervalOption(plugin_instance, "rtc"),
         },
         help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard but is only supported on Kindle/Kobo."),
     }
@@ -530,6 +531,7 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 10800, _("3 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 21600, _("6 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 43200, _("12 hours")),
+            self:getCustomIntervalOption(plugin_instance, "dashboard"),
         },
         help_text = _("Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."),
         separator = true,
@@ -546,6 +548,57 @@ function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, l
         callback = function(touchmenu_instance)
             plugin_instance:setPeriodicRefreshInterval(interval, type, touchmenu_instance)
         end,
+    }
+end
+
+function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
+    local preset_intervals = {0, 180, 1800, 3600, 10800, 21600, 43200}
+
+    local function isCustomInterval()
+        local current = WeatherUtils:getPeriodicRefreshInterval(type)
+        for _, preset in ipairs(preset_intervals) do
+            if current == preset then
+                return false
+            end
+        end
+        return current > 0
+    end
+
+    return {
+        text_func = function()
+            if isCustomInterval() then
+                local interval = WeatherUtils:getPeriodicRefreshInterval(type)
+                return T(_("Custom (%1 min)"), math.floor(interval / 60))
+            else
+                return _("Custom…")
+            end
+        end,
+        checked_func = isCustomInterval,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            local SpinWidget = require("ui/widget/spinwidget")
+            local current_interval = WeatherUtils:getPeriodicRefreshInterval(type)
+            local current_minutes = current_interval > 0 and math.floor(current_interval / 60) or 30
+
+            local spin_widget = SpinWidget:new {
+                title_text = _("Custom refresh interval"),
+                info_text = _("Set a custom refresh interval in minutes."),
+                value = current_minutes,
+                value_min = 1,
+                value_max = 60,
+                value_step = 1,
+                value_hold_step = 15,
+                default_value = 30,
+                unit = _("minutes"),
+                ok_text = _("Save"),
+                callback = function(spin)
+                    local interval_seconds = spin.value * 60
+                    plugin_instance:setPeriodicRefreshInterval(interval_seconds, type, touchmenu_instance)
+                end,
+            }
+            UIManager:show(spin_widget)
+        end,
+        separator = true,
     }
 end
 
