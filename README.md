@@ -42,6 +42,7 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
           <ul>
             <li><b>Location</b>: Enter your location (city name, airport code, us postal code, or coordinates)
               <br><i>Examples: "London", "MUC", "10001", "48.8567,2.3508"</i>
+              <br>You will see a list of search results. Select your location.
             </li>
             <li><b>Temperature Scale</b>: Choose Celsius (°C) or Fahrenheit (°F)</li>
             <li><b>Display Format</b>: Select your layout</li>

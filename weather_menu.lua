@@ -12,6 +12,7 @@ local InputDialog = require("ui/widget/inputdialog")
 local logger = require("logger")
 local _ = require("l10n/gettext")
 local T = require("ffi/util").template
+local WeatherAPI = require("weather_api")
 
 local WeatherMenu = {}
 
@@ -48,46 +49,151 @@ function WeatherMenu:getLocationMenuItem(plugin_instance)
         text = _("Location"),
         text_func = function()
             local location = G_reader_settings:readSetting("weather_location") or plugin_instance.default_location
-            return T(_("Location") .. " (" .. location .. ")")
+            local location_name = G_reader_settings:readSetting("weather_location_name") or location
+            return T(_("Location") .. " (" .. location_name .. ")")
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local location = G_reader_settings:readSetting("weather_location") or plugin_instance.default_location
-            local input
-            input = InputDialog:new {
-                title = _("Location"),
-                input = location,
-                input_hint = _("Format: " .. plugin_instance.default_location),
-                input_type = "string",
-                description = _("Enter your postal code or city name"),
-                buttons = {
-                    {
-                        {
-                            text = _("Cancel"),
-                            callback = function()
-                                UIManager:close(input)
-                            end,
-                        },
-                        {
-                            text = _("Save"),
-                            is_enter_default = true,
-                            callback = function()
-                                local new_value = input:getInputValue()
-                                G_reader_settings:saveSetting("weather_location", new_value)
-                                G_reader_settings:flush()
-                                plugin_instance.refresh = true
-                                logger.dbg("WeatherLockscreen: Saved location:", new_value)
-                                UIManager:close(input)
-                                touchmenu_instance:updateItems()
-                            end,
-                        },
-                    }
-                },
-            }
-            UIManager:show(input)
-            input:onShowKeyboard()
+            self:showLocationSearchDialog(plugin_instance, touchmenu_instance)
         end,
     }
+end
+
+function WeatherMenu:showLocationSearchDialog(plugin_instance, touchmenu_instance)
+    local location = G_reader_settings:readSetting("weather_location") or plugin_instance.default_location
+    local input
+    input = InputDialog:new {
+        title = _("Location"),
+        input = "",
+        input_hint = _("City, postal code, or coordinates"),
+        input_type = "string",
+        description = _("Enter your postal code or city name"),
+        buttons = {
+            {
+                {
+                    text = _("Cancel"),
+                    callback = function()
+                        UIManager:close(input)
+                    end,
+                },
+                {
+                    text = _("Search"),
+                    is_enter_default = true,
+                    callback = function()
+                        local query = input:getInputValue()
+                        UIManager:close(input)
+                        if query and query ~= "" then
+                            self:searchAndShowLocations(plugin_instance, touchmenu_instance, query)
+                        end
+                    end,
+                },
+            }
+        },
+    }
+    UIManager:show(input)
+    input:onShowKeyboard()
+end
+
+function WeatherMenu:searchAndShowLocations(plugin_instance, touchmenu_instance, query)
+    local InfoMessage = require("ui/widget/infomessage")
+
+    -- Show searching message
+    local searching_msg = InfoMessage:new {
+        text = _("Searching..."),
+        timeout = 0.5,
+    }
+    UIManager:show(searching_msg)
+    UIManager:forceRePaint()
+
+    -- Get API key
+    local api_key = G_reader_settings:readSetting("weather_api_key")
+    if not api_key or api_key == "" then
+        api_key = plugin_instance.default_api_key
+    end
+
+    -- Search for locations
+    local locations, err = WeatherAPI:searchLocations(query, api_key)
+
+    UIManager:close(searching_msg)
+
+    if not locations then
+        UIManager:show(InfoMessage:new {
+            text = T(_("Location search failed: %1"), err or _("Unknown error")),
+            timeout = 3,
+        })
+        return
+    end
+
+    -- Show location picker
+    self:showLocationPicker(plugin_instance, touchmenu_instance, locations, query)
+end
+
+function WeatherMenu:showLocationPicker(plugin_instance, touchmenu_instance, locations, original_query)
+    local ButtonDialogTitle = require("ui/widget/buttondialogtitle")
+
+    local buttons = {}
+
+    for i, loc in ipairs(locations) do
+        -- Format location display: "Name, Region, Country"
+        local display_parts = {}
+        if loc.name then table.insert(display_parts, loc.name) end
+        if loc.region and loc.region ~= "" and loc.region ~= loc.name then
+            table.insert(display_parts, loc.region)
+        end
+        if loc.country then table.insert(display_parts, loc.country) end
+
+        local display_text = table.concat(display_parts, ", ")
+
+        -- Each location is a row with one button
+        table.insert(buttons, {
+            {
+                text = display_text,
+                callback = function()
+                    UIManager:close(self.location_dialog)
+                    self.location_dialog = nil
+
+                    -- Use lat,lon as the location identifier (most precise)
+                    local location_value = string.format("%.4f,%.4f", loc.lat, loc.lon)
+                    local location_name = loc.name or original_query
+
+                    G_reader_settings:saveSetting("weather_location", location_value)
+                    G_reader_settings:saveSetting("weather_location_name", location_name)
+                    G_reader_settings:flush()
+                    plugin_instance.refresh = true
+                    logger.dbg("WeatherLockscreen: Saved location:", location_value, "as", location_name)
+
+                    if touchmenu_instance then
+                        touchmenu_instance:updateItems()
+                    end
+                end,
+            },
+        })
+    end
+
+    -- Add "Search again" button at the bottom
+    table.insert(buttons, {
+        {
+            text = _("Search again"),
+            callback = function()
+                UIManager:close(self.location_dialog)
+                self.location_dialog = nil
+                self:showLocationSearchDialog(plugin_instance, touchmenu_instance)
+            end,
+        },
+    })
+
+
+    local title_str = T(_("Select Location (%1 results)"), #locations)
+    if #locations == 1 then
+        title_str = _("Select Location (1 result)")
+    end
+
+    self.location_dialog = ButtonDialogTitle:new {
+        title = title_str,
+        buttons = buttons,
+    }
+
+    UIManager:show(self.location_dialog)
 end
 
 function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
