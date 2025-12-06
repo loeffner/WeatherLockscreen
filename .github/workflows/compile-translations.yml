@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install gettext
         run: |
@@ -51,9 +52,15 @@ jobs:
           git add l10n/**/*.mo
           git commit -m "chore: compile translations [skip ci]"
 
+      # Only push on push events (not PRs)
       - name: Push changes
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' && github.event_name == 'push'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      - name: Notice for PRs
+        if: steps.changes.outputs.has_changes == 'true' && github.event_name == 'pull_request'
+        run: |
+          echo "::warning::Translation files need to be compiled. Please run ./compile_translations.sh locally and commit the .mo files."
