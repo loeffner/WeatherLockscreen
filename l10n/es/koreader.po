@@ -38,6 +38,33 @@ msgstr "Formato: %1"
 msgid "Enter your postal code or city name"
 msgstr "Ingresa tu código postal o nombre de ciudad"
 
+msgid "City, postal code, or coordinates"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Searching..."
+msgstr ""
+
+msgid "Location search failed: %1"
+msgstr ""
+
+msgid "Unknown error"
+msgstr ""
+
+msgid "Search again"
+msgstr ""
+
+msgid "Select Location (%1 results)"
+msgstr ""
+
+msgid "Select Location (1 result)"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
 msgid "Cancel"
 msgstr "Cancelar"
 
