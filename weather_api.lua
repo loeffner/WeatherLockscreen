@@ -242,6 +242,61 @@ function WeatherAPI:processWeatherData(result)
     }
 end
 
+function WeatherAPI:searchLocations(query, api_key)
+    if not query or query == "" then
+        return nil, "No query provided"
+    end
+
+    if not api_key or api_key == "" then
+        return nil, "No API key configured"
+    end
+
+    local json = require("json")
+
+    -- WeatherAPI.com search endpoint
+    local url = string.format(
+        "https://api.weatherapi.com/v1/search.json?key=%s&q=%s",
+        api_key,
+        query
+    )
+
+    logger.dbg("WeatherLockscreen: Searching locations with query:", query)
+
+    local sink_table = {}
+    local code, err = http_request_code(url, sink_table)
+    if not code then
+        logger.warn("WeatherLockscreen: Location search HTTP request failed:", err or "unknown error")
+        return nil, "Network error"
+    end
+
+    if code == 200 then
+        local response_data = table.concat(sink_table)
+        local success, result = pcall(json.decode, response_data)
+
+        if success and result then
+            if #result == 0 then
+                return nil, "No locations found"
+            end
+            logger.dbg("WeatherLockscreen: Found", #result, "locations")
+            return result
+        else
+            logger.warn("WeatherLockscreen: Failed to parse location search response")
+            return nil, "Failed to parse response"
+        end
+    elseif code == 400 then
+        -- API error - could be 1006 (no location found)
+        local response_data = table.concat(sink_table)
+        local success, result = pcall(json.decode, response_data)
+        if success and result and result.error then
+            return nil, result.error.message or "No location found"
+        end
+        return nil, "No location found"
+    else
+        logger.warn("WeatherLockscreen: Location search failed, HTTP code:", code)
+        return nil, "API error (code " .. code .. ")"
+    end
+end
+
 function WeatherAPI:getIconPath(icon_url_from_api)
     if not icon_url_from_api then
         return nil
