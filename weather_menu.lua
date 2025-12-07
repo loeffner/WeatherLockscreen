@@ -60,11 +60,11 @@ function WeatherMenu:getLocationMenuItem(plugin_instance)
 end
 
 function WeatherMenu:showLocationSearchDialog(plugin_instance, touchmenu_instance)
-    local location = G_reader_settings:readSetting("weather_location") or plugin_instance.default_location
+    local location_name = G_reader_settings:readSetting("weather_location_name") or plugin_instance.default_location
     local input
     input = InputDialog:new {
         title = _("Location"),
-        input = "",
+        input = location_name,
         input_hint = _("City, postal code, or coordinates"),
         input_type = "string",
         description = _("Enter your postal code or city name"),

@@ -243,14 +243,6 @@ function WeatherAPI:processWeatherData(result)
 end
 
 function WeatherAPI:searchLocations(query, api_key)
-    if not query or query == "" then
-        return nil, _("No query provided")
-    end
-
-    if not api_key or api_key == "" then
-        return nil, ""
-    end
-
     local json = require("json")
 
     -- WeatherAPI.com search endpoint
@@ -266,7 +258,7 @@ function WeatherAPI:searchLocations(query, api_key)
     local code, err = http_request_code(url, sink_table)
     if not code then
         logger.warn("WeatherLockscreen: Location search HTTP request failed:", err or "unknown error")
-        return nil, _("Network error")
+        return nil, _("API error") .. " (" .. code .. ")"
     end
 
     if code == 200 then
@@ -281,7 +273,7 @@ function WeatherAPI:searchLocations(query, api_key)
             return result
         else
             logger.warn("WeatherLockscreen: Failed to parse location search response")
-            return nil, "Failed to parse response"
+            return nil, _("Failed to parse response")
         end
     elseif code == 400 then
         -- API error - could be 1006 (no location found)
