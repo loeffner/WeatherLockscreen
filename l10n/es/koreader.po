@@ -53,6 +53,18 @@ msgstr "Error en la búsqueda de ubicación: %1"
 msgid "Unknown error"
 msgstr "Error desconocido"
 
+msgid "No location found"
+msgstr "No se encontró ninguna ubicación"
+
+msgid "Network error"
+msgstr "Error de red"
+
+msgid "API error"
+msgstr "Error de API"
+
+msgid "No query provided"
+msgstr "No se proporcionó ninguna consulta"
+
 msgid "Search again"
 msgstr "Buscar de nuevo"
 

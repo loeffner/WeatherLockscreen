@@ -51,6 +51,18 @@ msgstr "Standortsuche fehlgeschlagen: %1"
 msgid "Unknown error"
 msgstr "Unbekannter Fehler"
 
+msgid "No location found"
+msgstr "Kein Standort gefunden"
+
+msgid "Network error"
+msgstr "Netzwerkfehler"
+
+msgid "API error"
+msgstr "API-Fehler"
+
+msgid "No query provided"
+msgstr "Kein Suchterm angegeben"
+
 msgid "Search again"
 msgstr "Erneut suchen"
 

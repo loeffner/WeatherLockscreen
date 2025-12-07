@@ -22,7 +22,8 @@ rsync -av --exclude='.git' \
           --exclude='.github' \
           --exclude='resources' \
           --exclude='*.zip' \
-          --exclude='create-release.sh' \
+          --exclude='*.log' \
+          --exclude='*.sh' \
           ./ "$PLUGIN_DIR/"
 
 # Create zip archive
