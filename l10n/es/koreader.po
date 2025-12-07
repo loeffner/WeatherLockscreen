@@ -39,31 +39,31 @@ msgid "Enter your postal code or city name"
 msgstr "Ingresa tu código postal o nombre de ciudad"
 
 msgid "City, postal code, or coordinates"
-msgstr ""
+msgstr "Ciudad, código postal o coordenadas"
 
 msgid "Search"
-msgstr ""
+msgstr "Buscar"
 
 msgid "Searching..."
-msgstr ""
+msgstr "Buscando..."
 
 msgid "Location search failed: %1"
-msgstr ""
+msgstr "Error en la búsqueda de ubicación: %1"
 
 msgid "Unknown error"
-msgstr ""
+msgstr "Error desconocido"
 
 msgid "Search again"
-msgstr ""
+msgstr "Buscar de nuevo"
 
 msgid "Select Location (%1 results)"
-msgstr ""
+msgstr "Seleccionar ubicación (%1 resultados)"
 
 msgid "Select Location (1 result)"
-msgstr ""
+msgstr "Seleccionar ubicación (1 resultado)"
 
 msgid "Delete"
-msgstr ""
+msgstr "Eliminar"
 
 msgid "Cancel"
 msgstr "Cancelar"
