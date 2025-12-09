@@ -113,9 +113,7 @@ function WeatherUtils:getMoonPhaseIcon(moon_phase)
     local icon_path = DataStorage:getDataDir() .. "/icons/moonphases/" .. icon_file
 
     -- Check if file exists
-    local f = io.open(icon_path, "r")
-    if f then
-        f:close()
+    if util.pathExists(icon_path) then
         return icon_path
     end
 
@@ -395,6 +393,167 @@ end
 function WeatherUtils:wifiEnableActionTurnOn()
     local wifi_enable_action = G_reader_settings:readSetting("wifi_enable_action") or "prompt"
     return wifi_enable_action == "turn_on"
+end
+
+-- Safely try to go online and run a callback
+-- This wraps NetworkMgr:goOnlineToRun() with proper error handling to avoid crashes
+-- from race conditions in KOReader's network initialization code.
+-- @param callback function - The callback to run when online
+-- @param fallback_callback function - Optional callback to run if going online fails
+-- @param suppress_network_messages boolean - Whether to suppress network-related InfoMessages (default: true)
+-- @param call_after_wifi_action boolean - Whether to call afterWifiAction when done (respects wifi_disable_action setting, default: false)
+function WeatherUtils:safeGoOnlineToRun(callback, fallback_callback, suppress_network_messages, call_after_wifi_action)
+    local UIManager = require("ui/uimanager")
+    local NetworkMgr = require("ui/network/manager")
+
+    if suppress_network_messages == nil then
+        suppress_network_messages = true
+    end
+
+    -- First check if we're already online - no need to do anything
+    if NetworkMgr:isOnline() then
+        logger.dbg("WeatherLockscreen: Already online, running callback directly")
+        if callback then
+            callback()
+        end
+        -- Don't call afterWifiAction if we were already online - we didn't enable Wi-Fi
+        return true
+    end
+
+    -- If wifi_enable_action is not "turn_on", we can't auto-connect
+    if not self:wifiEnableActionTurnOn() then
+        logger.dbg("WeatherLockscreen: wifi_enable_action is not 'turn_on', running fallback")
+        if fallback_callback then
+            fallback_callback()
+        elseif callback then
+            -- Run callback anyway, it will use cached data if available
+            callback()
+        end
+        return false
+    end
+
+    -- Set up message suppression if requested
+    local orig_uimanager_show
+    if suppress_network_messages then
+        orig_uimanager_show = UIManager.show
+        UIManager.show = function(self, widget, refresh_type, refresh_region, x, y)
+            -- Suppress InfoMessage widgets with network-related text
+            if widget and widget.text and type(widget) == "table" and widget.modal ~= nil then
+                local text_lower = widget.text:lower()
+                if text_lower:find("connect") or text_lower:find("wi%-fi") or text_lower:find("network") or text_lower:find("waiting") or text_lower:find("scanning") then
+                    logger.dbg("WeatherLockscreen: Suppressed network info message:", widget.text)
+                    return
+                end
+            end
+            return orig_uimanager_show(self, widget, refresh_type, refresh_region, x, y)
+        end
+    end
+
+    -- Restore function for cleanup
+    local function restoreUIManager()
+        if suppress_network_messages and orig_uimanager_show then
+            UIManager.show = orig_uimanager_show
+            orig_uimanager_show = nil -- Prevent double-restore
+        end
+    end
+
+    -- Helper to call afterWifiAction if requested (respects user's wifi_disable_action setting)
+    -- Note: We skip if wifi_disable_action is "prompt" because this plugin is designed
+    -- for unattended operation (weather display that updates periodically without user interaction)
+    local function maybeAfterWifiAction()
+        if not call_after_wifi_action then
+            return
+        end
+        
+        local wifi_disable_action = G_reader_settings:readSetting("wifi_disable_action") or "prompt"
+        if wifi_disable_action == "prompt" then
+            -- Don't call afterWifiAction when set to "prompt" - that would require user interaction
+            -- For an unattended weather display, we treat "prompt" as "leave_on" (do nothing)
+            logger.dbg("WeatherLockscreen: wifi_disable_action is 'prompt', skipping afterWifiAction to avoid user interaction")
+            return
+        end
+        
+        logger.dbg("WeatherLockscreen: Calling afterWifiAction (wifi_disable_action=" .. wifi_disable_action .. ")")
+        NetworkMgr:afterWifiAction()
+    end
+
+    -- Track whether callback was called
+    local callback_invoked = false
+
+    -- Try to go online with pcall to catch any crashes from KOReader's network code
+    local pcall_success, go_online_result = pcall(function()
+        return NetworkMgr:goOnlineToRun(function()
+            callback_invoked = true
+            restoreUIManager()
+            logger.dbg("WeatherLockscreen: Network is online, running callback")
+            if callback then
+                callback()
+            end
+            maybeAfterWifiAction()
+        end)
+    end)
+
+    if not pcall_success then
+        -- A crash occurred (e.g., lipc error in kindleGetSavedNetworks)
+        logger.warn("WeatherLockscreen: goOnlineToRun crashed:", go_online_result)
+        restoreUIManager()
+
+        -- Try to recover - wait a bit and check if we're online anyway
+        -- The crash might have happened after Wi-Fi was enabled but during network list scan
+        UIManager:scheduleIn(2, function()
+            if NetworkMgr:isOnline() then
+                logger.info("WeatherLockscreen: Recovered - network came online after crash")
+                if callback then
+                    callback()
+                end
+                maybeAfterWifiAction()
+            else
+                logger.warn("WeatherLockscreen: Could not recover network connection, running fallback")
+                if fallback_callback then
+                    fallback_callback()
+                elseif callback then
+                    -- Run callback anyway with potentially cached data
+                    callback()
+                end
+                -- Don't call afterWifiAction if we failed to connect
+            end
+        end)
+        return false
+    end
+
+    -- goOnlineToRun returned without crash
+    -- Check if it returned false (failed to connect) and callback wasn't invoked
+    if go_online_result == false and not callback_invoked then
+        logger.dbg("WeatherLockscreen: goOnlineToRun returned false, connection failed")
+        restoreUIManager()
+        if fallback_callback then
+            fallback_callback()
+        elseif callback then
+            callback()
+        end
+        -- Don't call afterWifiAction if connection failed
+        return false
+    end
+
+    -- If we get here and callback wasn't invoked yet, schedule cleanup
+    -- goOnlineToRun might still be waiting for network
+    if not callback_invoked then
+        -- Schedule a timeout cleanup in case the callback is never called
+        UIManager:scheduleIn(35, function()
+            if not callback_invoked then
+                logger.warn("WeatherLockscreen: Network connection timed out (35s)")
+                restoreUIManager()
+                if fallback_callback then
+                    fallback_callback()
+                elseif callback then
+                    callback()
+                end
+                -- Don't call afterWifiAction on timeout
+            end
+        end)
+    end
+
+    return true
 end
 
 function WeatherUtils:getPeriodicRefreshInterval(type)
