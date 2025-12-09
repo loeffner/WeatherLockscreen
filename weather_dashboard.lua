@@ -214,30 +214,22 @@ function WeatherDashboard:showWidget(weather_lockscreen)
     -- Create weather widget
     if WeatherUtils:wifiEnableActionTurnOn() then
         logger.dbg("WeatherLockscreen: Creating dashboard widget (will wait for network if needed)")
-        local NetworkMgr = require("ui/network/manager")
 
-        -- Suppress NetworkMgr info notifications during dashboard display
-        local orig_uimanager_show = UIManager.show
-        UIManager.show = function(self, widget, refresh_type, refresh_region, x, y)
-            -- Suppress InfoMessage widgets with network-related text
-            local InfoMessage = require("ui/widget/infomessage")
-            if widget and widget.text and type(widget) == "table" and widget.modal ~= nil then
-                -- Check if it's an InfoMessage by duck-typing (has text and modal properties)
-                local text_lower = widget.text:lower()
-                if text_lower:find("connect") or text_lower:find("wi%-fi") or text_lower:find("network") or text_lower:find("waiting") then
-                    logger.dbg("WeatherLockscreen: Suppressed network info message:", widget.text)
-                    return
-                end
-            end
-            return orig_uimanager_show(self, widget, refresh_type, refresh_region, x, y)
-        end
-
-        NetworkMgr:goOnlineToRun(function()
-            -- Restore original UIManager:show function
-            UIManager.show = orig_uimanager_show
-            logger.dbg("WeatherLockscreen: Network is online, showing dashboard")
-            dashboardShow()
-        end)
+        -- Use safe wrapper to go online with proper error handling
+        -- call_after_wifi_action = true to respect wifi_disable_action setting (saves power between refreshes)
+        WeatherUtils:safeGoOnlineToRun(
+            function()
+                logger.dbg("WeatherLockscreen: Network is online, showing dashboard")
+                dashboardShow()
+            end,
+            function()
+                -- Fallback: show dashboard anyway with potentially cached data
+                logger.dbg("WeatherLockscreen: Network connection failed, showing dashboard with cached data")
+                dashboardShow()
+            end,
+            true, -- suppress network messages
+            true  -- call afterWifiAction when done (respects wifi_disable_action)
+        )
     else
         logger.dbg("WeatherLockscreen: Creating dashboard widget (will not wait for network)")
         dashboardShow()

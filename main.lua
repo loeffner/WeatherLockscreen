@@ -149,6 +149,7 @@ function WeatherLockscreen:setPeriodicRefreshInterval(interval, type, touchmenu_
         touchmenu_instance:updateItems()
     else
         local ConfirmBox = require("ui/widget/confirmbox")
+        local warning_msg = ""
         if type == "rtc" then
             warning_msg = _("Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?")
         else
@@ -256,32 +257,20 @@ function WeatherLockscreen:patchScreensaver()
             if WeatherUtils:wifiEnableActionTurnOn() then
                 -- TODO: See if we want to use the cache before turning on the wifi (needs refactoring)
                 logger.dbg("WeatherLockscreen: Creating widget (will wait for network if needed)")
-                local NetworkMgr = require("ui/network/manager")
 
-                -- Here we do black magic to make everything look nice.
-                -- Suppress NetworkMgr info notifications during weather screensaver
-                -- We need to override UIManager:show to catch InfoMessage widgets
-                local orig_uimanager_show = UIManager.show
-                UIManager.show = function(self, widget, refresh_type, refresh_region, x, y)
-                    -- Suppress InfoMessage widgets with network-related text
-                    local InfoMessage = require("ui/widget/infomessage")
-                    if widget and widget.text and type(widget) == "table" and widget.modal ~= nil then
-                        -- Check if it's an InfoMessage by duck-typing (has text and modal properties)
-                        local text_lower = widget.text:lower()
-                        if text_lower:find("connect") or text_lower:find("wi%-fi") or text_lower:find("network") or text_lower:find("waiting") then
-                            logger.dbg("WeatherLockscreen: Suppressed network info message:", widget.text)
-                            return
-                        end
-                    end
-                    return orig_uimanager_show(self, widget, refresh_type, refresh_region, x, y)
-                end
-
-                NetworkMgr:goOnlineToRun(function()
-                    -- Restore original UIManager:show function (which was patched to suppress network messages)
-                    UIManager.show = orig_uimanager_show
-                    logger.dbg("WeatherLockscreen: Network is online, showing screensaver")
-                    screensaverShow()
-                end)
+                -- Use safe wrapper to go online with proper error handling
+                WeatherUtils:safeGoOnlineToRun(
+                    function()
+                        logger.dbg("WeatherLockscreen: Network is online, showing screensaver")
+                        screensaverShow()
+                    end,
+                    function()
+                        -- Fallback: show screensaver anyway with potentially cached data
+                        logger.dbg("WeatherLockscreen: Network connection failed, showing screensaver with cached data")
+                        screensaverShow()
+                    end,
+                    true -- suppress network messages
+                )
             else
                 logger.dbg("WeatherLockscreen: Creating widget (will not wait for network)")
                 screensaverShow()
