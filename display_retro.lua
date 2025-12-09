@@ -17,6 +17,7 @@ local Device = require("device")
 local Screen = Device.screen
 local Blitbuffer = require("ffi/blitbuffer")
 local DataStorage = require("datastorage")
+local util = require("util")
 local WeatherUtils = require("weather_utils")
 local DisplayHelper = require("display_helper")
 
@@ -136,9 +137,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
 
                 -- Use installed arrows from data directory
                 local arrow_path = DataStorage:getDataDir() .. "/icons/arrows/arrow_" .. arrow_dir .. ".svg"
-                local f = io.open(arrow_path, "r")
-                if f then
-                    f:close()
+                if util.pathExists(arrow_path) then
                     return arrow_path
                 end
                 return nil
