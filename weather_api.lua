@@ -10,6 +10,18 @@ local _ = require("l10n/gettext")
 
 local WeatherAPI = {}
 
+
+local function urlEncode(str)
+    if str then
+        str = str:gsub("\n", "\r\n")
+        str = str:gsub("([^%w%-%.%_%~ ])", function(c)
+            return string.format("%%%02X", string.byte(c))
+        end)
+        str = str:gsub(" ", "+")
+    end
+    return str
+end
+
 local function http_request_code(url, sink_table)
     local ltn12 = require("ltn12")
     local sink = ltn12.sink.table(sink_table)
@@ -68,7 +80,7 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     local url = string.format(
         "https://api.weatherapi.com/v1/forecast.json?key=%s&q=%s&days=2&aqi=no&alerts=no&lang=%s",
         api_key,
-        location,
+        urlEncode(location),
         lang
     )
 
@@ -249,7 +261,7 @@ function WeatherAPI:searchLocations(query, api_key)
     local url = string.format(
         "https://api.weatherapi.com/v1/search.json?key=%s&q=%s",
         api_key,
-        query
+        urlEncode(query)
     )
 
     logger.dbg("WeatherLockscreen: Searching locations with query:", query)
@@ -325,8 +337,6 @@ function WeatherAPI:getIconPath(icon_url_from_api)
 
     -- Download the icon
     logger.dbg("WeatherLockscreen: Downloading icon from:", url)
-    local http = require("socket.http")
-    local ltn12 = require("ltn12")
     local util = require("util")
 
     util.makePath(cache_dir)
