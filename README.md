@@ -227,7 +227,7 @@ You can customize the fallback sun/moon icons:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Work in Progress for 0.9.3
+## Work in Progress for 0.9.4
 <details>
 <summary>Done</summary>
 
