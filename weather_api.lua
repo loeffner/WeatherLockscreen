@@ -329,15 +329,13 @@ function WeatherAPI:getIconPath(icon_url_from_api)
     local cache_path = cache_dir .. cache_filename
 
     -- Check if already cached
-    local f = io.open(cache_path, "r")
-    if f then
-        f:close()
+    local util = require("util")
+    if util.pathExists(cache_path) then
         return cache_path
     end
 
     -- Download the icon
     logger.dbg("WeatherLockscreen: Downloading icon from:", url)
-    local util = require("util")
 
     util.makePath(cache_dir)
 

@@ -10,6 +10,7 @@
 local Device = require("device")
 local Screen = Device.screen
 local DataStorage = require("datastorage")
+local util = require("util")
 local ImageWidget = require("ui/widget/imagewidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local CenterContainer = require("ui/widget/container/centercontainer")
@@ -106,10 +107,7 @@ function DisplayHelper:createFallbackWidget()
     local icon_filename = is_daytime and "sun.svg" or "moon.svg"
     local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
 
-    local f = io.open(icon_path, "r")
-    if f then
-        f:close()
-    else
+    if not util.pathExists(icon_path) then
         return nil
     end
 
@@ -138,10 +136,7 @@ function DisplayHelper:createLoadingWidget()
     local icon_filename = "hourglass.svg"
     local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
 
-    local f = io.open(icon_path, "r")
-    if f then
-        f:close()
-    else
+    if not util.pathExists(icon_path) then
         logger.warn("WeatherLockscreen: Loading icon file not found:", icon_path)
         return nil
     end
