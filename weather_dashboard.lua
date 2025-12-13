@@ -153,8 +153,10 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         local plugin_instance = weather_lockscreen
         local dashboard_module = self
 
+        -- Create the dashboard widget as a modal fullscreen widget
+        -- This ensures it blocks all events from reaching widgets below (like ReaderUI)
         weather_lockscreen.dashboard_widget = InputContainer:new {
-            dimen = {
+            dimen = Geom:new {
                 x = 0,
                 y = 0,
                 w = screen_width,
@@ -163,14 +165,27 @@ function WeatherDashboard:showWidget(weather_lockscreen)
             background_widget,
         }
 
-        -- Add tap handler to close and stop dashboard mode (anonymous function like TRMNL)
-        weather_lockscreen.dashboard_widget.onTapClose = function()
+        -- Set modal and covers_fullscreen to block events from reaching other widgets
+        -- Without these, taps can reach ReaderUI (status bar, menu areas) when reader is open
+        weather_lockscreen.dashboard_widget.modal = true
+        weather_lockscreen.dashboard_widget.covers_fullscreen = true
+        weather_lockscreen.dashboard_widget.dithered = true
+
+        -- Add tap handler to close and stop dashboard mode (like ScreenSaverWidget:onTap)
+        weather_lockscreen.dashboard_widget.onTap = function(self_widget, _, ges)
             logger.info("WeatherLockscreen: Dashboard dismissed by tap")
             dashboard_module:stop(plugin_instance)
             return true
         end
 
-        -- Add key press handler for non-touch devices (anonymous function like TRMNL)
+        -- Add close handler (can be called by system events)
+        weather_lockscreen.dashboard_widget.onClose = function()
+            logger.info("WeatherLockscreen: Dashboard onClose called")
+            dashboard_module:stop(plugin_instance)
+            return true
+        end
+
+        -- Add key press handler for non-touch devices
         weather_lockscreen.dashboard_widget.onAnyKeyPressed = function()
             logger.info("WeatherLockscreen: Dashboard dismissed by key press")
             dashboard_module:stop(plugin_instance)
@@ -180,7 +195,7 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         -- Register tap gesture for touch devices
         if Device:isTouchDevice() then
             weather_lockscreen.dashboard_widget.ges_events = {
-                TapClose = {
+                Tap = {
                     GestureRange:new {
                         ges = "tap",
                         range = Geom:new {
@@ -200,7 +215,7 @@ function WeatherDashboard:showWidget(weather_lockscreen)
             }
         end
 
-        UIManager:show(weather_lockscreen.dashboard_widget)
+        UIManager:show(weather_lockscreen.dashboard_widget, "full")
 
         -- Trigger screen refresh (like TRMNL does)
         UIManager:setDirty(weather_lockscreen.dashboard_widget, "full")
