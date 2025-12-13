@@ -584,7 +584,6 @@ function WeatherUtils:periodicRefreshSupported()
 end
 
 function WeatherUtils:periodicRefreshEnabled(type)
-    print("WeatherUtils:periodicRefreshEnabled called with type:", type)
     if type == "rtc" then
         return WeatherUtils:periodicRefreshSupported() and WeatherUtils:getPeriodicRefreshInterval(type) > 0
     else
