@@ -472,12 +472,17 @@ end
 
 
 function WeatherMenu:getRtcModeMenuItem(plugin_instance)
-    local can_schedule_wakeup = WeatherUtils:canScheduleWakeup()
-    local wifi_turn_on =  WeatherUtils:wifiEnableActionTurnOn()
     return {
         text_func = function()
+            local can_schedule_wakeup = WeatherUtils:canScheduleWakeup()
+            local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
             local interval = WeatherUtils:getPeriodicRefreshInterval("rtc")
             if not can_schedule_wakeup then
+                -- Check if this is a Kobo device (which could be enabled)
+                local Device = require("device")
+                if Device:isKobo() then
+                    return _("Active Sleep (Kobo experimental - see README)")
+                end
                 return _("Active Sleep (Unsupported device)")
             elseif wifi_turn_on == false then
                     return _("Active Sleep (Enable Wi-Fi 'Turn on' first)")
@@ -500,7 +505,7 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 43200, _("12 hours")),
             self:getCustomIntervalOption(plugin_instance, "rtc"),
         },
-        help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard but is only supported on Kindle/Kobo."),
+        help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle"),
     }
 end
 

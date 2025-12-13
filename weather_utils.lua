@@ -464,7 +464,7 @@ function WeatherUtils:safeGoOnlineToRun(callback, fallback_callback, suppress_ne
         if not call_after_wifi_action then
             return
         end
-        
+
         local wifi_disable_action = G_reader_settings:readSetting("wifi_disable_action") or "prompt"
         if wifi_disable_action == "prompt" then
             -- Don't call afterWifiAction when set to "prompt" - that would require user interaction
@@ -472,7 +472,7 @@ function WeatherUtils:safeGoOnlineToRun(callback, fallback_callback, suppress_ne
             logger.dbg("WeatherLockscreen: wifi_disable_action is 'prompt', skipping afterWifiAction to avoid user interaction")
             return
         end
-        
+
         logger.dbg("WeatherLockscreen: Calling afterWifiAction (wifi_disable_action=" .. wifi_disable_action .. ")")
         NetworkMgr:afterWifiAction()
     end
@@ -565,7 +565,18 @@ end
 
 function WeatherUtils:canScheduleWakeup()
     local Device = require("device")
-    return Device:isKindle() or Device:isKobo()
+
+    -- By default, only Kindle is supported (tested)
+    -- Kobo support is experimental and disabled by default
+    if Device:isKindle() then
+        return true
+    end
+
+    if Device:isKobo() then
+        return false
+    end
+
+    return false
 end
 
 function WeatherUtils:periodicRefreshSupported()
