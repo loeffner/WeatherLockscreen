@@ -481,7 +481,7 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                 -- Check if this is a Kobo device (which could be enabled)
                 local Device = require("device")
                 if Device:isKobo() then
-                    return _("Active Sleep (Kobo experimental - see README)")
+                    return _("Active Sleep (Kobo experimental - hold for help)")
                 end
                 return _("Active Sleep (Unsupported device)")
             elseif wifi_turn_on == false then
@@ -497,15 +497,13 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
         end,
         sub_item_table = {
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 0, _("Off")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 180, _("3 minutes")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 1800, _("30 minutes")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 3600, _("1 hour")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 10800, _("3 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 21600, _("6 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "rtc", 43200, _("12 hours")),
-            self:getCustomIntervalOption(plugin_instance, "rtc"),
         },
-        help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle"),
+        help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."),
     }
 end
 
@@ -530,13 +528,11 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
         -- Tap to open interval settings
         sub_item_table = {
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 0, _("Off")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 180, _("3 minutes")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 1800, _("30 minutes")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 3600, _("1 hour")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 10800, _("3 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 21600, _("6 hours")),
             self:getPeriodicRefreshOption(plugin_instance, "dashboard", 43200, _("12 hours")),
-            self:getCustomIntervalOption(plugin_instance, "dashboard"),
         },
         help_text = _("Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."),
         separator = true,

@@ -56,7 +56,48 @@ function WeatherLockscreen:onDispatcherRegisterActions()
     })
 end
 
+-- Initialize default settings if not already set
+-- This ensures the plugin works correctly on first run
+function WeatherLockscreen:initDefaultSettings()
+    local defaults = {
+        -- Core settings
+        weather_location = self.default_location,
+        weather_location_name = self.default_location,
+        weather_temp_scale = self.default_temp_scale,
+        weather_display_style = "default",
+
+        -- Display settings
+        weather_show_header = true,           -- nilOrTrue default is true
+        weather_override_scaling = false,
+        weather_fill_percent = 90,
+        weather_cover_scaling = "zoom",
+
+        -- Cache settings
+        weather_cache_max_age = 3600,         -- 1 hour
+        weather_min_update_delay = 1800,      -- 30 minutes
+
+        -- Periodic refresh settings
+        weather_periodic_refresh_rtc = 0,     -- Off by default
+        weather_periodic_refresh_dashboard = 0, -- Off by default
+    }
+
+    local settings_changed = false
+    for setting, default_value in pairs(defaults) do
+        if G_reader_settings:readSetting(setting) == nil then
+            G_reader_settings:saveSetting(setting, default_value)
+            settings_changed = true
+            logger.dbg("WeatherLockscreen: Initialized setting", setting, "to", default_value)
+        end
+    end
+
+    if settings_changed then
+        G_reader_settings:flush()
+        logger.info("WeatherLockscreen: Default settings initialized")
+    end
+end
+
 function WeatherLockscreen:init()
+    self:initDefaultSettings()
     self:onDispatcherRegisterActions()
     WeatherUtils:installIcons()
     self.ui.menu:registerToMainMenu(self)
