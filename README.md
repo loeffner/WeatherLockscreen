@@ -98,14 +98,37 @@ The plugin offers several display formats to customize your lockscreen:
   </tr>
 </table>
 
-## How It Works
+## Active Sleep and Dashboard
 
-1. **Data Fetching**: Weather data is automatically fetched from WeatherAPI.com when your device enters sleep mode
-   * To avoid unnecessary api calls, the data is only refreshed, if the cached data is older than 30 minutes.
-   * Changing the location or deleting the cache forces an update.
-2. **Caching**: Data is cached locally for a configurable amount of time (1h - 24h)
-3. **Offline Mode**: If the API request fails or no internet connection is available, the plugin uses cached data
-4. **Fallback Display**: If no cached data is available, displays a sun/moon icon based on the current time of day
+### Active Sleep (Kindle Only)
+Since version 0.9.4, the plugin supports updating weather data while the device is locked and sleeping.
+To enable this feature:
+1. Go to the plugin settings via <b>Tools &gt; Weather Lockscreen</b>
+2. Enable the <b>"Active Sleep"</b> option by setting an interval.
+
+#### Additional requirements:
+- Only supported on Kindle devices.
+- `Settings > Network > "Action when Wi-Fi is off"` must be set to `Turn on`.
+
+#### How it works:
+- The device will wake up from sleep at the specified interval to refresh weather data.
+- After updating, the device will return to sleep mode automatically.
+- This feature is only available on Kindle devices (because Kobo and Android devices handle sleep differently and I do not have the devices to test on.)
+- This feature will increase battery consumption slightly, depending on the interval set. However, the device will still spend most of the time in sleep mode.
+
+## Dasboard
+For devices that do not support `Active Sleep`, you can use the Dashboard feature to show live weather data.
+To enable this feature:
+1. Go to the plugin settings via `Tools > Weather Lockscreen`
+2. Enable the `Dashboard` option by setting an interval.
+3. Long press `Dashboard` to show the dashboard. You can also set a gesture in `Settings > Taps & Gestures > Gesture Manager`. The WeatherLockscreen gesture can be found in the `General` section.
+
+#### How it works:
+- The dashboard is a full screen widget that shows live weather data.
+- Backlight will be disabled, but the touchscreen will remain active.
+- To dismiss the dashboard, tap the screen.
+- This feature works on all devices, including Kindle, Kobo, and Android.
+- This feature will consume more battery than `Active Sleep`, as the screen will remain on while the dashboard is displayed.
 
 ## API Information
 
@@ -198,32 +221,6 @@ You can customize the fallback sun/moon icons:
 3. The plugin will use these icons when weather data is unavailable
 </details>
 
-## Troubleshooting
-
-<details>
-<summary>Weather not displaying</summary>
-
-- Check your internet connection
-- Ensure your location is entered correctly
-- Check the KOReader log for error messages
-</details>
-
-<details>
-<summary>Icons not showing</summary>
-
-- Ensure you have an active internet connection for the first fetch
-- Weather icons are automatically downloaded and cached
-- Check the cache directory has write permissions
-</details>
-
-<details>
-<summary>Outdated weather data</summary>
-
-- Weather data is cached for the configured time (1 hour default)
-- Enter sleep mode again to force a refresh after the cache expires
-- Check your internet connection
-</details>
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
@@ -232,13 +229,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 <details>
 <summary>Done</summary>
 
+
+- Periodically refresh the lockscreen (its not easy, let me tell you that!)
+- Attempt connecting to wifi: See #1
 </details>
 
 <details>
 <summary>In progress</summary>
-
-- Periodically refresh the lockscreen (its not easy, let me tell you that!)
-- Attempt connecting to wifi: See #1
 </details>
 
 <details>
