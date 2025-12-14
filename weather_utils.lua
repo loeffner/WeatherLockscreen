@@ -603,13 +603,14 @@ function WeatherUtils:canScheduleWakeup()
     local Device = require("device")
 
     -- By default, only Kindle is supported (tested)
-    -- Kobo support is experimental and disabled by default
+    -- Kobo support is experimental - enabled when debug mode is on
     if Device:isKindle() then
         return true
     end
 
     if Device:isKobo() then
-        return false
+        -- Allow Kobo RTC wakeup when debug mode is enabled
+        return G_reader_settings:isTrue("weather_debug_options")
     end
 
     return false
