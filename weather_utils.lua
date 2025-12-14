@@ -653,12 +653,17 @@ function WeatherUtils:resumeFrontlight(plugin_instance)
     end
 end
 
--- Trigger device suspend/resume via power device API
+-- Trigger device suspend via UIManager event handler
 function WeatherUtils:toggleSuspend()
-    local Device = require("device")
-    local Powerd = Device:getPowerDevice()
-    Powerd:toggleSuspend()
-    logger.info("WeatherLockscreen: Suspend triggered via toggleSuspend()")
+    local UIManager = require("ui/uimanager")
+    -- Use the UIManager event handler to trigger proper suspend sequence
+    -- This works on both Kindle and Kobo devices
+    if UIManager.event_handlers and UIManager.event_handlers.Suspend then
+        UIManager.event_handlers.Suspend()
+        logger.info("WeatherLockscreen: Suspend triggered via UIManager.event_handlers.Suspend()")
+    else
+        logger.warn("WeatherLockscreen: UIManager.event_handlers.Suspend not available")
+    end
 end
 
 function WeatherUtils:koLangAsWeatherAPILang()
