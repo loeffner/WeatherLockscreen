@@ -1,27 +1,33 @@
 # GitHub Copilot Instructions for WeatherLockscreen
 
 ## Project Overview
-WeatherLockscreen is a KOReader plugin that displays weather information on e-reader sleep screens. It's written in Lua and integrates with KOReader's widget system to create custom lockscreen displays.
+WeatherLockscreen is a KOReader plugin that displays weather information on e-reader sleep screens. It's written in Lua and integrates with KOReader's widget system to create custom lockscreen displays. The plugin supports multiple display modes, periodic refresh features, and multi-language localization.
 
 ## Technology Stack
 - **Language**: Lua
 - **Platform**: KOReader (e-reader framework)
 - **API**: WeatherAPI.com (forecast endpoint)
 - **UI Framework**: KOReader widget system (ImageWidget, TextWidget, containers, etc.)
+- **Localization**: gettext (.po/.mo files)
 
 ## Architecture
 
 ### Core Modules
-1. **main.lua**: Plugin entry point, menu system, screensaver patching
-2. **weather_api.lua**: API fetching, JSON parsing, data processing
-3. **weather_utils.lua**: Utility functions for caching, icons, time formatting, localization
-4. **display_*.lua**: Display mode implementations (default, card, nightowl, retro, reading)
+1. **main.lua**: Plugin entry point, screensaver patching, event handlers, settings initialization
+2. **weather_menu.lua**: Menu system and UI dialogs for settings
+3. **weather_api.lua**: API fetching, JSON parsing, data processing
+4. **weather_utils.lua**: Utility functions for caching, icons, time formatting, localization, device detection
+5. **weather_dashboard.lua**: Full-screen dashboard mode with periodic refresh
+6. **display_*.lua**: Display mode implementations (default, card, nightowl, retro, reading)
+7. **display_helper.lua**: Shared display utilities
+8. **_meta.lua**: Plugin metadata (name, version, description)
 
 ### Key Design Patterns
 - **Display Strategy Pattern**: Each display mode is a separate module with a `create(weather_lockscreen, weather_data)` function
 - **Widget Composition**: UI built using nested widget containers (VerticalGroup, HorizontalGroup, OverlapGroup, etc.)
 - **Dynamic Scaling**: Content scales to fit different screen sizes using DPI-independent base sizes and calculated scale factors
-- **Caching System**: Two-tier caching (30min min delay for API calls, configurable max age for data)
+- **Two-Tier Caching**: Minimum delay between API calls + configurable max cache age for offline use
+- **Safe Network Wrapper**: All network calls wrapped in pcall to prevent crashes
 
 ## Code Style & Conventions
 
@@ -63,6 +69,35 @@ local content_height = content:getSize().h
 
 ## Important Implementation Details
 
+### Settings System
+All settings are prefixed with `weather_` and initialized in `main.lua:initDefaultSettings()`:
+
+```lua
+-- Core settings
+weather_location           -- Location string (e.g., "London" or coordinates)
+weather_temp_scale         -- "C" or "F"
+weather_display_mode       -- "default", "card", "nightowl", "retro", "reading"
+
+-- Display settings
+weather_show_header        -- boolean, show status bar
+weather_override_scaling   -- boolean, enable manual scaling
+weather_fill_percent       -- 50-100, content fill percentage
+weather_cover_scaling      -- "fit" or "zoom" (for reading mode)
+
+-- Cache settings
+weather_cache_max_age      -- hours (1-24), max cache age for offline
+weather_min_update_delay   -- minutes (1-60), min time between API calls
+
+-- Periodic refresh settings
+weather_rtc_mode           -- nil/false (off) or interval in minutes
+weather_dashboard_mode     -- nil/false (off) or interval in minutes
+weather_custom_rtc_interval    -- custom interval minutes
+weather_custom_dashboard_interval
+
+-- Debug settings
+weather_debug_options      -- boolean, show advanced options in menu
+```
+
 ### Weather Data Structure
 The processed weather data has this structure:
 ```lua
@@ -91,6 +126,7 @@ The processed weather data has this structure:
 - Settings stored via `G_reader_settings:readSetting()` and `G_reader_settings:saveSetting()`
 - Always call `G_reader_settings:flush()` after saving
 - Use `G_reader_settings:nilOrTrue()` for boolean settings that default to true
+- All settings initialized with defaults on first run via `initDefaultSettings()`
 
 ### Screen Dimensions & Scaling
 - Get screen size: `Screen:getWidth()`, `Screen:getHeight()`, `Screen:getSize()`
@@ -105,27 +141,61 @@ The processed weather data has this structure:
 - SVG format supported via ImageWidget with `alpha = true`
 
 ### Localization
-- Use `require("gettext")` and wrap user-facing strings with `_("Text")`
+- Plugin uses custom gettext loader: `require("l10n/gettext")`
+- Translation files in `l10n/` directory: `template.pot`, `de/`, `es/`
+- User-facing strings wrapped with `_("Text")`
 - For formatted strings: `local T = require("ffi/util").template` then `T(_("Format %1"), value)`
-- Day names: Use KOReader's localized `os.date("%A")` when `WeatherUtils:shouldTranslateWeather()` is true
+- Dynamic strings (moon phases, setting values) also need entries in .po files
 - Weather conditions from API include localized text based on language setting
 
-### HTTP Requests
+### HTTP Requests (Safe Pattern)
 ```lua
 local ltn12 = require("ltn12")
 local sink_table = {}
-local code, err = http_request_code(url, sink_table)
-if code == 200 then
-    local response = table.concat(sink_table)
+
+-- Always use pcall wrapper for network operations
+local success, result = pcall(function()
+    local code, err = http_request_code(url, sink_table)
+    if code == 200 then
+        return table.concat(sink_table)
+    end
+    return nil, code
+end)
+
+if success and result then
     -- Process response
 end
+```
+
+## Periodic Refresh Features
+
+### Dashboard Mode
+- Full-screen weather display that refreshes periodically
+- Works on all devices
+- Uses `UIManager:scheduleIn()` for refresh timing
+- Tap to dismiss
+- Higher battery consumption (device stays awake)
+
+### Active Sleep Mode (RTC)
+- Device wakes from sleep to update weather, then goes back to sleep
+- Lower battery consumption than dashboard
+- **Kindle**: Fully supported via `/sys/class/rtc/rtc1/wakealarm`
+- **Kobo**: Experimental, disabled by default (see `WeatherUtils:isKoboRtcEnabled()`)
+- **Other devices**: Not supported
+
+### Device Detection
+```lua
+local Device = require("device")
+Device:isKindle()  -- Check if Kindle
+Device:isKobo()    -- Check if Kobo
+Device:hasWifiToggle()  -- Check for WiFi capability
 ```
 
 ## Common Tasks
 
 ### Adding a New Display Mode
 1. Create `display_<name>.lua` with `create(weather_lockscreen, weather_data)` function
-2. Add menu entry in `main.lua:getSubMenuItems()` under "Display Style" submenu
+2. Add menu entry in `weather_menu.lua:getDisplayStyleMenuItem()`
 3. Follow scaling pattern: define base sizes, build function, measure, rescale
 4. Return an OverlapGroup or CenterContainer widget
 5. Consider adding conditional menu items (like cover scaling for reading mode)
@@ -136,12 +206,21 @@ end
 3. Consider cache invalidation if data format changes significantly
 
 ### Adding New Settings
-1. Add menu item in `main.lua:getSubMenuItems()`
-2. Use `checked_func` for radio/checkbox items
-3. Use `text_func` for dynamic labels showing current value
-4. Save with `G_reader_settings:saveSetting()` and flush
-5. Set `keep_menu_open = true` for inline updates
-6. Use `touchmenu_instance:updateItems()` to refresh menu after changes
+1. Add default value in `main.lua:initDefaultSettings()`
+2. Add menu item in appropriate function in `weather_menu.lua`
+3. Use `checked_func` for radio/checkbox items
+4. Use `text_func` for dynamic labels showing current value
+5. Save with `G_reader_settings:saveSetting()` and flush
+6. Set `keep_menu_open = true` for inline updates
+7. Use `touchmenu_instance:updateItems()` to refresh menu after changes
+8. For debug-only options, check `G_reader_settings:isTrue("weather_debug_options")`
+
+### Adding New Localized Strings
+1. Add `_("String")` in code
+2. Add entry in `l10n/template.pot`
+3. Add translations in `l10n/de/koreader.po` and `l10n/es/koreader.po`
+4. Run `msgfmt` to compile `.mo` files
+5. For dynamic strings (like setting values), add entries even if they're not literal in code
 
 ### Working with Fonts
 - Standard fonts: `"cfont"` (content), `"ffont"` (fixed-width/monospace)
@@ -155,6 +234,12 @@ end
 - Use `fgcolor` in TextWidget, `background` in FrameContainer
 
 ## Testing & Debugging
+
+### Debug Mode
+- Toggle via searching "debug on" or "debug off" in location search
+- When enabled, shows additional options in menu:
+  - Minimum cache duration setting
+  - Custom interval options for Dashboard/Active Sleep
 
 ### Logging
 ```lua
@@ -170,24 +255,27 @@ logger.info("WeatherLockscreen: Info message")
 - **Scaling issues**: Ensure base sizes are DPI-independent and scale factor applied consistently
 - **Cache problems**: Clear cache via menu or delete files in cache directory
 - **API failures**: Check logger for HTTP response codes and error messages
+- **Crash on network error**: Ensure all network calls use pcall wrapper
 
 ## Plugin Conventions
 
 ### Menu Structure
 - Top level: `Tools > Weather Lockscreen`
 - Use separators (`separator = true`) to group related settings
-- Use `sub_item_table` for nested menus
+- Use `sub_item_table` for static nested menus
+- Use `sub_item_table_func` for dynamic nested menus
 - Use `callback` for actions, `checked_func` for toggles
 
 ### File Organization
 - Icons: `icons/` directory (bundled with plugin)
-- Cache: DataStorage directory (user data)
+- Translations: `l10n/` directory
+- Cache: `DataStorage:getDataDir()/cache/weather-icons/`
 - Plugin directory obtained via: `debug.getinfo(2, "S").source:gsub("^@(.*)/[^/]*", "%1")`
 
 ### API Usage Guidelines
-- Respect 30-minute minimum between API calls
+- Respect minimum delay between API calls (configurable, default 30 min)
 - Use cached data when available and not expired
-- Default cache duration: 1 hour (configurable 1-24h)
+- Default max cache age: 1 hour (configurable 1-24h)
 - Show asterisk (*) in timestamp when displaying cached data
 - Include error handling for network failures
 
@@ -204,6 +292,7 @@ logger.info("WeatherLockscreen: Info message")
 - Add localization support for new user-facing strings
 - Follow existing code structure and naming patterns
 - Document new features in README.md
+- Initialize new settings in `initDefaultSettings()`
 
 ## Special Considerations
 
@@ -223,3 +312,8 @@ logger.info("WeatherLockscreen: Info message")
 - Check `G_reader_settings:isTrue("twelve_hour_clock")`
 - Format times appropriately: "3:00 PM" vs "15:00"
 - Use `WeatherUtils:formatHourLabel(hour, twelve_hour_clock)` for consistency
+
+### WiFi Management
+- Check `Device:hasWifiToggle()` for capability
+- Use `WeatherUtils:isWifiTurnOnEnabled()` to check if WiFi auto-on is configured
+- Active Sleep requires WiFi to be available
