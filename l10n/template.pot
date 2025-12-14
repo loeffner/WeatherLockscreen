@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WeatherLockscreen\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-18 12:00+0000\n"
+"POT-Creation-Date: 2025-01-18 12:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,26 +28,47 @@ msgid "Displays weather information on the sleep screen. Select Weather option i
 msgstr ""
 
 # ==============================================================================
-# Main Menu (main.lua)
+# Main Menu (weather_menu.lua)
 # ==============================================================================
 
 # Location Settings
 msgid "Location"
 msgstr ""
 
-msgid "Location (%1)"
-msgstr ""
-
-msgid "Format: %1"
+msgid "City, postal code, or coordinates"
 msgstr ""
 
 msgid "Enter your postal code or city name"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "Searching..."
+msgstr ""
+
+msgid "Select Location (1 result)"
+msgstr ""
+
+msgid "Select Location (%1 results)"
+msgstr ""
+
+msgid "No location found"
+msgstr ""
+
+msgid "Search again"
+msgstr ""
+
+msgid "Location search failed: %1"
 msgstr ""
 
 msgid "Cancel"
 msgstr ""
 
 msgid "Save"
+msgstr ""
+
+msgid "Delete"
 msgstr ""
 
 # Display Style Settings
@@ -70,7 +91,7 @@ msgid "Cover"
 msgstr ""
 
 # Temperature Scale Settings
-msgid "Temperature Scale (°%1)"
+msgid "Temperature Scale"
 msgstr ""
 
 msgid "Celsius"
@@ -92,23 +113,42 @@ msgstr ""
 msgid "Content Fill Percentage"
 msgstr ""
 
-msgid "How much of the available screen height should be filled (in percent)"
+msgid "How much of the available screen height should be filled?"
 msgstr ""
 
-msgid "Set"
-msgstr ""
-
-msgid "Cover scaling (%1)"
+msgid "Cover scaling"
 msgstr ""
 
 msgid "Fit to screen"
 msgstr ""
 
-msgid "Stretch to fill"
+msgid "Zoom to fill"
+msgstr ""
+
+# Dynamic setting values (for menu display)
+msgid "fit"
+msgstr ""
+
+msgid "zoom"
 msgstr ""
 
 # Cache Settings
-msgid "Cache duration (%1 %2)"
+msgid "Cache Settings"
+msgstr ""
+
+msgid "Maximum Cache duration"
+msgstr ""
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
+msgstr ""
+
+msgid "Minimum Cache duration"
+msgstr ""
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr ""
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
 msgstr ""
 
 msgid "hour"
@@ -117,37 +157,34 @@ msgstr ""
 msgid "hours"
 msgstr ""
 
-msgid "Cache duration"
+msgid "h"
 msgstr ""
 
-msgid "How long weather data should remain cached"
+msgid "min"
+msgstr ""
+
+msgid "minutes"
 msgstr ""
 
 msgid "Clear cache"
 msgstr ""
 
+msgid "Clear weather cache"
+msgstr ""
+
 msgid "Clear cached weather data and icons?"
 msgstr ""
 
-msgid "Clear"
+msgid "Cache cleared"
 msgstr ""
 
-msgid "Cache cleared"
+msgid "Weather cache cleared"
 msgstr ""
 
 msgid "No cache to clear"
 msgstr ""
 
 # Periodic Refresh Settings
-msgid "Periodic refresh (Off)"
-msgstr ""
-
-msgid "Periodic refresh (%1 min)"
-msgstr ""
-
-msgid "Periodic refresh (%1 h)"
-msgstr ""
-
 msgid "Off"
 msgstr ""
 
@@ -166,14 +203,99 @@ msgstr ""
 msgid "12 hours"
 msgstr ""
 
-msgid "24 hours"
+# Custom Interval Settings
+msgid "Custom…"
+msgstr ""
+
+msgid "Custom (%1)"
+msgstr ""
+
+msgid "Custom refresh interval"
+msgstr ""
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr ""
+
+msgid "Hours"
+msgstr ""
+
+msgid "Minutes"
+msgstr ""
+
+msgid "%1 h"
+msgstr ""
+
+msgid "%1 min"
+msgstr ""
+
+msgid "%1 h %2 min"
 msgstr ""
 
 # Language Settings
-msgid "Use KOReader language setting (%1)"
+msgid "Show weather on sleep screen"
 msgstr ""
 
-msgid "Show weather on sleep screen"
+# Dashboard/Active Sleep Settings
+msgid "Dashboard"
+msgstr ""
+
+msgid "Weather dashboard"
+msgstr ""
+
+msgid "Dashboard (Tap to set interval)"
+msgstr ""
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr ""
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr ""
+
+msgid "Active Sleep"
+msgstr ""
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr ""
+
+msgid "Active Sleep (Unsupported device)"
+msgstr ""
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr ""
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr ""
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr ""
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr ""
+
+msgid "Lock to Start"
+msgstr ""
+
+msgid "Hold to Start"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+# Debug Settings
+msgid "Debug options enabled"
+msgstr ""
+
+msgid "Debug options disabled"
+msgstr ""
+
+# Error Messages
+msgid "API error"
+msgstr ""
+
+msgid "Unknown error"
+msgstr ""
+
+msgid "Failed to parse response"
 msgstr ""
 
 # ==============================================================================
@@ -202,6 +324,7 @@ msgid "Page %1 of %2"
 msgstr ""
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
+# These are dynamically translated via _(moon_phase) in weather_utils.lua
 msgid "New Moon"
 msgstr ""
 

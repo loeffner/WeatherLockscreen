@@ -15,6 +15,7 @@ A comprehensive KOReader plugin that displays beautiful weather information on y
 
 - **Real-time Weather Data** - Displays current weather conditions with icons, temperature, and detailed descriptions
 - **Several Display Formats** - Choose from multiple layout options to suit your preferences
+- **Active Sleep** - The device will temporarily wake up from sleep to refresh data if enabled (Kindle only).
 - **Easy Configuration** - Configure settings via main menu, no need to edit source code
 - **Smart Caching** - Automatic caching with configurable expiration
 - **Offline Support** - Uses cached data when internet connection is unavailable

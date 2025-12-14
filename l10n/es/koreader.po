@@ -19,6 +19,7 @@ msgstr ""
 # ==============================================================================
 # Plugin Metadata (_meta.lua)
 # ==============================================================================
+
 msgid "Weather Lockscreen"
 msgstr "Weather Lockscreen"
 
@@ -26,20 +27,18 @@ msgid "Displays weather information on the sleep screen. Select Weather option i
 msgstr "Muestra la información del clima en la pantalla de suspensión. Selecciona la opción Clima en Pantalla de suspensión > Fondo para activarlo."
 
 # ==============================================================================
-# Main Menu (main.lua)
+# Main Menu (weather_menu.lua)
 # ==============================================================================
+
 # Location Settings
 msgid "Location"
 msgstr "Ubicación"
 
-msgid "Format: %1"
-msgstr "Formato: %1"
+msgid "City, postal code, or coordinates"
+msgstr "Ciudad, código postal o coordenadas"
 
 msgid "Enter your postal code or city name"
 msgstr "Ingresa tu código postal o nombre de ciudad"
-
-msgid "City, postal code, or coordinates"
-msgstr "Ciudad, código postal o coordenadas"
 
 msgid "Search"
 msgstr "Buscar"
@@ -47,38 +46,29 @@ msgstr "Buscar"
 msgid "Searching..."
 msgstr "Buscando..."
 
-msgid "Location search failed: %1"
-msgstr "Error en la búsqueda de ubicación: %1"
-
-msgid "Unknown error"
-msgstr "Error desconocido"
-
-msgid "No location found"
-msgstr "No se encontró ninguna ubicación"
-
-msgid "API error"
-msgstr "Error de API"
-
-msgid "Failed to parse response"
-msgstr "Error al analizar la respuesta"
-
-msgid "Search again"
-msgstr "Buscar de nuevo"
+msgid "Select Location (1 result)"
+msgstr "Seleccionar ubicación (1 resultado)"
 
 msgid "Select Location (%1 results)"
 msgstr "Seleccionar ubicación (%1 resultados)"
 
-msgid "Select Location (1 result)"
-msgstr "Seleccionar ubicación (1 resultado)"
+msgid "No location found"
+msgstr "No se encontró ninguna ubicación"
 
-msgid "Delete"
-msgstr "Eliminar"
+msgid "Search again"
+msgstr "Buscar de nuevo"
+
+msgid "Location search failed: %1"
+msgstr "Error en la búsqueda de ubicación: %1"
 
 msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Save"
 msgstr "Guardar"
+
+msgid "Delete"
+msgstr "Eliminar"
 
 # Display Style Settings
 msgid "Display Style (%1)"
@@ -134,24 +124,52 @@ msgstr "Ajustar a la pantalla"
 msgid "Zoom to fill"
 msgstr "Zoom para llenar"
 
+# Dynamic setting values (for menu display)
 msgid "fit"
 msgstr "ajustar"
 
+msgid "zoom"
+msgstr "zoom"
+
 # Cache Settings
+msgid "Cache Settings"
+msgstr "Configuración de caché"
+
+msgid "Maximum Cache duration"
+msgstr "Duración máxima del caché"
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
+msgstr "Sin conexión, se mostrarán datos del clima en caché hasta esta antigüedad. Los datos más antiguos mostrarán un ícono alternativo."
+
+msgid "Minimum Cache duration"
+msgstr "Duración mínima del caché"
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr "Tiempo mínimo entre solicitudes de API al bloquear el dispositivo. Durante este período, se usan datos en caché automáticamente."
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
+msgstr "Depuración: Controla el tiempo mínimo entre solicitudes de API. No afecta los intervalos de actualización periódica."
+
 msgid "hour"
 msgstr "hora"
 
 msgid "hours"
 msgstr "horas"
 
-msgid "Cache duration"
-msgstr "Duración del caché"
+msgid "h"
+msgstr "h"
 
-msgid "How long should weather data remain cached?"
-msgstr "¿Cuánto tiempo deben permanecer en caché los datos del clima?"
+msgid "min"
+msgstr "min"
+
+msgid "minutes"
+msgstr "minutos"
 
 msgid "Clear cache"
 msgstr "Limpiar caché"
+
+msgid "Clear weather cache"
+msgstr "Limpiar caché del clima"
 
 msgid "Clear cached weather data and icons?"
 msgstr "¿Limpiar los datos e íconos almacenados en caché?"
@@ -159,15 +177,130 @@ msgstr "¿Limpiar los datos e íconos almacenados en caché?"
 msgid "Cache cleared"
 msgstr "Caché eliminada"
 
+msgid "Weather cache cleared"
+msgstr "Caché del clima eliminada"
+
 msgid "No cache to clear"
 msgstr "No hay caché para limpiar"
 
+# Periodic Refresh Settings
+msgid "Off"
+msgstr "Desactivado"
+
+msgid "30 minutes"
+msgstr "30 minutos"
+
+msgid "1 hour"
+msgstr "1 hora"
+
+msgid "3 hours"
+msgstr "3 horas"
+
+msgid "6 hours"
+msgstr "6 horas"
+
+msgid "12 hours"
+msgstr "12 horas"
+
+# Custom Interval Settings
+msgid "Custom…"
+msgstr "Personalizado…"
+
+msgid "Custom (%1)"
+msgstr "Personalizado (%1)"
+
+msgid "Custom refresh interval"
+msgstr "Intervalo de actualización personalizado"
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr "Establece horas y minutos para el intervalo de actualización."
+
+msgid "Hours"
+msgstr "Horas"
+
+msgid "Minutes"
+msgstr "Minutos"
+
+msgid "%1 h"
+msgstr "%1 h"
+
+msgid "%1 min"
+msgstr "%1 min"
+
+msgid "%1 h %2 min"
+msgstr "%1 h %2 min"
+
+# Language Settings
 msgid "Show weather on sleep screen"
 msgstr "Mostrar clima en la pantalla de suspensión"
+
+# Dashboard/Active Sleep Settings
+msgid "Dashboard"
+msgstr "Panel"
+
+msgid "Weather dashboard"
+msgstr "Panel del clima"
+
+msgid "Dashboard (Tap to set interval)"
+msgstr "Panel (Toca para configurar intervalo)"
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr "Muestra el clima en pantalla completa y se actualiza periódicamente. Funciona en todos los dispositivos. Toca la pantalla para cerrar. Consume más batería que la pantalla de suspensión normal."
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr "El panel mantendrá el dispositivo activo y actualizará los datos del clima regularmente.\nEsto aumentará el consumo de energía mientras el panel esté activo.\n\n¿Continuar?"
+
+msgid "Active Sleep"
+msgstr "Suspensión activa"
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr "Suspensión activa (Toca para configurar intervalo)"
+
+msgid "Active Sleep (Unsupported device)"
+msgstr "Suspensión activa (Dispositivo no compatible)"
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr "Suspensión activa (Activa primero 'Encender' Wi-Fi)"
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr "Suspensión activa (Kobo experimental - mantén presionado para ayuda)"
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr "El dispositivo se despierta de la suspensión para actualizar los datos del clima. Ahorra energía comparado con el panel.\n\nDispositivos compatibles: Kindle. Kobo (experimental) consulta el README para más información."
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr "La suspensión activa despertará el dispositivo para actualizar los datos del clima.\nEsto aumentará el consumo de energía mientras el dispositivo está bloqueado.\n\n¿Continuar?"
+
+msgid "Lock to Start"
+msgstr "Bloquear para iniciar"
+
+msgid "Hold to Start"
+msgstr "Mantén presionado para iniciar"
+
+msgid "Enable"
+msgstr "Activar"
+
+# Debug Settings
+msgid "Debug options enabled"
+msgstr "Opciones de depuración activadas"
+
+msgid "Debug options disabled"
+msgstr "Opciones de depuración desactivadas"
+
+# Error Messages
+msgid "API error"
+msgstr "Error de API"
+
+msgid "Unknown error"
+msgstr "Error desconocido"
+
+msgid "Failed to parse response"
+msgstr "Error al analizar la respuesta"
 
 # ==============================================================================
 # Display Views
 # ==============================================================================
+
 # Weather API (weather_api.lua)
 msgid "Today"
 msgstr "Hoy"
@@ -190,6 +323,7 @@ msgid "Page %1 of %2"
 msgstr "Página %1 de %2"
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
+# These are dynamically translated via _(moon_phase) in weather_utils.lua
 msgid "New Moon"
 msgstr "Luna nueva"
 
