@@ -116,7 +116,7 @@ To enable this feature:
 - This feature is only available on Kindle devices (because Kobo and Android devices handle sleep differently and I do not have the devices to test on.)
 - This feature will increase battery consumption slightly, depending on the interval set. However, the device will still spend most of the time in sleep mode.
 
-## Dasboard
+### Dasboard
 For devices that do not support `Active Sleep`, you can use the Dashboard feature to show live weather data.
 To enable this feature:
 1. Go to the plugin settings via `Tools > Weather Lockscreen`
