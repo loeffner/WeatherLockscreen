@@ -7,6 +7,7 @@ local DataStorage = require("datastorage")
 local logger = require("logger")
 local ffiUtil = require("ffi/util")
 local util = require("util")
+local _ = require("l10n/gettext")
 
 local WeatherUtils = {}
 
@@ -393,6 +394,41 @@ end
 function WeatherUtils:wifiEnableActionTurnOn()
     local wifi_enable_action = G_reader_settings:readSetting("wifi_enable_action") or "prompt"
     return wifi_enable_action == "turn_on"
+end
+
+-- Check if a search query is a special command and handle it
+-- Returns true if the query was a command (and was handled), false otherwise
+-- Special commands:
+--   "debug on" / "debug enable" - Enable debug options
+--   "debug off" / "debug disable" - Disable debug options
+function WeatherUtils:handleSpecialCommand(query)
+    if not query then return false end
+
+    local UIManager = require("ui/uimanager")
+    local InfoMessage = require("ui/widget/infomessage")
+    local query_lower = query:lower()
+
+    if query_lower == "debug on" or query_lower == "debug enable" then
+        G_reader_settings:saveSetting("weather_debug_options", true)
+        G_reader_settings:flush()
+        UIManager:show(InfoMessage:new {
+            text = _("Debug options enabled"),
+            timeout = 2,
+        })
+        logger.info("WeatherLockscreen: Debug options enabled via search command")
+        return true
+    elseif query_lower == "debug off" or query_lower == "debug disable" then
+        G_reader_settings:saveSetting("weather_debug_options", false)
+        G_reader_settings:flush()
+        UIManager:show(InfoMessage:new {
+            text = _("Debug options disabled"),
+            timeout = 2,
+        })
+        logger.info("WeatherLockscreen: Debug options disabled via search command")
+        return true
+    end
+
+    return false
 end
 
 -- Safely try to go online and run a callback

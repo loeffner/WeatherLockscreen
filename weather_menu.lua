@@ -99,6 +99,15 @@ end
 function WeatherMenu:searchAndShowLocations(plugin_instance, touchmenu_instance, query)
     local InfoMessage = require("ui/widget/infomessage")
 
+    -- Check for special commands (debug on/off, etc.)
+    if WeatherUtils:handleSpecialCommand(query) then
+        if touchmenu_instance then
+            touchmenu_instance.item_table = WeatherMenu:getSubMenuItems(plugin_instance)
+            touchmenu_instance:updateItems()
+        end
+        return
+    end
+
     -- Show searching message
     local searching_msg = InfoMessage:new {
         text = _("Searching..."),
@@ -383,89 +392,97 @@ function WeatherMenu:getCoverScalingMenuItem()
 end
 
 function WeatherMenu:getCacheMenuItem(plugin_instance)
+    local sub_items = {}
+
+    -- Only show min update delay in debug mode
+    if G_reader_settings:isTrue("weather_debug_options") then
+        table.insert(sub_items, {
+            text_func = function()
+                local current_minutes = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
+                return T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. _("minutes") .. ")")
+            end,
+            keep_menu_open = true,
+            callback = function(touchmenu_instance)
+                local SpinWidget = require("ui/widget/spinwidget")
+                local current_minutes = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
+                local spin_widget = SpinWidget:new {
+                    title_text = _("Minimum Cache duration"),
+                    info_text = _("Minimum time between API requests when locking device. Within this period, cached data is used automatically."),
+                    value = current_minutes,
+                    value_min = 0,
+                    value_max = 60,
+                    value_step = 5,
+                    value_hold_step = 15,
+                    unit = _("minutes"),
+                    ok_text = _("Save"),
+                    callback = function(spin)
+                        G_reader_settings:saveSetting("weather_min_update_delay", spin.value * 60)
+                        G_reader_settings:flush()
+                        touchmenu_instance:updateItems()
+                    end,
+                }
+                UIManager:show(spin_widget)
+            end,
+            help_text = _("Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."),
+        })
+    end
+
+    table.insert(sub_items, {
+        text_func = function()
+            local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
+            local hour_text = current_hours == 1 and _("hour") or _("hours")
+            return T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            local SpinWidget = require("ui/widget/spinwidget")
+            local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
+            local spin_widget = SpinWidget:new {
+                title_text = _("Maximum Cache duration"),
+                info_text = _("When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."),
+                value = current_hours,
+                value_min = 1,
+                value_max = 24,
+                value_step = 1,
+                value_hold_step = 2,
+                unit = _("hours"),
+                ok_text = _("Save"),
+                callback = function(spin)
+                    G_reader_settings:saveSetting("weather_cache_max_age", spin.value * 3600)
+                    G_reader_settings:flush()
+                    touchmenu_instance:updateItems()
+                end,
+            }
+            UIManager:show(spin_widget)
+        end,
+    })
+
+    table.insert(sub_items, {
+        text = _("Clear cache"),
+        keep_menu_open = true,
+        callback = function()
+            local ConfirmBox = require("ui/widget/confirmbox")
+            UIManager:show(ConfirmBox:new {
+                text = _("Clear cached weather data and icons?"),
+                ok_text = _("Delete"),
+                ok_callback = function()
+                    if WeatherUtils:clearCache() then
+                        UIManager:show(require("ui/widget/notification"):new {
+                            text = _("Cache cleared"),
+                        })
+                    else
+                        UIManager:show(require("ui/widget/notification"):new {
+                            text = _("No cache to clear"),
+                        })
+                    end
+                end,
+            })
+        end,
+    })
+
     return {
         text = _("Cache Settings"),
-        sub_item_table = {
-            {
-                text_func = function()
-                    local current_minutes = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
-                    return T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. "minutes)")
-                end,
-                keep_menu_open = true,
-                callback = function(touchmenu_instance)
-                    local SpinWidget = require("ui/widget/spinwidget")
-                    local current_hours = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
-                    local spin_widget = SpinWidget:new {
-                        title_text = _("Minimum Cache duration"),
-                        info_text = _("How often should weather data be refreshed?"),
-                        value = current_hours,
-                        value_min = 0,
-                        value_max = 30,
-                        value_step = 1,
-                        value_hold_step = 30,
-                        unit = _("minutes"),
-                        ok_text = _("Save"),
-                        callback = function(spin)
-                            G_reader_settings:saveSetting("weather_min_update_delay", spin.value * 60)
-                            G_reader_settings:flush()
-                            touchmenu_instance:updateItems()
-                        end,
-                    }
-                    UIManager:show(spin_widget)
-                end,
-            },
-            {
-                text_func = function()
-                    local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
-                    local hour_text = current_hours == 1 and _("hour") or _("hours")
-                    return T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")")
-                end,
-                keep_menu_open = true,
-                callback = function(touchmenu_instance)
-                    local SpinWidget = require("ui/widget/spinwidget")
-                    local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
-                    local spin_widget = SpinWidget:new {
-                        title_text = _("Maximum Cache duration"),
-                        info_text = _("How long should weather data remain cached?"),
-                        value = current_hours,
-                        value_min = 1,
-                        value_max = 24,
-                        value_step = 1,
-                        value_hold_step = 2,
-                        unit = _("hours"),
-                        ok_text = _("Save"),
-                        callback = function(spin)
-                            G_reader_settings:saveSetting("weather_cache_max_age", spin.value * 3600)
-                            G_reader_settings:flush()
-                            touchmenu_instance:updateItems()
-                        end,
-                    }
-                    UIManager:show(spin_widget)
-                end,
-            },
-            {
-                text = _("Clear cache"),
-                keep_menu_open = true,
-                callback = function()
-                    local ConfirmBox = require("ui/widget/confirmbox")
-                    UIManager:show(ConfirmBox:new {
-                        text = _("Clear cached weather data and icons?"),
-                        ok_text = _("Delete"),
-                        ok_callback = function()
-                            if WeatherUtils:clearCache() then
-                                UIManager:show(require("ui/widget/notification"):new {
-                                    text = _("Cache cleared"),
-                                })
-                            else
-                                UIManager:show(require("ui/widget/notification"):new {
-                                    text = _("No cache to clear"),
-                                })
-                            end
-                        end,
-                    })
-                end,
-            },
-        },
+        sub_item_table = sub_items,
         separator = true,
     }
 end
@@ -495,14 +512,21 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
         enabled_func = function()
             return WeatherUtils:periodicRefreshSupported()
         end,
-        sub_item_table = {
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 0, _("Off")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 1800, _("30 minutes")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 3600, _("1 hour")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 10800, _("3 hours")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 21600, _("6 hours")),
-            self:getPeriodicRefreshOption(plugin_instance, "rtc", 43200, _("12 hours")),
-        },
+        sub_item_table_func = function()
+            local items = {
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 0, _("Off")),
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 1800, _("30 minutes")),
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 3600, _("1 hour")),
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 10800, _("3 hours")),
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 21600, _("6 hours")),
+                self:getPeriodicRefreshOption(plugin_instance, "rtc", 43200, _("12 hours")),
+            }
+            -- Add custom interval option only in debug mode
+            if G_reader_settings:isTrue("weather_debug_options") then
+                table.insert(items, self:getCustomIntervalOption(plugin_instance, "rtc"))
+            end
+            return items
+        end,
         help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."),
     }
 end
@@ -526,14 +550,21 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
             end
         end,
         -- Tap to open interval settings
-        sub_item_table = {
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 0, _("Off")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 1800, _("30 minutes")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 3600, _("1 hour")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 10800, _("3 hours")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 21600, _("6 hours")),
-            self:getPeriodicRefreshOption(plugin_instance, "dashboard", 43200, _("12 hours")),
-        },
+        sub_item_table_func = function()
+            local items = {
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 0, _("Off")),
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 1800, _("30 minutes")),
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 3600, _("1 hour")),
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 10800, _("3 hours")),
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 21600, _("6 hours")),
+                self:getPeriodicRefreshOption(plugin_instance, "dashboard", 43200, _("12 hours")),
+            }
+            -- Add custom interval option only in debug mode
+            if G_reader_settings:isTrue("weather_debug_options") then
+                table.insert(items, self:getCustomIntervalOption(plugin_instance, "dashboard"))
+            end
+            return items
+        end,
         help_text = _("Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."),
         separator = true,
     }
@@ -553,7 +584,7 @@ function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, l
 end
 
 function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
-    local preset_intervals = {0, 180, 1800, 3600, 10800, 21600, 43200}
+    local preset_intervals = {0, 1800, 3600, 10800, 21600, 43200}
 
     local function isCustomInterval()
         local current = WeatherUtils:getPeriodicRefreshInterval(type)
@@ -565,11 +596,24 @@ function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
         return current > 0
     end
 
+    local function formatInterval(seconds)
+        if seconds < 3600 then
+            return T(_("%1 min"), math.floor(seconds / 60))
+        elseif seconds % 3600 == 0 then
+            local hours = math.floor(seconds / 3600)
+            return T(_("%1 h"), hours)
+        else
+            local hours = math.floor(seconds / 3600)
+            local mins = math.floor((seconds % 3600) / 60)
+            return T(_("%1 h %2 min"), hours, mins)
+        end
+    end
+
     return {
         text_func = function()
             if isCustomInterval() then
                 local interval = WeatherUtils:getPeriodicRefreshInterval(type)
-                return T(_("Custom (%1 min)"), math.floor(interval / 60))
+                return T(_("Custom (%1)"), formatInterval(interval))
             else
                 return _("Custom…")
             end
@@ -577,23 +621,36 @@ function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
         checked_func = isCustomInterval,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local SpinWidget = require("ui/widget/spinwidget")
+            local DoubleSpinWidget = require("ui/widget/doublespinwidget")
             local current_interval = WeatherUtils:getPeriodicRefreshInterval(type)
-            local current_minutes = current_interval > 0 and math.floor(current_interval / 60) or 30
+            if current_interval == 0 then current_interval = 1800 end -- Default to 30 min
 
-            local spin_widget = SpinWidget:new {
+            local current_hours = math.floor(current_interval / 3600)
+            local current_minutes = math.floor((current_interval % 3600) / 60)
+
+            local spin_widget = DoubleSpinWidget:new {
                 title_text = _("Custom refresh interval"),
-                info_text = _("Set a custom refresh interval in minutes."),
-                value = current_minutes,
-                value_min = 1,
-                value_max = 60,
-                value_step = 1,
-                value_hold_step = 15,
-                default_value = 30,
-                unit = _("minutes"),
+                info_text = _("Set hours and minutes for the refresh interval."),
+                left_text = _("Hours"),
+                right_text = _("Minutes"),
+                left_value = current_hours,
+                left_min = 0,
+                left_max = 24,
+                left_step = 1,
+                left_hold_step = 3,
+                left_default = 0,
+                right_value = current_minutes,
+                right_min = 0,
+                right_max = 59,
+                right_step = 1,
+                right_hold_step = 15,
+                right_default = 30,
                 ok_text = _("Save"),
-                callback = function(spin)
-                    local interval_seconds = spin.value * 60
+                callback = function(left_value, right_value)
+                    local interval_seconds = (left_value * 3600) + (right_value * 60)
+                    if interval_seconds < 60 then
+                        interval_seconds = 60 -- Minimum 1 minute
+                    end
                     plugin_instance:setPeriodicRefreshInterval(interval_seconds, type, touchmenu_instance)
                 end,
             }

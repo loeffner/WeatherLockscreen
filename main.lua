@@ -79,6 +79,9 @@ function WeatherLockscreen:initDefaultSettings()
         -- Periodic refresh settings
         weather_periodic_refresh_rtc = 0,     -- Off by default
         weather_periodic_refresh_dashboard = 0, -- Off by default
+
+        -- Debug Options
+        weather_debug_options = false,           -- Off by default
     }
 
     local settings_changed = false
