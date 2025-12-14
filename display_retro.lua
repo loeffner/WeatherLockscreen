@@ -145,27 +145,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
 
             local arrow_path = getArrowPath(wind_dir)
 
-            -- Row 1: Labels (TEMPERATURE | WIND)
-            local labels_row = {}
-            table.insert(labels_row, TextWidget:new{
-                text = _("TEMPERATURE"),
-                face = Font:getFace("cfont", label_font_size),
-                bold = true,
-            })
-            table.insert(labels_row, HorizontalSpan:new{ width = spacing * 3 })
-            table.insert(labels_row, TextWidget:new{
-                text = _("WIND"),
-                face = Font:getFace("cfont", label_font_size),
-                bold = true,
-            })
-
-            table.insert(widgets, HorizontalGroup:new{
-                align = "center",
-                unpack(labels_row)
-            })
-            table.insert(widgets, VerticalSpan:new{ width = small_spacing })
-
-            -- Row 2: Middle content (thermometer bars | arrow)
+            -- Build thermometer
             local temp_c = temp_num
             if temp_scale == "F" then
                 temp_c = (temp_num - 32) * 5 / 9
@@ -183,7 +163,6 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
             local thermo_widgets = {}
             for _, seg in ipairs(segments) do
                 local marker = temp_c >= seg.temp and "▓" or "░"
-                -- Use right-aligned label for better alignment
                 local line = string.format("%4s ║%s║", seg.label, marker)
                 table.insert(thermo_widgets, TextWidget:new{
                     text = line,
@@ -196,7 +175,10 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
                 align = "right",
                 unpack(thermo_widgets)
             }
+            local thermo_height = thermo_group:getSize().h
+            local thermo_width = thermo_group:getSize().w
 
+            -- Build arrow widget
             local arrow_widget
             if arrow_path then
                 arrow_widget = ImageWidget:new{
@@ -213,35 +195,54 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
                 }
             end
 
-            local middle_row = {}
-            table.insert(middle_row, thermo_group)
-            table.insert(middle_row, HorizontalSpan:new{ width = spacing * 3 })
-            table.insert(middle_row, arrow_widget)
+            -- Wrap arrow in a container matching thermometer dimensions for alignment
+            local arrow_container = CenterContainer:new{
+                dimen = { w = thermo_width, h = thermo_height },
+                arrow_widget,
+            }
 
+            -- Temperature column (center-aligned)
+            local temp_column = VerticalGroup:new{
+                align = "center",
+                TextWidget:new{
+                    text = _("TEMPERATURE"),
+                    face = Font:getFace("cfont", label_font_size),
+                    bold = true,
+                },
+                VerticalSpan:new{ width = small_spacing },
+                thermo_group,
+                VerticalSpan:new{ width = small_spacing },
+                TextWidget:new{
+                    text = temp_value,
+                    face = Font:getFace("cfont", gauge_font_size),
+                    bold = true,
+                },
+            }
+
+            -- Wind column (center-aligned, with arrow container matching thermo height)
+            local wind_column = VerticalGroup:new{
+                align = "center",
+                TextWidget:new{
+                    text = _("WIND"),
+                    face = Font:getFace("cfont", label_font_size),
+                    bold = true,
+                },
+                VerticalSpan:new{ width = small_spacing },
+                arrow_container,
+                VerticalSpan:new{ width = small_spacing },
+                TextWidget:new{
+                    text = wind_speed,
+                    face = Font:getFace("cfont", gauge_font_size),
+                    bold = true,
+                },
+            }
+
+            -- Place columns side by side
             table.insert(widgets, HorizontalGroup:new{
                 align = "center",
-                unpack(middle_row)
-            })
-            table.insert(widgets, VerticalSpan:new{ width = small_spacing })
-
-            -- Row 3: Values (temperature | wind speed)
-            local values_row = {}
-            table.insert(values_row, HorizontalSpan:new{ width = spacing * 1.1 })
-            table.insert(values_row, TextWidget:new{
-                text = temp_value,
-                face = Font:getFace("cfont", gauge_font_size),
-                bold = true,
-            })
-            table.insert(values_row, HorizontalSpan:new{ width = spacing * 3 })
-            table.insert(values_row, TextWidget:new{
-                text = wind_speed,
-                face = Font:getFace("cfont", gauge_font_size),
-                bold = true,
-            })
-
-            table.insert(widgets, HorizontalGroup:new{
-                align = "center",
-                unpack(values_row)
+                temp_column,
+                HorizontalSpan:new{ width = spacing * 2 },
+                wind_column,
             })
         end
 
