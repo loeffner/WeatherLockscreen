@@ -20,7 +20,7 @@ local DisplayHelper = require("display_helper")
 local NightOwlDisplay = {}
 
 function NightOwlDisplay:create(weather_lockscreen, weather_data)
-    local header_font_size = Screen:scaleBySize(16)
+    local header_font_size = 16
     local moon_font_size = Screen:scaleBySize(22)
     local moon_icon_size = Screen:scaleBySize(250)
     local header_margin = Screen:scaleBySize(10)
