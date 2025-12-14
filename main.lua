@@ -107,40 +107,55 @@ function WeatherLockscreen:init()
     self:patchDofile()
     self:patchScreensaver()
 
-    -- Check if device supports RTC wakeup for periodic refresh
-    local can_schedule_wakeup = WeatherUtils:canScheduleWakeup()
-
-    if can_schedule_wakeup then
-        -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
-        -- Otherwise create our own
-        if Device.wakeup_mgr then
-            self.wakeup_mgr = Device.wakeup_mgr
-            logger.dbg("WeatherLockscreen: Using device WakeupMgr")
-        else
-            -- For Kobo, detect dodgy RTC (i.MX5 devices)
-            local dodgy_rtc = false
-            if Device:isKobo() then
-                local f = io.open("/sys/class/rtc/rtc0/name", "r")
-                if f then
-                    local rtc_name = f:read("*line")
-                    f:close()
-                    if rtc_name == "pmic_rtc" then
-                        dodgy_rtc = true
-                        logger.info("WeatherLockscreen: Detected dodgy RTC (i.MX5), will chain alarms if needed")
-                    end
-                end
-            end
-            self.wakeup_mgr = WakeupMgr:new{dodgy_rtc = dodgy_rtc}
-            logger.dbg("WeatherLockscreen: Created new WakeupMgr")
-        end
-    else
-        logger.info("WeatherLockscreen: RTC wakeup not available, dashboard mode available for all devices")
-    end
+    -- Initialize WakeupMgr if supported at startup
+    -- Note: This may be re-initialized later if debug mode is enabled on Kobo
+    self:ensureWakeupMgr()
 
     -- Dashboard mode refresh task (must be instance-specific for UIManager)
     self.dashboard_refresh_task = function()
         WeatherDashboard:showWidget(self)
     end
+end
+
+-- Lazily initialize WakeupMgr when needed
+-- This allows Kobo users to enable debug mode after plugin init
+function WeatherLockscreen:ensureWakeupMgr()
+    -- Already initialized
+    if self.wakeup_mgr then
+        return true
+    end
+
+    -- Check if device supports RTC wakeup for periodic refresh
+    local can_schedule_wakeup = WeatherUtils:canScheduleWakeup()
+    if not can_schedule_wakeup then
+        logger.info("WeatherLockscreen: RTC wakeup not available, dashboard mode available for all devices")
+        return false
+    end
+
+    -- Use device's WakeupMgr if available (properly configured on Kindle with MockRTC)
+    -- Otherwise create our own
+    if Device.wakeup_mgr then
+        self.wakeup_mgr = Device.wakeup_mgr
+        logger.dbg("WeatherLockscreen: Using device WakeupMgr")
+    else
+        -- For Kobo, detect dodgy RTC (i.MX5 devices)
+        local dodgy_rtc = false
+        if Device:isKobo() then
+            local f = io.open("/sys/class/rtc/rtc0/name", "r")
+            if f then
+                local rtc_name = f:read("*line")
+                f:close()
+                if rtc_name == "pmic_rtc" then
+                    dodgy_rtc = true
+                    logger.info("WeatherLockscreen: Detected dodgy RTC (i.MX5), will chain alarms if needed")
+                end
+            end
+        end
+        self.wakeup_mgr = WakeupMgr:new{dodgy_rtc = dodgy_rtc}
+        logger.dbg("WeatherLockscreen: Created new WakeupMgr")
+    end
+
+    return true
 end
 
 function WeatherLockscreen:onToggleWeatherDashboard()
@@ -428,21 +443,23 @@ function WeatherLockscreen:schedulePeriodicRefresh()
         return
     end
 
-    -- Try RTC scheduling if WakeupMgr is available
-    if self.wakeup_mgr then
-        logger.info("WeatherLockscreen: Scheduling RTC-based periodic refresh every", interval, "seconds")
-
-        -- Add task to WakeupMgr queue
-        -- On Kindle, this will be picked up by powerd during ReadyToSuspend
-        self.wakeup_mgr:addTask(interval, function()
-            logger.info("WeatherLockscreen: RTC periodic refresh triggered")
-            WeatherUtils:toggleSuspend()
-            self.simulated_wakeup = true
-        end)
-        self.rtc_wakeup_scheduled = true
-    else
-        logger.warn("WeatherLockscreen: WakeupMgr not available")
+    -- Ensure WakeupMgr is initialized (may have been skipped at init if debug was off)
+    if not self:ensureWakeupMgr() then
+        logger.warn("WeatherLockscreen: WakeupMgr not available for periodic refresh")
+        return
     end
+
+    -- Schedule RTC wakeup
+    logger.info("WeatherLockscreen: Scheduling RTC-based periodic refresh every", interval, "seconds")
+
+    -- Add task to WakeupMgr queue
+    -- On Kindle, this will be picked up by powerd during ReadyToSuspend
+    self.wakeup_mgr:addTask(interval, function()
+        logger.info("WeatherLockscreen: RTC periodic refresh triggered")
+        WeatherUtils:toggleSuspend()
+        self.simulated_wakeup = true
+    end)
+    self.rtc_wakeup_scheduled = true
 end
 
 function WeatherLockscreen:onSuspend()
