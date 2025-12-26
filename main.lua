@@ -32,6 +32,8 @@ local WeatherLockscreen = WidgetContainer:extend {
     simulated_wakeup = false,
     wakeup_mgr = nil,
     rtc_wakeup_scheduled = false,
+    rtcRefreshCallback = nil,
+    rtcRescheduleCallback = nil,
     hourglass_widget = nil,
     loading_widget = nil,
     saved_frontlight_intensity = nil,
@@ -137,6 +139,44 @@ function WeatherLockscreen:init()
         logger.info("WeatherLockscreen: RTC wakeup not available, dashboard mode available for all devices")
     end
 
+    self.rtcRefreshCallback = function()
+        logger.info("WeatherLockscreen: RTC periodic refresh triggered")
+
+        -- The WakeupMgr will drop the task after executing this callback.
+        -- Reschedule a new alarm after we return to avoid interfering with WakeupMgr's internal queue handling.
+        if self.rtcRescheduleCallback then
+            UIManager:unschedule(self.rtcRescheduleCallback)
+            UIManager:scheduleIn(1, self.rtcRescheduleCallback)
+        end
+
+        if Device:isKobo() then
+            self.refresh = true
+
+            -- Schedule redraw on the UI loop to avoid running a full Screensaver refresh while
+            -- we're still in the scheduled wakeup guard path.
+            UIManager:scheduleIn(0, function()
+                local Screensaver = require("ui/screensaver")
+                local ss_type = G_reader_settings:readSetting("screensaver_type")
+                if Device.screen_saver_mode and ss_type == "weather" then
+                    Screensaver:show()
+                else
+                    logger.info("WeatherLockscreen: Skipping screensaver redraw on scheduled wakeup (mode=", Device.screen_saver_mode, ", type=", ss_type, ")")
+                end
+            end)
+            return
+        end
+
+        WeatherUtils:toggleSuspend()
+        self.simulated_wakeup = true
+    end
+
+    self.rtcRescheduleCallback = function()
+        -- We may still be in screensaver mode here (scheduled wakeup).
+        -- Ensure the flag doesn't block scheduling.
+        self.rtc_wakeup_scheduled = false
+        self:schedulePeriodicRefresh()
+    end
+
     -- Dashboard mode refresh task (must be instance-specific for UIManager)
     self.dashboard_refresh_task = function()
         WeatherDashboard:showWidget(self)
@@ -228,7 +268,9 @@ function WeatherLockscreen:patchScreensaver()
     end
 
     Screensaver.show = function(screensaver_instance)
-        if screensaver_instance.screensaver_type == "weather" then
+        local ss_type = G_reader_settings:readSetting("screensaver_type")
+        if ss_type == "weather" then
+            screensaver_instance.screensaver_type = "weather"
             logger.dbg("WeatherLockscreen: Weather screensaver activated")
 
             -- Schedule periodic refresh when screen locks
@@ -434,11 +476,7 @@ function WeatherLockscreen:schedulePeriodicRefresh()
 
         -- Add task to WakeupMgr queue
         -- On Kindle, this will be picked up by powerd during ReadyToSuspend
-        self.wakeup_mgr:addTask(interval, function()
-            logger.info("WeatherLockscreen: RTC periodic refresh triggered")
-            WeatherUtils:toggleSuspend()
-            self.simulated_wakeup = true
-        end)
+        self.wakeup_mgr:addTask(interval, self.rtcRefreshCallback)
         self.rtc_wakeup_scheduled = true
     else
         logger.warn("WeatherLockscreen: WakeupMgr not available")
@@ -458,14 +496,14 @@ end
 function WeatherLockscreen:onResume()
     logger.dbg("WeatherLockscreen: Device resuming")
 
-    -- Cancel any existing RTC wakeup
-    if self.rtc_wakeup_scheduled and self.wakeup_mgr then
-        self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
-        self.rtc_wakeup_scheduled = false
-    end
-
     -- Check if we woke up due to an RTC alarm and execute the action
     if self.simulated_wakeup then
+        -- Cancel any existing RTC wakeup
+        if not Device:isKobo() and self.rtc_wakeup_scheduled and self.wakeup_mgr then
+            self.wakeup_mgr:removeTasks(nil, self.rtcRefreshCallback)
+            self.rtc_wakeup_scheduled = false
+        end
+
         -- Reset the flag
         self.simulated_wakeup = false
         -- Force refresh by setting the flag

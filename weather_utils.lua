@@ -657,8 +657,19 @@ end
 function WeatherUtils:toggleSuspend()
     local Device = require("device")
     local Powerd = Device:getPowerDevice()
-    Powerd:toggleSuspend()
-    logger.info("WeatherLockscreen: Suspend triggered via toggleSuspend()")
+    if Powerd and Powerd.toggleSuspend then
+        Powerd:toggleSuspend()
+        logger.info("WeatherLockscreen: Suspend triggered via toggleSuspend()")
+        return
+    end
+
+    if Device and Device.suspend then
+        Device:suspend()
+        logger.info("WeatherLockscreen: Suspend triggered via Device:suspend()")
+        return
+    end
+
+    logger.warn("WeatherLockscreen: Unable to suspend device (no toggleSuspend or suspend API)")
 end
 
 function WeatherUtils:koLangAsWeatherAPILang()
