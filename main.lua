@@ -81,6 +81,7 @@ function WeatherLockscreen:initDefaultSettings()
         -- Periodic refresh settings
         weather_periodic_refresh_rtc = 0,     -- Off by default
         weather_periodic_refresh_dashboard = 0, -- Off by default
+        weather_active_sleep_min_battery = 20,
 
         -- Debug Options
         weather_debug_options = false,           -- Off by default
@@ -141,6 +142,15 @@ function WeatherLockscreen:init()
 
     self.rtcRefreshCallback = function()
         logger.info("WeatherLockscreen: RTC periodic refresh triggered")
+
+        local min_batt = WeatherUtils:getActiveSleepMinBattery()
+        if min_batt > 0 then
+            local capacity = WeatherUtils:getBatteryCapacity()
+            if capacity and capacity < min_batt then
+                logger.info("WeatherLockscreen: Skipping RTC refresh due to low battery (", capacity, "<", min_batt, ")")
+                return
+            end
+        end
 
         -- The WakeupMgr will drop the task after executing this callback.
         -- Reschedule a new alarm after we return to avoid interfering with WakeupMgr's internal queue handling.
@@ -462,6 +472,15 @@ function WeatherLockscreen:schedulePeriodicRefresh()
     if wifi_turn_on == false then
         logger.dbg("WeatherLockscreen: Periodic refresh disabled due to Wi-Fi action setting")
         return
+    end
+
+    local min_batt = WeatherUtils:getActiveSleepMinBattery()
+    if min_batt > 0 then
+        local capacity = WeatherUtils:getBatteryCapacity()
+        if capacity and capacity < min_batt then
+            logger.info("WeatherLockscreen: Periodic refresh disabled due to low battery (", capacity, "<", min_batt, ")")
+            return
+        end
     end
 
     local interval = WeatherUtils:getPeriodicRefreshInterval("rtc")

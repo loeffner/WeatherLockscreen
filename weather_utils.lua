@@ -396,6 +396,37 @@ function WeatherUtils:wifiEnableActionTurnOn()
     return wifi_enable_action == "turn_on"
 end
 
+function WeatherUtils:getBatteryCapacity()
+    local Device = require("device")
+    local Powerd = Device and Device:getPowerDevice()
+    if not Powerd or not Powerd.getCapacity then
+        return nil
+    end
+
+    local ok, capacity = pcall(function()
+        return Powerd:getCapacity()
+    end)
+    if not ok or type(capacity) ~= "number" then
+        return nil
+    end
+
+    return capacity
+end
+
+function WeatherUtils:getActiveSleepMinBattery()
+    local v = G_reader_settings:readSetting("weather_active_sleep_min_battery")
+    if type(v) == "number" then
+        return v
+    end
+    if type(v) == "string" then
+        local n = tonumber(v)
+        if n then
+            return n
+        end
+    end
+    return 0
+end
+
 -- Check if a search query is a special command and handle it
 -- Returns true if the query was a command (and was handled), false otherwise
 -- Special commands:
