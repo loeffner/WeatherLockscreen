@@ -525,6 +525,37 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
             if G_reader_settings:isTrue("weather_debug_options") then
                 table.insert(items, self:getCustomIntervalOption(plugin_instance, "rtc"))
             end
+
+            table.insert(items, {
+                text_func = function()
+                    local min_batt = WeatherUtils:getActiveSleepMinBattery()
+                    if min_batt > 0 then
+                        return T(_("Min battery (%1%)"), min_batt)
+                    end
+                    return _("Min battery (Off)")
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    local SpinWidget = require("ui/widget/spinwidget")
+                    local current = WeatherUtils:getActiveSleepMinBattery()
+                    local spin_widget = SpinWidget:new {
+                        title_text = _("Active Sleep"),
+                        info_text = _("Disable Active Sleep below this battery level. Set to 0 to turn off."),
+                        value = current,
+                        value_min = 0,
+                        value_max = 100,
+                        value_step = 1,
+                        ok_text = _("Save"),
+                        callback = function(spin)
+                            G_reader_settings:saveSetting("weather_active_sleep_min_battery", spin.value)
+                            G_reader_settings:flush()
+                            touchmenu_instance:updateItems()
+                        end,
+                    }
+                    UIManager:show(spin_widget)
+                end,
+                separator = true,
+            })
             return items
         end,
         help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."),
