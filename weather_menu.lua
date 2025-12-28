@@ -544,7 +544,10 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                         value = current,
                         value_min = 0,
                         value_max = 100,
-                        value_step = 1,
+                        value_step = 5,
+                        value_hold_step = 20,
+                        default_value = 20,
+                        unit = _("%"),
                         ok_text = _("Save"),
                         callback = function(spin)
                             G_reader_settings:saveSetting("weather_active_sleep_min_battery", spin.value)
