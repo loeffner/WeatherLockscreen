@@ -69,22 +69,22 @@ function WeatherLockscreen:initDefaultSettings()
         weather_display_style = "default",
 
         -- Display settings
-        weather_show_header = true,           -- nilOrTrue default is true
+        weather_show_header = true, -- nilOrTrue default is true
         weather_override_scaling = false,
         weather_fill_percent = 90,
         weather_cover_scaling = "zoom",
 
         -- Cache settings
-        weather_cache_max_age = 3600,         -- 1 hour
-        weather_min_update_delay = 1800,      -- 30 minutes
+        weather_cache_max_age = 3600,    -- 1 hour
+        weather_min_update_delay = 1800, -- 30 minutes
 
         -- Periodic refresh settings
-        weather_periodic_refresh_rtc = 0,     -- Off by default
+        weather_periodic_refresh_rtc = 0,       -- Off by default
         weather_periodic_refresh_dashboard = 0, -- Off by default
         weather_active_sleep_min_battery = 20,
 
         -- Debug Options
-        weather_debug_options = false,           -- Off by default
+        weather_debug_options = false, -- Off by default
     }
 
     local settings_changed = false
@@ -133,7 +133,7 @@ function WeatherLockscreen:init()
                     end
                 end
             end
-            self.wakeup_mgr = WakeupMgr:new{dodgy_rtc = dodgy_rtc}
+            self.wakeup_mgr = WakeupMgr:new { dodgy_rtc = dodgy_rtc }
             logger.dbg("WeatherLockscreen: Created new WakeupMgr")
         end
     else
@@ -170,7 +170,8 @@ function WeatherLockscreen:init()
                 if Device.screen_saver_mode and ss_type == "weather" then
                     Screensaver:show()
                 else
-                    logger.info("WeatherLockscreen: Skipping screensaver redraw on scheduled wakeup (mode=", Device.screen_saver_mode, ", type=", ss_type, ")")
+                    logger.info("WeatherLockscreen: Skipping screensaver redraw on scheduled wakeup (mode=",
+                        Device.screen_saver_mode, ", type=", ss_type, ")")
                 end
             end)
             return
@@ -209,12 +210,12 @@ function WeatherLockscreen:onClearWeatherCache()
     local InfoMessage = require("ui/widget/infomessage")
 
     if WeatherUtils:clearCache() then
-        UIManager:show(InfoMessage:new{
+        UIManager:show(InfoMessage:new {
             text = _("Weather cache cleared"),
             timeout = 2,
         })
     else
-        UIManager:show(InfoMessage:new{
+        UIManager:show(InfoMessage:new {
             text = _("No cache to clear"),
             timeout = 2,
         })
@@ -245,11 +246,13 @@ function WeatherLockscreen:setPeriodicRefreshInterval(interval, type, touchmenu_
         local ConfirmBox = require("ui/widget/confirmbox")
         local warning_msg = ""
         if type == "rtc" then
-            warning_msg = _("Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?")
+            warning_msg = _(
+                "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?")
         else
-            warning_msg = _("The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?")
+            warning_msg = _(
+                "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?")
         end
-        UIManager:show(ConfirmBox:new{
+        UIManager:show(ConfirmBox:new {
             text = warning_msg,
             ok_text = _("Enable"),
             ok_callback = function()
