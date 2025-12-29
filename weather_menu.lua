@@ -257,7 +257,8 @@ function WeatherMenu:getTemperatureScaleMenuItem(plugin_instance)
             {
                 text = _("Celsius"),
                 checked_func = function()
-                    local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or plugin_instance.default_temp_scale
+                    local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or
+                        plugin_instance.default_temp_scale
                     return temp_scale == "C"
                 end,
                 keep_menu_open = true,
@@ -271,7 +272,8 @@ function WeatherMenu:getTemperatureScaleMenuItem(plugin_instance)
             {
                 text = _("Fahrenheit"),
                 checked_func = function()
-                    local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or plugin_instance.default_temp_scale
+                    local temp_scale = G_reader_settings:readSetting("weather_temp_scale") or
+                        plugin_instance.default_temp_scale
                     return temp_scale == "F"
                 end,
                 keep_menu_open = true,
@@ -423,7 +425,8 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
                 }
                 UIManager:show(spin_widget)
             end,
-            help_text = _("Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."),
+            help_text = _(
+                "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."),
         })
     end
 
@@ -487,7 +490,6 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
     }
 end
 
-
 function WeatherMenu:getRtcModeMenuItem(plugin_instance)
     return {
         text_func = function()
@@ -502,11 +504,15 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                 end
                 return _("Active Sleep (Unsupported device)")
             elseif wifi_turn_on == false then
-                    return _("Active Sleep (Enable Wi-Fi 'Turn on' first)")
+                return _("Active Sleep (Enable Wi-Fi 'Turn on' first)")
             elseif interval <= 0 then
                 return _("Active Sleep (Tap to set interval)")
             else
-                return _("Active Sleep") .. " (" .. _("Lock to Start") .. ": " .. (interval < 3600 and (interval / 60 .. " " .. _("min")) or (interval / 3600 .. " " .. _("h"))) .. ")"
+                return _("Active Sleep") ..
+                    " (" ..
+                    _("Lock to Start") ..
+                    ": " ..
+                    (interval < 3600 and (interval / 60 .. " " .. _("min")) or (interval / 3600 .. " " .. _("h"))) .. ")"
             end
         end,
         enabled_func = function()
@@ -561,7 +567,8 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
             })
             return items
         end,
-        help_text = _("Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."),
+        help_text = _(
+            "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."),
     }
 end
 
@@ -570,7 +577,11 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
         text_func = function()
             local interval = WeatherUtils:getPeriodicRefreshInterval("dashboard")
             if interval > 0 then
-                return _("Dashboard") .. " (" .. _("Hold to Start") .. ": " .. (interval < 3600 and (interval / 60 .. " " .. _("min")) or (interval / 3600 .. " " .. _("h"))) .. ")"
+                return _("Dashboard") ..
+                    " (" ..
+                    _("Hold to Start") ..
+                    ": " ..
+                    (interval < 3600 and (interval / 60 .. " " .. _("min")) or (interval / 3600 .. " " .. _("h"))) .. ")"
             else
                 return _("Dashboard (Tap to set interval)")
             end
@@ -599,7 +610,8 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
             end
             return items
         end,
-        help_text = _("Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."),
+        help_text = _(
+            "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."),
         separator = true,
     }
 end
@@ -618,7 +630,7 @@ function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, l
 end
 
 function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
-    local preset_intervals = {0, 1800, 3600, 10800, 21600, 43200}
+    local preset_intervals = { 0, 1800, 3600, 10800, 21600, 43200 }
 
     local function isCustomInterval()
         local current = WeatherUtils:getPeriodicRefreshInterval(type)
