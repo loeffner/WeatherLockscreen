@@ -119,22 +119,6 @@ function WeatherLockscreen:init()
         if Device.wakeup_mgr then
             self.wakeup_mgr = Device.wakeup_mgr
             logger.dbg("WeatherLockscreen: Using device WakeupMgr")
-        else
-            -- For Kobo, detect dodgy RTC (i.MX5 devices)
-            local dodgy_rtc = false
-            if Device:isKobo() then
-                local f = io.open("/sys/class/rtc/rtc0/name", "r")
-                if f then
-                    local rtc_name = f:read("*line")
-                    f:close()
-                    if rtc_name == "pmic_rtc" then
-                        dodgy_rtc = true
-                        logger.info("WeatherLockscreen: Detected dodgy RTC (i.MX5), will chain alarms if needed")
-                    end
-                end
-            end
-            self.wakeup_mgr = WakeupMgr:new { dodgy_rtc = dodgy_rtc }
-            logger.dbg("WeatherLockscreen: Created new WakeupMgr")
         end
     else
         logger.info("WeatherLockscreen: RTC wakeup not available, dashboard mode available for all devices")
@@ -142,26 +126,9 @@ function WeatherLockscreen:init()
 
     self.rtcRefreshCallback = function()
         logger.info("WeatherLockscreen: RTC periodic refresh triggered")
-
-        local min_batt = WeatherUtils:getActiveSleepMinBattery()
-        if min_batt > 0 then
-            local capacity = WeatherUtils:getBatteryCapacity()
-            if capacity and capacity < min_batt then
-                logger.info("WeatherLockscreen: Skipping RTC refresh due to low battery (", capacity, "<", min_batt, ")")
-                return
-            end
-        end
-
-        -- The WakeupMgr will drop the task after executing this callback.
-        -- Reschedule a new alarm after we return to avoid interfering with WakeupMgr's internal queue handling.
-        if self.rtcRescheduleCallback then
-            UIManager:unschedule(self.rtcRescheduleCallback)
-            UIManager:scheduleIn(1, self.rtcRescheduleCallback)
-        end
+        WeatherLockscreen.refresh = true
 
         if Device:isKobo() then
-            self.refresh = true
-
             -- Schedule redraw on the UI loop to avoid running a full Screensaver refresh while
             -- we're still in the scheduled wakeup guard path.
             UIManager:scheduleIn(0, function()
@@ -170,22 +137,13 @@ function WeatherLockscreen:init()
                 if Device.screen_saver_mode and ss_type == "weather" then
                     Screensaver:show()
                 else
-                    logger.info("WeatherLockscreen: Skipping screensaver redraw on scheduled wakeup (mode=",
-                        Device.screen_saver_mode, ", type=", ss_type, ")")
+                    logger.info("WeatherLockscreen: Skipping screensaver redraw on scheduled wakeup")
                 end
             end)
-            return
+        else -- Device is Kindle
+            WeatherUtils:toggleSuspend()
+            self.simulated_wakeup = true
         end
-
-        WeatherUtils:toggleSuspend()
-        self.simulated_wakeup = true
-    end
-
-    self.rtcRescheduleCallback = function()
-        -- We may still be in screensaver mode here (scheduled wakeup).
-        -- Ensure the flag doesn't block scheduling.
-        self.rtc_wakeup_scheduled = false
-        self:schedulePeriodicRefresh()
     end
 
     -- Dashboard mode refresh task (must be instance-specific for UIManager)
@@ -471,6 +429,12 @@ function WeatherLockscreen:schedulePeriodicRefresh()
         self.rtc_wakeup_scheduled = false
     end
 
+    local interval = WeatherUtils:getPeriodicRefreshInterval("rtc")
+    if interval == 0 then
+        logger.dbg("WeatherLockscreen: Periodic refresh disabled")
+        return
+    end
+
     local wifi_turn_on = WeatherUtils:wifiEnableActionTurnOn()
     if wifi_turn_on == false then
         logger.dbg("WeatherLockscreen: Periodic refresh disabled due to Wi-Fi action setting")
@@ -484,12 +448,6 @@ function WeatherLockscreen:schedulePeriodicRefresh()
             logger.info("WeatherLockscreen: Periodic refresh disabled due to low battery (", capacity, "<", min_batt, ")")
             return
         end
-    end
-
-    local interval = WeatherUtils:getPeriodicRefreshInterval("rtc")
-    if interval == 0 then
-        logger.dbg("WeatherLockscreen: Periodic refresh disabled")
-        return
     end
 
     -- Try RTC scheduling if WakeupMgr is available
@@ -528,8 +486,6 @@ function WeatherLockscreen:onResume()
 
         -- Reset the flag
         self.simulated_wakeup = false
-        -- Force refresh by setting the flag
-        self.refresh = true
         logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
 
         -- Close any existing loading widget
