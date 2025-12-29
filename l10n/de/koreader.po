@@ -293,6 +293,12 @@ msgstr "Unbekannter Fehler"
 msgid "Failed to parse response"
 msgstr "Fehler beim Verarbeiten der Ergebnisse"
 
+msgid "Preserve Battery"
+msgstr "Batterie sparen"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "Fällt der Akkustand unter dieses Level wird 'Aktiver Schlaf' deaktiviert."
+
 # ==============================================================================
 # Display Views
 # ==============================================================================

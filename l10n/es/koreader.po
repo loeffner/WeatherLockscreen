@@ -297,6 +297,12 @@ msgstr "Error desconocido"
 msgid "Failed to parse response"
 msgstr "Error al analizar la respuesta"
 
+msgid "Preserve Battery"
+msgstr "Preservar batería"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "Desactiva la suspensión activa cuando la batería esté por debajo de este nivel. Pon 0 para desactivar."
+
 # ==============================================================================
 # Display Views
 # ==============================================================================

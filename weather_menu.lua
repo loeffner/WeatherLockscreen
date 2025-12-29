@@ -536,9 +536,9 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                 text_func = function()
                     local min_batt = WeatherUtils:getActiveSleepMinBattery()
                     if min_batt > 0 then
-                        return T(_("Min battery (%1%)"), min_batt)
+                        return T(_("Preserve Battery") .. " (%1%)", min_batt)
                     end
-                    return _("Min battery (Off)")
+                    return _("Preserve Battery") .. " (" .. _("Off") .. ")"
                 end,
                 keep_menu_open = true,
                 callback = function(touchmenu_instance)
@@ -553,7 +553,7 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                         value_step = 5,
                         value_hold_step = 20,
                         default_value = 20,
-                        unit = _("%"),
+                        unit = "%",
                         ok_text = _("Save"),
                         callback = function(spin)
                             G_reader_settings:saveSetting("weather_active_sleep_min_battery", spin.value)

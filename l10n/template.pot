@@ -298,6 +298,12 @@ msgstr ""
 msgid "Failed to parse response"
 msgstr ""
 
+msgid "Preserve Battery"
+msgstr ""
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr ""
+
 # ==============================================================================
 # Display Views
 # ==============================================================================
