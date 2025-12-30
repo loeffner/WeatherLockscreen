@@ -1,0 +1,357 @@
+# Turkish translation for WeatherLockscreen
+# Copyright (C) 2025
+# This file is distributed under the same license as the WeatherLockscreen package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"POT-Creation-Date: 2025-01-18 12:00+0000\n"
+"PO-Revision-Date: 2025-01-18 12:00+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Turkish <LL@li.org>\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# ============================================================================
+# Plugin Metadata (_meta.lua)
+# ============================================================================
+
+msgid "Weather Lockscreen"
+msgstr "Hava Kilit Ekranı"
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "Uyku ekranında hava durumu bilgilerini gösterir. Etkinleştirmek için Uyku ekranı > Duvar kağıdı menüsünden Hava seçeneğini seçin."
+
+# ============================================================================
+# Main Menu (weather_menu.lua)
+# ============================================================================
+
+# Location Settings
+msgid "Location"
+msgstr "Konum"
+
+msgid "City, postal code, or coordinates"
+msgstr "Şehir, posta kodu veya koordinatlar"
+
+msgid "Enter your postal code or city name"
+msgstr "Posta kodunuzu veya şehir adını girin"
+
+msgid "Search"
+msgstr "Ara"
+
+msgid "Searching..."
+msgstr "Aranıyor..."
+
+msgid "Select Location (1 result)"
+msgstr "Konumu seç (1 sonuç)"
+
+msgid "Select Location (%1 results)"
+msgstr "Konumu seç (%1 sonuç)"
+
+msgid "No location found"
+msgstr "Konum bulunamadı"
+
+msgid "Search again"
+msgstr "Yeniden ara"
+
+msgid "Location search failed: %1"
+msgstr "Konum araması başarısız: %1"
+
+msgid "Cancel"
+msgstr "İptal"
+
+msgid "Save"
+msgstr "Kaydet"
+
+msgid "Delete"
+msgstr "Sil"
+
+# Display Style Settings
+msgid "Display Style (%1)"
+msgstr "Görüntüleme stili (%1)"
+
+msgid "Detailed"
+msgstr "Ayrıntılı"
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Night Owl"
+msgstr "Gece Baykuşu"
+
+msgid "Retro Analog"
+msgstr "Retro Analog"
+
+msgid "Cover"
+msgstr "Kapak"
+
+# Temperature Scale Settings
+msgid "Temperature Scale"
+msgstr "Sıcaklık ölçeği"
+
+msgid "Celsius"
+msgstr "Santigrat"
+
+msgid "Fahrenheit"
+msgstr "Fahrenheit"
+
+# Display Settings
+msgid "Show header"
+msgstr "Başlığı göster"
+
+msgid "Override scaling"
+msgstr "Ölçeklemeyi geçersiz kıl"
+
+msgid "Content Fill (%1%)"
+msgstr "İçerik doldurma (%1%)"
+
+msgid "Content Fill Percentage"
+msgstr "İçerik doldurma yüzdesi"
+
+msgid "How much of the available screen height should be filled?"
+msgstr "Kullanılabilir ekran yüksekliğinin ne kadarı doldurulsun?"
+
+msgid "Cover scaling"
+msgstr "Kapak ölçekleme"
+
+msgid "Fit to screen"
+msgstr "Ekrana sığdır"
+
+msgid "Zoom to fill"
+msgstr "Doldurmak için yakınlaştır"
+
+# Dynamic setting values (for menu display)
+msgid "fit"
+msgstr "sığdır"
+
+msgid "zoom"
+msgstr "yakınlaştır"
+
+# Cache Settings
+msgid "Cache Settings"
+msgstr "Önbellek ayarları"
+
+msgid "Maximum Cache duration"
+msgstr "Maksimum önbellek süresi"
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
+msgstr "Çevrimdışıyken bu yaşa kadar olan önbellekteki hava durumu verileri gösterilir. Daha eski veriler yerine yedek bir simge gösterilir."
+
+msgid "Minimum Cache duration"
+msgstr "Minimum önbellek süresi"
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr "Cihaz kilitlenirken API istekleri arasındaki minimum süre. Bu süre içinde önbellek otomatik olarak kullanılır."
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
+msgstr "Hata ayıklama: API istekleri arasındaki minimum süreyi kontrol eder. Periyodik yenileme aralıklarını etkilemez."
+
+msgid "hour"
+msgstr "saat"
+
+msgid "hours"
+msgstr "saat"
+
+msgid "h"
+msgstr "s"
+
+msgid "min"
+msgstr "dk"
+
+msgid "minutes"
+msgstr "dakika"
+
+msgid "Clear cache"
+msgstr "Önbelleği temizle"
+
+msgid "Clear weather cache"
+msgstr "Hava durumu önbelleğini temizle"
+
+msgid "Clear cached weather data and icons?"
+msgstr "Önbellekteki hava durumu verileri ve simgeler temizlensin mi?"
+
+msgid "Cache cleared"
+msgstr "Önbellek temizlendi"
+
+msgid "Weather cache cleared"
+msgstr "Hava durumu önbelleği temizlendi"
+
+msgid "No cache to clear"
+msgstr "Temizlenecek önbellek yok"
+
+# Periodic Refresh Settings
+msgid "Off"
+msgstr "Kapalı"
+
+msgid "30 minutes"
+msgstr "30 dakika"
+
+msgid "1 hour"
+msgstr "1 saat"
+
+msgid "3 hours"
+msgstr "3 saat"
+
+msgid "6 hours"
+msgstr "6 saat"
+
+msgid "12 hours"
+msgstr "12 saat"
+
+# Custom Interval Settings
+msgid "Custom…"
+msgstr "Özel..."
+
+msgid "Custom (%1)"
+msgstr "Özel (%1)"
+
+msgid "Custom refresh interval"
+msgstr "Özel yenileme aralığı"
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr "Yenileme aralığı için saat ve dakikayı ayarlayın."
+
+msgid "Hours"
+msgstr "Saat"
+
+msgid "Minutes"
+msgstr "Dakika"
+
+msgid "%1 h"
+msgstr "%1 s"
+
+msgid "%1 min"
+msgstr "%1 dk"
+
+msgid "%1 h %2 min"
+msgstr "%1 s %2 dk"
+
+# Language Settings
+msgid "Show weather on sleep screen"
+msgstr "Uyku ekranında hava durumunu göster"
+
+# Dashboard/Active Sleep Settings
+msgid "Dashboard"
+msgstr "Panel"
+
+msgid "Weather dashboard"
+msgstr "Hava durumu paneli"
+
+msgid "Dashboard (Tap to set interval)"
+msgstr "Panel (Aralığı ayarlamak için dokunun)"
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr "Hava durumunu tam ekranda gösterir ve periyodik olarak yeniler. Tüm cihazlarda çalışır. Kapatmak için ekrana dokunun. Normal uyku ekranından daha fazla pil kullanır."
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr "Panel cihazı uyanık tutar ve düzenli olarak hava durumu verilerini günceller.\nBu, panel aktifken güç tüketimini artıracaktır.\n\nDevam edilsin mi?"
+
+msgid "Active Sleep"
+msgstr "Aktif Uyku"
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr "Aktif Uyku (Aralığı ayarlamak için dokunun)"
+
+msgid "Active Sleep (Unsupported device)"
+msgstr "Aktif Uyku (Desteklenmeyen cihaz)"
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr "Aktif Uyku (Önce Wi-Fi 'Açık'ı etkinleştirin)"
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr "Aktif Uyku (Kobo deneysel - yardım için basılı tutun)"
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr "Cihaz, uyku halinden uyanarak hava durumu verilerini yeniler. Panele göre daha az güç tüketir.\n\nDesteklenen cihazlar: Kindle. Kobo (deneysel) daha fazla bilgi için README'ye bakın."
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr "Aktif uyku, cihaz kilitliyken hava durumu verilerini güncellemek için cihazı uyandırır.\nBu, cihaz kilitliyken güç tüketimini artıracaktır.\n\nDevam edilsin mi?"
+
+msgid "Lock to Start"
+msgstr "Başlatmak için kilitle"
+
+msgid "Hold to Start"
+msgstr "Başlatmak için basılı tut"
+
+msgid "Enable"
+msgstr "Etkinleştir"
+
+# Debug Settings
+msgid "Debug options enabled"
+msgstr "Hata ayıklama seçenekleri etkin"
+
+msgid "Debug options disabled"
+msgstr "Hata ayıklama seçenekleri devre dışı"
+
+# Error Messages
+msgid "API error"
+msgstr "API hatası"
+
+msgid "Unknown error"
+msgstr "Bilinmeyen hata"
+
+msgid "Failed to parse response"
+msgstr "Yanıt ayrıştırılamadı"
+
+msgid "Preserve Battery"
+msgstr "Pili Koru"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "Aktif Uyku'yu bu pil seviyesinin altında devre dışı bırak. Kapatmak için 0 yapın."
+
+# ============================================================================
+# Display Views
+# ============================================================================
+
+# Weather API (weather_api.lua)
+msgid "Today"
+msgstr "Bugün"
+
+msgid "Tomorrow"
+msgstr "Yarın"
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr "SICAKLIK"
+
+msgid "WIND"
+msgstr "RÜZGAR"
+
+msgid "HUMIDITY"
+msgstr "NEM"
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr "Sayfa %1 / %2"
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+# These are dynamically translated via _(moon_phase) in weather_utils.lua
+msgid "New Moon"
+msgstr "Yeni Ay"
+
+msgid "Waxing Crescent"
+msgstr "Büyüyen Hilal"
+
+msgid "First Quarter"
+msgstr "İlk Dördün"
+
+msgid "Waxing Gibbous"
+msgstr "Büyüyen Şişkin"
+
+msgid "Full Moon"
+msgstr "Dolunay"
+
+msgid "Waning Gibbous"
+msgstr "Küçülen Şişkin"
+
+msgid "Last Quarter"
+msgstr "Son Dördün"
+
+msgid "Third Quarter"
+msgstr "Son Dördün"
+
+msgid "Waning Crescent"
+msgstr "Küçülen Hilal"
