@@ -83,6 +83,11 @@ function WeatherLockscreen:initDefaultSettings()
         weather_periodic_refresh_dashboard = 0, -- Off by default
         weather_active_sleep_min_battery = 20,
 
+        -- Calendar settings
+        calendar_enabled = false,
+        calendar_url = "",             -- Set via calendar_url.txt file in plugin directory
+        calendar_cache_max_age = 3600, -- 1 hour
+
         -- Debug Options
         weather_debug_options = false, -- Off by default
     }
@@ -405,9 +410,28 @@ function WeatherLockscreen:createWeatherWidget()
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     logger.dbg("WeatherLockscreen: Using display style: " .. display_style)
 
+    -- Fetch calendar data if URL(s) configured
+    local calendar_data = nil
+    local calendar_urls = WeatherUtils:getCalendarUrls()
+
+    if #calendar_urls > 0 then
+        local CalendarAPI = require("calendar_api")
+        calendar_data = CalendarAPI:fetchCalendarData(calendar_urls, self.refresh)
+        if calendar_data then
+            logger.dbg("WeatherLockscreen: Calendar data fetched, events:",
+                calendar_data.events and #calendar_data.events or 0,
+                "from", calendar_data.url_count or 1, "calendar(s)")
+        else
+            logger.dbg("WeatherLockscreen: No calendar data available")
+        end
+    end
+
     -- Load appropriate display module
     local display_module
-    if display_style == "card" then
+    if display_style == "calendar" then
+        display_module = require("display_calendar")
+        return display_module:create(self, weather_data, calendar_data), fallback
+    elseif display_style == "card" then
         display_module = require("display_card")
     elseif display_style == "nightowl" then
         display_module = require("display_nightowl")

@@ -39,6 +39,9 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
         table.insert(menu_items, self:getCoverScalingMenuItem())
     end
 
+    -- Calendar settings (always shown)
+    table.insert(menu_items, self:getCalendarMenuItem(plugin_instance))
+
     table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
     table.insert(menu_items, self:getRtcModeMenuItem(plugin_instance))
     table.insert(menu_items, self:getDashboardModeMenuItem(plugin_instance))
@@ -217,8 +220,9 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
                 reading = _("Cover"),
                 retro = _("Retro Analog"),
                 nightowl = _("Night Owl"),
+                calendar = _("Calendar"),
             }
-            return T(_("Display Style (%1)"), style_names[display_style])
+            return T(_("Display Style (%1)"), style_names[display_style] or display_style)
         end,
         sub_item_table = {
             self:getDisplayStyleOption(plugin_instance, "default", _("Detailed")),
@@ -226,6 +230,7 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
             self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
             self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
             self:getDisplayStyleOption(plugin_instance, "reading", _("Cover")),
+            self:getDisplayStyleOption(plugin_instance, "calendar", _("Calendar")),
         },
     }
 end
@@ -393,6 +398,90 @@ function WeatherMenu:getCoverScalingMenuItem()
     }
 end
 
+function WeatherMenu:getCalendarMenuItem(plugin_instance)
+    return {
+        text_func = function()
+            local urls = WeatherUtils:getCalendarUrls()
+            if #urls > 1 then
+                return T(_("Calendar (%1 calendars)"), #urls)
+            elseif #urls == 1 then
+                return _("Calendar (Configured)")
+            else
+                return _("Calendar (Not configured)")
+            end
+        end,
+        sub_item_table = {
+            {
+                text_func = function()
+                    local settings_url = G_reader_settings:readSetting("calendar_url") or ""
+                    local file_urls = WeatherUtils:readCalendarUrlsFromFile()
+
+                    if settings_url ~= "" then
+                        -- Single URL from settings
+                        local display_url = settings_url
+                        if #display_url > 25 then
+                            display_url = display_url:sub(1, 22) .. "..."
+                        end
+                        return T(_("Calendar URL (%1)"), display_url)
+                    elseif file_urls and #file_urls > 0 then
+                        -- URLs from file
+                        if #file_urls == 1 then
+                            local display_url = file_urls[1]
+                            if #display_url > 20 then
+                                display_url = display_url:sub(1, 17) .. "..."
+                            end
+                            return T(_("Calendar URL (%1) [file]"), display_url)
+                        else
+                            return T(_("Calendar URLs (%1 calendars) [file]"), #file_urls)
+                        end
+                    else
+                        return _("Calendar URL (not set)")
+                    end
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    local current_url = G_reader_settings:readSetting("calendar_url") or ""
+                    local input
+                    input = InputDialog:new {
+                        title = _("Calendar URL"),
+                        input = current_url,
+                        input_hint = "https://calendar.google.com/calendar/ical/...",
+                        input_type = "string",
+                        description = _("Enter the ICS calendar URL. For multiple calendars, add URLs to calendar_url.txt (one per line)."),
+                        buttons = {
+                            {
+                                {
+                                    text = _("Cancel"),
+                                    callback = function()
+                                        UIManager:close(input)
+                                    end,
+                                },
+                                {
+                                    text = _("Save"),
+                                    is_enter_default = true,
+                                    callback = function()
+                                        local url = input:getInputValue()
+                                        UIManager:close(input)
+                                        G_reader_settings:saveSetting("calendar_url", url)
+                                        G_reader_settings:flush()
+                                        -- Clear cache when URL changes
+                                        local CalendarAPI = require("calendar_api")
+                                        CalendarAPI:clearCache()
+                                        touchmenu_instance:updateItems()
+                                    end,
+                                },
+                            }
+                        },
+                    }
+                    UIManager:show(input)
+                    input:onShowKeyboard()
+                end,
+            },
+        },
+        separator = true,
+    }
+end
+
 function WeatherMenu:getCacheMenuItem(plugin_instance)
     local sub_items = {}
 
@@ -466,10 +555,13 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
         callback = function()
             local ConfirmBox = require("ui/widget/confirmbox")
             UIManager:show(ConfirmBox:new {
-                text = _("Clear cached weather data and icons?"),
+                text = _("Clear cached weather and calendar data?"),
                 ok_text = _("Delete"),
                 ok_callback = function()
-                    if WeatherUtils:clearCache() then
+                    local weather_cleared = WeatherUtils:clearCache()
+                    local CalendarAPI = require("calendar_api")
+                    local calendar_cleared = CalendarAPI:clearCache()
+                    if weather_cleared or calendar_cleared then
                         UIManager:show(require("ui/widget/notification"):new {
                             text = _("Cache cleared"),
                         })

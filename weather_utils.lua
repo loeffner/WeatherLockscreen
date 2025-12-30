@@ -16,6 +16,56 @@ function WeatherUtils:getTempScale()
     return G_reader_settings:readSetting("weather_temp_scale") or "C"
 end
 
+-- Read calendar URL from config file (easier than typing on e-reader)
+-- Returns first non-empty URL for backward compatibility
+function WeatherUtils:readCalendarUrlFromFile()
+    local urls = self:readCalendarUrlsFromFile()
+    return urls and urls[1] or nil
+end
+
+-- Read all calendar URLs from config file (one URL per line)
+function WeatherUtils:readCalendarUrlsFromFile()
+    local plugin_dir = self:getPluginDir()
+    local config_file = plugin_dir .. "/calendar_url.txt"
+    local file = io.open(config_file, "r")
+    if file then
+        local urls = {}
+        for line in file:lines() do
+            local url = line:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+            -- Skip empty lines and comments (lines starting with #)
+            if url ~= "" and not url:match("^#") then
+                table.insert(urls, url)
+            end
+        end
+        file:close()
+        if #urls > 0 then
+            return urls
+        end
+    end
+    return nil
+end
+
+-- Get effective calendar URL (from settings or config file)
+-- Returns single URL for backward compatibility
+function WeatherUtils:getCalendarUrl()
+    local url = G_reader_settings:readSetting("calendar_url") or ""
+    if url == "" then
+        url = self:readCalendarUrlFromFile() or ""
+    end
+    return url
+end
+
+-- Get all effective calendar URLs
+function WeatherUtils:getCalendarUrls()
+    local url = G_reader_settings:readSetting("calendar_url") or ""
+    if url ~= "" then
+        -- Single URL from settings takes precedence
+        return { url }
+    end
+    -- Otherwise return all URLs from file
+    return self:readCalendarUrlsFromFile() or {}
+end
+
 -- Format temperature from weather data based on user settings
 function WeatherUtils:formatTemp(temp_c, temp_f, with_unit)
     if not temp_c or not temp_f then
@@ -59,6 +109,34 @@ function WeatherUtils:getForecastHighLow(day_data)
         return day_data.high_c .. "° / " .. day_data.low_c .. "°"
     else
         return day_data.high_f .. "° / " .. day_data.low_f .. "°"
+    end
+end
+
+-- Get forecast high temperature formatted
+function WeatherUtils:getForecastHigh(day_data)
+    if not day_data or not day_data.high_c then
+        return nil
+    end
+
+    local temp_scale = self:getTempScale()
+    if temp_scale == "C" then
+        return day_data.high_c .. "°"
+    else
+        return day_data.high_f .. "°"
+    end
+end
+
+-- Get forecast low temperature formatted
+function WeatherUtils:getForecastLow(day_data)
+    if not day_data or not day_data.low_c then
+        return nil
+    end
+
+    local temp_scale = self:getTempScale()
+    if temp_scale == "C" then
+        return day_data.low_c .. "°"
+    else
+        return day_data.low_f .. "°"
     end
 end
 

@@ -21,3 +21,6 @@ tmp_*
 
 # Development notes
 changes.md
+
+# Settings files
+calendar_url.txt

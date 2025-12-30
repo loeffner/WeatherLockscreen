@@ -20,6 +20,7 @@ mkdir -p "$PLUGIN_DIR"
 rsync -av --exclude='.git' \
           --exclude='.gitignore' \
           --exclude='.github' \
+          --exclude='.vscode' \
           --exclude='resources' \
           --exclude='*.zip' \
           --exclude='*.log' \
