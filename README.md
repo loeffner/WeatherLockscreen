@@ -154,6 +154,7 @@ The plugin supports multiple languages through a hybrid localization approach:
 **Fully Translated Languages:**
 - 🇩🇪 German (de) - Complete
 - 🇪🇸 Spanish (es) - Complete by @jeubm
+- 🇹🇷 Turkish (tr) - Complete by @omer-faruq
 
 **English (en)** - Default language (no translation needed)
 
