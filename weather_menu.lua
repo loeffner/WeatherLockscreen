@@ -39,7 +39,12 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
         table.insert(menu_items, self:getCoverScalingMenuItem())
     end
 
-    -- Calendar settings (always shown)
+    -- Calendar settings (shown when calendar display is selected)
+    if display_style == "calendar" or display_style == "calendar_agenda" then
+        table.insert(menu_items, self:getPastEventsMenuItem())
+    end
+
+    -- Calendar URL settings (always shown)
     table.insert(menu_items, self:getCalendarMenuItem(plugin_instance))
 
     table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
@@ -220,17 +225,27 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
                 reading = _("Cover"),
                 retro = _("Retro Analog"),
                 nightowl = _("Night Owl"),
-                calendar = _("Calendar"),
+                calendar = _("Today"),
             }
             return T(_("Display Style (%1)"), style_names[display_style] or display_style)
         end,
         sub_item_table = {
-            self:getDisplayStyleOption(plugin_instance, "default", _("Detailed")),
-            self:getDisplayStyleOption(plugin_instance, "card", _("Minimal")),
-            self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
-            self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
-            self:getDisplayStyleOption(plugin_instance, "reading", _("Cover")),
-            self:getDisplayStyleOption(plugin_instance, "calendar", _("Calendar")),
+            {
+                text = _("Weather Displays"),
+                sub_item_table = {
+                    self:getDisplayStyleOption(plugin_instance, "default", _("Detailed")),
+                    self:getDisplayStyleOption(plugin_instance, "card", _("Minimal")),
+                    self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
+                    self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
+                    self:getDisplayStyleOption(plugin_instance, "reading", _("Cover")),
+                },
+            },
+            {
+                text = _("Calendar Displays"),
+                sub_item_table = {
+                    self:getDisplayStyleOption(plugin_instance, "calendar", _("Today")),
+                },
+            },
         },
     }
 end
@@ -390,6 +405,59 @@ function WeatherMenu:getCoverScalingMenuItem()
                     G_reader_settings:saveSetting("weather_cover_scaling", "zoom")
                     G_reader_settings:flush()
                     logger.dbg("WeatherLockscreen: Saved cover scaling: zoom")
+                    touchmenu_instance:updateItems()
+                end,
+            },
+        },
+        separator = true,
+    }
+end
+
+function WeatherMenu:getPastEventsMenuItem()
+    return {
+        text_func = function()
+            local mode = G_reader_settings:readSetting("calendar_past_events") or "fade"
+            local mode_names = {
+                show = _("Show"),
+                fade = _("Fade"),
+                hide = _("Hide"),
+            }
+            return T(_("Past Events (%1)"), mode_names[mode] or mode)
+        end,
+        sub_item_table = {
+            {
+                text = _("Show normally"),
+                checked_func = function()
+                    return (G_reader_settings:readSetting("calendar_past_events") or "fade") == "show"
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("calendar_past_events", "show")
+                    G_reader_settings:flush()
+                    touchmenu_instance:updateItems()
+                end,
+            },
+            {
+                text = _("Fade (gray out)"),
+                checked_func = function()
+                    return (G_reader_settings:readSetting("calendar_past_events") or "fade") == "fade"
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("calendar_past_events", "fade")
+                    G_reader_settings:flush()
+                    touchmenu_instance:updateItems()
+                end,
+            },
+            {
+                text = _("Hide completely"),
+                checked_func = function()
+                    return (G_reader_settings:readSetting("calendar_past_events") or "fade") == "hide"
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("calendar_past_events", "hide")
+                    G_reader_settings:flush()
                     touchmenu_instance:updateItems()
                 end,
             },

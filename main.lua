@@ -431,6 +431,9 @@ function WeatherLockscreen:createWeatherWidget()
     if display_style == "calendar" then
         display_module = require("display_calendar")
         return display_module:create(self, weather_data, calendar_data), fallback
+    elseif display_style == "calendar_agenda" then
+        display_module = require("display_calendar_agenda")
+        return display_module:create(self, weather_data, calendar_data), fallback
     elseif display_style == "card" then
         display_module = require("display_card")
     elseif display_style == "nightowl" then
