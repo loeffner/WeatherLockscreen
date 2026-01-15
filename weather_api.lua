@@ -134,13 +134,13 @@ function WeatherAPI:processWeatherData(result)
 
     local current_data = {
         icon_path = icon_path,
-        temp_c = math.floor(result.current.temp_c),
-        temp_f = math.floor(result.current.temp_f),
+        temp_c = math.floor(result.current.temp_c + 0.5),
+        temp_f = math.floor(result.current.temp_f + 0.5),
         condition = condition,
         location = result.location and result.location.name or nil,
         timestamp = result.location and result.location.localtime or os.date("%Y-%m-%d %H:%M"),
-        feelslike_c = math.floor(result.current.feelslike_c),
-        feelslike_f = math.floor(result.current.feelslike_f),
+        feelslike_c = math.floor(result.current.feelslike_c + 0.5),
+        feelslike_f = math.floor(result.current.feelslike_f + 0.5),
         humidity = result.current.humidity and (result.current.humidity .. "%") or nil,
         wind = result.current.wind_kph and (math.floor(result.current.wind_kph) .. " km/h") or nil,
         wind_dir = result.current.wind_dir or nil,
@@ -176,8 +176,8 @@ function WeatherAPI:processWeatherData(result)
                         hour = WeatherUtils:formatHourLabel(hour, twelve_hour_clock),
                         hour_num = hour,
                         icon_path = h_icon_path,
-                        temp_c = math.floor(hour_data.temp_c),
-                        temp_f = math.floor(hour_data.temp_f),
+                        temp_c = math.floor(hour_data.temp_c + 0.5),
+                        temp_f = math.floor(hour_data.temp_f + 0.5),
                         condition = hour_data.condition.text,
                     })
                 end
@@ -195,8 +195,8 @@ function WeatherAPI:processWeatherData(result)
                         hour = WeatherUtils:formatHourLabel(hour, twelve_hour_clock),
                         hour_num = hour,
                         icon_path = h_icon_path,
-                        temp_c = math.floor(hour_data.temp_c),
-                        temp_f = math.floor(hour_data.temp_f),
+                        temp_c = math.floor(hour_data.temp_c + 0.5),
+                        temp_f = math.floor(hour_data.temp_f + 0.5),
                         condition = hour_data.condition.text,
                     })
                 end
@@ -234,10 +234,10 @@ function WeatherAPI:processWeatherData(result)
                 table.insert(forecast_days, {
                     day_name = day_name,
                     icon_path = self:getIconPath(day_data.day.condition.icon),
-                    high_c = math.floor(day_data.day.maxtemp_c),
-                    high_f = math.floor(day_data.day.maxtemp_f),
-                    low_c = math.floor(day_data.day.mintemp_c),
-                    low_f = math.floor(day_data.day.mintemp_f),
+                    high_c = math.floor(day_data.day.maxtemp_c + 0.5),
+                    high_f = math.floor(day_data.day.maxtemp_f + 0.5),
+                    low_c = math.floor(day_data.day.mintemp_c + 0.5),
+                    low_f = math.floor(day_data.day.mintemp_f + 0.5),
                     condition = day_data.day.condition.text,
                 })
             end
