@@ -213,6 +213,7 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
             local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
             local style_names = {
                 default = _("Detailed"),
+                day = _("Day"),
                 card = _("Minimal"),
                 reading = _("Cover"),
                 retro = _("Retro Analog"),
@@ -222,6 +223,7 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
         end,
         sub_item_table = {
             self:getDisplayStyleOption(plugin_instance, "default", _("Detailed")),
+            self:getDisplayStyleOption(plugin_instance, "day", _("Day")),
             self:getDisplayStyleOption(plugin_instance, "card", _("Minimal")),
             self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
             self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
