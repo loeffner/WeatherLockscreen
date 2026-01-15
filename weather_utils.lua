@@ -40,6 +40,15 @@ function WeatherUtils:getCurrentTemp(weather_data, with_unit)
     return self:formatTemp(weather_data.current.temp_c, weather_data.current.temp_f, with_unit)
 end
 
+-- Get current "feels like" temperature formatted
+function WeatherUtils:getCurrentTempFeelsLike(weather_data, with_unit)
+    if not weather_data or not weather_data.current then
+        return nil
+    end
+    return "(feels like " .. self:formatTemp(weather_data.current.feelslike_c, weather_data.current.feelslike_f, with_unit) .. ")"
+end
+
+
 -- Get hourly temperature formatted
 function WeatherUtils:getHourlyTemp(hour_data, with_unit)
     if not hour_data then
@@ -705,6 +714,8 @@ function WeatherUtils:koLangAsWeatherAPILang()
 end
 
 WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
+WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For detailed display
+
 
 -- Static KOReader to WeatherAPI language code mapping
 WeatherUtils.lang_map = {

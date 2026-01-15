@@ -409,6 +409,8 @@ function WeatherLockscreen:createWeatherWidget()
     local display_module
     if display_style == "card" then
         display_module = require("display_card")
+    elseif display_style == "day" then
+        display_module = require("display_day")
     elseif display_style == "nightowl" then
         display_module = require("display_nightowl")
     elseif display_style == "retro" then
