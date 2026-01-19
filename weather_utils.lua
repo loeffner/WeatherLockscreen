@@ -8,6 +8,7 @@ local logger = require("logger")
 local ffiUtil = require("ffi/util")
 local util = require("util")
 local _ = require("l10n/gettext")
+local T = require("ffi/util").template
 
 local WeatherUtils = {}
 
@@ -45,9 +46,9 @@ function WeatherUtils:getCurrentTempFeelsLike(weather_data, with_unit)
     if not weather_data or not weather_data.current then
         return nil
     end
-    return "(feels like " .. self:formatTemp(weather_data.current.feelslike_c, weather_data.current.feelslike_f, with_unit) .. ")"
+    return T(_("(feels like %1)"),
+        self:formatTemp(weather_data.current.feelslike_c, weather_data.current.feelslike_f, with_unit))
 end
-
 
 -- Get hourly temperature formatted
 function WeatherUtils:getHourlyTemp(hour_data, with_unit)
@@ -713,7 +714,7 @@ function WeatherUtils:koLangAsWeatherAPILang()
     return WeatherUtils.lang_map[lang_locale] or "en"
 end
 
-WeatherUtils.target_hours = { 6, 12, 18 } -- For basic display
+WeatherUtils.target_hours = { 6, 12, 18 }                -- For basic display
 WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For detailed display
 
 

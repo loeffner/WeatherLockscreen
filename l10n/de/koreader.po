@@ -70,11 +70,14 @@ msgstr "Löschen"
 msgid "Display Style (%1)"
 msgstr "Anzeigestil (%1)"
 
-msgid "Detailed"
-msgstr "Details"
+msgid "Today & Tomorrow"
+msgstr "Heute & Morgen"
 
-msgid "Minimal"
-msgstr "Minimal"
+msgid "Today"
+msgstr "Heute"
+
+msgid "Current"
+msgstr "Aktuell"
 
 msgid "Night Owl"
 msgstr "Night Owl"
@@ -94,6 +97,10 @@ msgstr "Celsius"
 
 msgid "Fahrenheit"
 msgstr "Fahrenheit"
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
+msgstr "(gefühlt %1)"
 
 # Display Settings
 msgid "Show header"
@@ -304,8 +311,7 @@ msgstr "Fällt der Akkustand unter dieses Level wird 'Aktiver Schlaf' deaktivier
 # ==============================================================================
 
 # Weather API (weather_api.lua)
-msgid "Today"
-msgstr "Heute"
+# Note: "Today" is defined in Display Style Settings section above
 
 msgid "Tomorrow"
 msgstr "Morgen"

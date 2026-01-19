@@ -74,11 +74,14 @@ msgstr "Eliminar"
 msgid "Display Style (%1)"
 msgstr "Estilo de visualización (%1)"
 
-msgid "Detailed"
-msgstr "Detallado"
+msgid "Today & Tomorrow"
+msgstr "Hoy y Mañana"
 
-msgid "Minimal"
-msgstr "Minimalista"
+msgid "Today"
+msgstr "Hoy"
+
+msgid "Current"
+msgstr "Actual"
 
 msgid "Night Owl"
 msgstr "Night Owl"
@@ -98,6 +101,10 @@ msgstr "Celsius"
 
 msgid "Fahrenheit"
 msgstr "Fahrenheit"
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
+msgstr "(sensación de %1)"
 
 # Display Settings
 msgid "Show header"
@@ -308,8 +315,7 @@ msgstr "Desactiva la suspensión activa cuando la batería esté por debajo de e
 # ==============================================================================
 
 # Weather API (weather_api.lua)
-msgid "Today"
-msgstr "Hoy"
+# Note: "Today" is defined in Display Style Settings section above
 
 msgid "Tomorrow"
 msgstr "Mañana"

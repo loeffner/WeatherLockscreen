@@ -73,11 +73,14 @@ msgstr "Sil"
 msgid "Display Style (%1)"
 msgstr "Görüntüleme stili (%1)"
 
-msgid "Detailed"
-msgstr "Ayrıntılı"
+msgid "Today & Tomorrow"
+msgstr "Bugün ve Yarın"
 
-msgid "Minimal"
-msgstr "Minimal"
+msgid "Today"
+msgstr "Bugün"
+
+msgid "Current"
+msgstr "Şu an"
 
 msgid "Night Owl"
 msgstr "Gece Baykuşu"
@@ -97,6 +100,10 @@ msgstr "Santigrat"
 
 msgid "Fahrenheit"
 msgstr "Fahrenheit"
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
+msgstr "(hissedilen %1)"
 
 # Display Settings
 msgid "Show header"
@@ -307,8 +314,7 @@ msgstr "Aktif Uyku'yu bu pil seviyesinin altında devre dışı bırak. Kapatmak
 # ============================================================================
 
 # Weather API (weather_api.lua)
-msgid "Today"
-msgstr "Bugün"
+# Note: "Today" is defined in Display Style Settings section above
 
 msgid "Tomorrow"
 msgstr "Yarın"
