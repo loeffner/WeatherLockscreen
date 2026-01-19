@@ -35,7 +35,7 @@ function DayDisplay:create(weather_lockscreen, weather_data)
     local base_hour_font_size = 24
     local base_vertical_spacing = 30
     local base_horizontal_spacing = 20
-    local header_font_size = 30
+    local header_font_size = Screen:scaleBySize(20)
     local header_margin = 10
 
     -- Header: Location and Timestamp
