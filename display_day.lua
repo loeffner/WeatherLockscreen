@@ -1,6 +1,6 @@
 --[[
     Day Display Mode for Weather Lockscreen
-    Shows detailed weather with hourly forecasts
+    Day-focused display with expanded hourly forecasts and feels-like temperature
 --]]
 
 local ImageWidget = require("ui/widget/imagewidget")
@@ -29,9 +29,7 @@ function DayDisplay:create(weather_lockscreen, weather_data)
     local base_hourly_icon_size = 120
     local base_temp_font_size = 48
     local base_temp_feels_like_font_size = 30
-    local base_date_font_size = 20
     local base_condition_font_size = 36
-    local base_label_font_size = 30
     local base_hour_font_size = 24
     local base_vertical_spacing = 30
     local base_horizontal_spacing = 20
@@ -49,9 +47,7 @@ function DayDisplay:create(weather_lockscreen, weather_data)
         local hourly_icon_size = math.floor(base_hourly_icon_size * scale_factor)
         local temp_font_size = math.floor(base_temp_font_size * scale_factor)
         local temp_feels_like_font_size = math.floor(base_temp_feels_like_font_size * scale_factor)
-        local date_font_size = math.floor(base_date_font_size * scale_factor)
         local condition_font_size = math.floor(base_condition_font_size * scale_factor)
-        local label_font_size = math.floor(base_label_font_size * scale_factor)
         local hour_font_size = math.floor(base_hour_font_size * scale_factor)
         local vertical_spacing = math.floor(base_vertical_spacing * scale_factor)
         local horizontal_spacing = math.floor(base_horizontal_spacing * scale_factor)
@@ -62,14 +58,15 @@ function DayDisplay:create(weather_lockscreen, weather_data)
         local current_widgets = {}
 
         -- Icon
-        local icon_widget = ImageWidget:new {
-            file = weather_data.current.icon_path,
-            width = current_icon_size,
-            height = current_icon_size,
-            alpha = true,
-            original_in_nightmode = false
-        }
-        table.insert(current_widgets, icon_widget)
+        if weather_data.current.icon_path then
+            table.insert(current_widgets, ImageWidget:new {
+                file = weather_data.current.icon_path,
+                width = current_icon_size,
+                height = current_icon_size,
+                alpha = true,
+                original_in_nightmode = false
+            })
+        end
 
         -- Temperature
         table.insert(current_widgets, TextWidget:new {
@@ -79,13 +76,10 @@ function DayDisplay:create(weather_lockscreen, weather_data)
         })
 
         -- Temperature Feels Like
-        table.insert(current_widgets, TextWidget:new{
-            -- text =  "(feels like " .. WeatherUtils:getCurrentTempFeelsLike(weather_data) .. ")",
-            text =  WeatherUtils:getCurrentTempFeelsLike(weather_data),
+        table.insert(current_widgets, TextWidget:new {
+            text = WeatherUtils:getCurrentTempFeelsLike(weather_data),
             face = Font:getFace("cfont", temp_feels_like_font_size),
-            bold = false,
         })
-
 
         if weather_data.current.condition then
             table.insert(current_widgets, TextWidget:new {
@@ -103,12 +97,6 @@ function DayDisplay:create(weather_lockscreen, weather_data)
 
         -- Today's hourly forecast
         if weather_data.hourly_today_all and #weather_data.hourly_today_all > 0 then
-            -- table.insert(widgets, TextWidget:new {
-            --     text = _("Today"),
-            --     face = Font:getFace("cfont", label_font_size),
-            --     bold = true,
-            -- })
-
             local today_row = {}
             for i = 1, #weather_data.hourly_today_all do
                 local hour_data = weather_data.hourly_today_all[i]
@@ -161,8 +149,6 @@ function DayDisplay:create(weather_lockscreen, weather_data)
 
             table.insert(widgets, VerticalSpan:new { width = vertical_spacing })
         end
-
-
 
         return VerticalGroup:new {
             align = "center",
