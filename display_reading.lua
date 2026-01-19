@@ -95,7 +95,8 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     local screen_height = Screen:getHeight()
 
     -- Get user fill percent (default 90)
-    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
+    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and
+    tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
     local min_fill = math.max(50, fill_percent - 5)
     local max_fill = math.min(100, fill_percent + 5)
 
@@ -116,7 +117,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     local base_small_spacing = 10
 
     -- Fixed header sizes
-    local header_font_size = 16
+    local header_font_size = Screen:scaleBySize(20)
     local header_margin = 10
 
     -- Get document information
@@ -317,11 +318,11 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         local page_text = ""
         if doc_info.page_no and doc_info.page_total then
             page_text = T(_("Page %1 of %2"), doc_info.page_no, doc_info.page_total)
-        table.insert(bottom_row, TextWidget:new{
+            table.insert(bottom_row, TextWidget:new {
                 text = page_text,
                 face = Font:getFace("cfont", progress_font_size),
                 fgcolor = Blitbuffer.COLOR_DARK_GRAY,
-        })
+            })
         end
 
         -- Spacer to push right content to the right

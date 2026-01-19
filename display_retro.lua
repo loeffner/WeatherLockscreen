@@ -32,7 +32,7 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
     local base_arrow_size = 100
     local base_spacing = 40
     local base_small_spacing = 16
-    local header_font_size = 16
+    local header_font_size = Screen:scaleBySize(20)
     local header_margin = 10
     local top_bottom_margin = 100
 

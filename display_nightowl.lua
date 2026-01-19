@@ -20,7 +20,7 @@ local DisplayHelper = require("display_helper")
 local NightOwlDisplay = {}
 
 function NightOwlDisplay:create(weather_lockscreen, weather_data)
-    local header_font_size = Screen:scaleBySize(16)
+    local header_font_size = Screen:scaleBySize(20)
     local moon_font_size = Screen:scaleBySize(22)
     local moon_icon_size = Screen:scaleBySize(250)
     local header_margin = Screen:scaleBySize(10)
@@ -33,9 +33,9 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
         local moon_icon_path = WeatherUtils:getMoonPhaseIcon(weather_data.astronomy.moon_phase)
         if moon_icon_path then
-            moon_icon_widget = CenterContainer:new{
+            moon_icon_widget = CenterContainer:new {
                 dimen = Screen:getSize(),
-                ImageWidget:new{
+                ImageWidget:new {
                     file = moon_icon_path,
                     width = moon_icon_size,
                     height = moon_icon_size,
@@ -51,14 +51,14 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     if weather_data.astronomy and weather_data.astronomy.moon_phase then
         local bottom_margin = Screen:scaleBySize(30)
         local translated_phase = WeatherUtils:translateMoonPhase(weather_data.astronomy.moon_phase)
-        bottom_text_widget = FrameContainer:new{
+        bottom_text_widget = FrameContainer:new {
             padding = 0,
             margin = 0,
             bordersize = 0,
             background = Blitbuffer.COLOR_BLACK,
-            CenterContainer:new{
+            CenterContainer:new {
                 dimen = { w = Screen:getWidth(), h = moon_font_size + bottom_margin * 2 },
-                TextWidget:new{
+                TextWidget:new {
                     text = translated_phase,
                     face = Font:getFace("cfont", moon_font_size),
                     bold = true,
@@ -75,17 +75,17 @@ function NightOwlDisplay:create(weather_lockscreen, weather_data)
     end
     table.insert(content_layers, header_group)
     if bottom_text_widget then
-        table.insert(content_layers, RightContainer:new{
+        table.insert(content_layers, RightContainer:new {
             dimen = Screen:getSize(),
             ignore = "height",
-            BottomContainer:new{
+            BottomContainer:new {
                 dimen = Screen:getSize(),
                 bottom_text_widget,
             }
         })
     end
 
-    return OverlapGroup:new{
+    return OverlapGroup:new {
         dimen = Screen:getSize(),
         unpack(content_layers)
     }

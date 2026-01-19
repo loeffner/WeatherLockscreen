@@ -25,7 +25,7 @@ function CardDisplay:create(weather_lockscreen, weather_data)
     local base_condition_font_size = 28
     local base_detail_font_size = 22
     local base_spacing = 25
-    local header_font_size = 16
+    local header_font_size = Screen:scaleBySize(20)
     local header_margin = 10
     local top_bottom_margin = 50
 
@@ -45,39 +45,39 @@ function CardDisplay:create(weather_lockscreen, weather_data)
 
         -- Weather icon
         if weather_data.current.icon_path then
-            table.insert(widgets, ImageWidget:new{
+            table.insert(widgets, ImageWidget:new {
                 file = weather_data.current.icon_path,
                 width = icon_size,
                 height = icon_size,
                 alpha = true,
                 original_in_nightmode = false
             })
-            table.insert(widgets, VerticalSpan:new{ width = spacing })
+            table.insert(widgets, VerticalSpan:new { width = spacing })
         end
 
         -- Temperature
-        table.insert(widgets, TextWidget:new{
+        table.insert(widgets, TextWidget:new {
             text = WeatherUtils:getCurrentTemp(weather_data),
             face = Font:getFace("cfont", temp_font_size),
             bold = true,
         })
-        table.insert(widgets, VerticalSpan:new{ width = math.floor(spacing * 0.3) })
+        table.insert(widgets, VerticalSpan:new { width = math.floor(spacing * 0.3) })
 
         -- Condition
-        table.insert(widgets, TextWidget:new{
+        table.insert(widgets, TextWidget:new {
             text = weather_data.current.condition,
             face = Font:getFace("cfont", condition_font_size),
         })
-        table.insert(widgets, VerticalSpan:new{ width = spacing })
+        table.insert(widgets, VerticalSpan:new { width = spacing })
 
         -- High/Low if available
-        table.insert(widgets, TextWidget:new{
+        table.insert(widgets, TextWidget:new {
             text = WeatherUtils:getForecastHighLow(weather_data.forecast_days[1]),
             face = Font:getFace("cfont", detail_font_size),
             fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         })
 
-        return VerticalGroup:new{
+        return VerticalGroup:new {
             align = "center",
             unpack(widgets)
         }
@@ -114,12 +114,12 @@ function CardDisplay:create(weather_lockscreen, weather_data)
         weather_group = buildCardContent(content_scale)
     end
 
-    local main_content = CenterContainer:new{
+    local main_content = CenterContainer:new {
         dimen = Screen:getSize(),
         weather_group,
     }
 
-    return OverlapGroup:new{
+    return OverlapGroup:new {
         dimen = Screen:getSize(),
         main_content,
         header_group,
