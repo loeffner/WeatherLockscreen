@@ -75,10 +75,13 @@ msgstr ""
 msgid "Display Style (%1)"
 msgstr ""
 
-msgid "Detailed"
+msgid "Today & Tomorrow"
 msgstr ""
 
-msgid "Minimal"
+msgid "Today"
+msgstr ""
+
+msgid "Current"
 msgstr ""
 
 msgid "Night Owl"
@@ -98,6 +101,10 @@ msgid "Celsius"
 msgstr ""
 
 msgid "Fahrenheit"
+msgstr ""
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
 msgstr ""
 
 # Display Settings
@@ -309,8 +316,7 @@ msgstr ""
 # ==============================================================================
 
 # Weather API (weather_api.lua)
-msgid "Today"
-msgstr ""
+# Note: "Today" is defined in Display Style Settings section above
 
 msgid "Tomorrow"
 msgstr ""
