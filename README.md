@@ -71,43 +71,89 @@ The plugin offers several display formats to customize your lockscreen:
 <table>
   <tr>
     <td align="center">
-      <strong>Detail Display</strong><br>
-      <img src="resources/detail.jpg" width="300">
+      <strong>Today & Tomorrow</strong><br>
+      <img src="resources/today_tomorrow.jpg" width="300">
     </td>
     <td align="center">
-      <strong>Minimal Display</strong><br>
-      <img src="resources/minimal.jpg" width="300">
+      <strong>Today</strong><br>
+      <img src="resources/today.jpg" width="300">
     </td>
   </tr>
   <tr>
       <td align="center">
-      <strong>Cover Display</strong><br>
-      <img src="resources/cover.jpg" width="300">
+      <strong>Current</strong><br>
+      <img src="resources/current.jpg" width="300">
     </td>
     <td align="center">
-      <strong>Retro Analog Display</strong><br>
+      <strong>Retro Analog</strong><br>
       <img src="resources/retro_analog.jpg" width="300">
     </td>
   </tr>
   <tr>
+      <td align="center">
+      <strong>Cover (Dark)</strong><br>
+      <img src="resources/cover_dark.jpg" width="300">
+    </td>
     <td align="center">
-      <strong>Night Owl Display</strong><br>
+      <strong>Cover (Light)</strong><br>
+      <img src="resources/cover_light.jpg" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Night Owl</strong><br>
       <img src="resources/night_owl.jpg" width="300">
     </td>
     <td></td>
   </tr>
 </table>
 
+<details>
+
+<summary>Old display modes (v0.9.5-beta.1 and earlier)</summary>
+
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Detail Display</strong><br>
+      <img src="resources/old_detail.jpg" width="300">
+    </td>
+    <td align="center">
+      <strong>Minimal Display</strong><br>
+      <img src="resources/old_minimal.jpg" width="300">
+    </td>
+  </tr>
+  <tr>
+      <td align="center">
+      <strong>Cover Display</strong><br>
+      <img src="resources/old_cover.jpg" width="300">
+    </td>
+    <td align="center">
+      <strong>Retro Analog Display</strong><br>
+      <img src="resources/old_retro_analog.jpg" width="300">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Night Owl Display</strong><br>
+      <img src="resources/old_night_owl.jpg" width="300">
+    </td>
+    <td></td>
+  </tr>
+</table>
+</details>
+
 ## Active Sleep and Dashboard
 
-### Active Sleep (Kindle Only)
+### Active Sleep (Kindle & Kobo Only)
 Since version 0.9.4, the plugin supports updating weather data while the device is locked and sleeping.
 To enable this feature:
 1. Go to the plugin settings via <b>Tools &gt; Weather Lockscreen</b>
 2. Enable the <b>"Active Sleep"</b> option by setting an interval.
 
 #### Additional requirements:
-- Only supported on Kindle devices.
+- Only supported on Kindle & Kobo devices.
 - `Settings > Network > "Action when Wi-Fi is off"` must be set to `Turn on`.
 
 #### How it works:
@@ -226,13 +272,10 @@ You can customize the fallback sun/moon icons:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Work in Progress for 0.9.4
+## Work in Progress for 0.9.6
 <details>
 <summary>Done</summary>
 
-
-- Periodically refresh the lockscreen (its not easy, let me tell you that!)
-- Attempt connecting to wifi: See #1
 </details>
 
 <details>
@@ -242,7 +285,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 <details>
 <summary>Backlog</summary>
 
-- More display modes: I am always open for requests.
+- A landscape display mode
 - A transparent display mode (either transparent image over weather or transparent weather over image)
 - Fallback: A more configurable fallback, when no weather data is available.
 </details>
