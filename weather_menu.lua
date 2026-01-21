@@ -390,6 +390,20 @@ function WeatherMenu:getCoverScalingMenuItem()
                     touchmenu_instance:updateItems()
                 end,
             },
+            {
+                text = _("Stretch to fill"),
+                checked_func = function()
+                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
+                    return cover_scaling == "stretch"
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    G_reader_settings:saveSetting("weather_cover_scaling", "stretch")
+                    G_reader_settings:flush()
+                    logger.dbg("WeatherLockscreen: Saved cover scaling: stretch")
+                    touchmenu_instance:updateItems()
+                end,
+            },
         },
         separator = true,
     }

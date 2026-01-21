@@ -96,7 +96,7 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
 
     -- Get user fill percent (default 90)
     local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and
-    tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
+        tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
     local min_fill = math.max(50, fill_percent - 5)
     local max_fill = math.min(100, fill_percent + 5)
 
@@ -141,17 +141,22 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
 
         -- Scale cover based on preference
-        local scale
-        if cover_scaling == "zoom" then
-            -- Zoom to fill screen (may crop)
-            scale = math.max(screen_width / cover_width, screen_height / cover_height)
+        local scaled_w, scaled_h
+        if cover_scaling == "stretch" then
+            -- Stretch to fill screen exactly (ignores aspect ratio)
+            scaled_w = screen_width
+            scaled_h = screen_height
+        elseif cover_scaling == "zoom" then
+            -- Zoom to fill screen (may crop, preserves aspect ratio)
+            local scale = math.max(screen_width / cover_width, screen_height / cover_height)
+            scaled_w = math.floor(cover_width * scale)
+            scaled_h = math.floor(cover_height * scale)
         else
-            -- Fit to screen (no cropping)
-            scale = math.min(screen_width / cover_width, screen_height / cover_height)
+            -- Fit to screen (no cropping, preserves aspect ratio)
+            local scale = math.min(screen_width / cover_width, screen_height / cover_height)
+            scaled_w = math.floor(cover_width * scale)
+            scaled_h = math.floor(cover_height * scale)
         end
-
-        local scaled_w = math.floor(cover_width * scale)
-        local scaled_h = math.floor(cover_height * scale)
 
         cover_bb = RenderImage:scaleBlitBuffer(cover_bb, scaled_w, scaled_h, true)
 
@@ -389,11 +394,13 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     -- Rescale if height is outside [min_target_height, max_target_height]
     if card_height > max_target_height then
         card_scale = max_target_height / card_height
-        logger.dbg("Reading display: Card height", card_height, "exceeds max", max_target_height, "- rebuilding with scale", card_scale)
+        logger.dbg("Reading display: Card height", card_height, "exceeds max", max_target_height,
+            "- rebuilding with scale", card_scale)
         card = buildCard(card_scale)
     elseif card_height < min_target_height then
         card_scale = min_target_height / card_height
-        logger.dbg("Reading display: Card height", card_height, "below min", min_target_height, "- rebuilding with scale", card_scale)
+        logger.dbg("Reading display: Card height", card_height, "below min", min_target_height, "- rebuilding with scale",
+            card_scale)
         card = buildCard(card_scale)
     end
 
