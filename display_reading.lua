@@ -35,19 +35,32 @@ local ReadingDisplay = {}
 CARD_WIDTH = 0.8 -- Card width as fraction of screen width
 
 function ReadingDisplay:getDocumentInfo()
-    -- Get active ReaderUI instance
+    -- First try: Get active ReaderUI instance
     local ui = ReaderUI.instance
-    if not ui or not ui.document then
-        logger.dbg("Reading display: No active document")
-        return nil
+    if ui and ui.document then
+        return self:getDocumentInfoFromReader(ui)
     end
 
+    -- Second try: Get info from lastfile (when in file browser)
+    local lastfile = G_reader_settings:readSetting("lastfile")
+    if lastfile then
+        local lfs = require("libs/libkoreader-lfs")
+        if lfs.attributes(lastfile, "mode") == "file" then
+            return self:getDocumentInfoFromFile(lastfile)
+        end
+    end
+
+    logger.dbg("Reading display: No document info available")
+    return nil
+end
+
+function ReadingDisplay:getDocumentInfoFromReader(ui)
     local doc_props = ui.doc_props or {}
     local doc_settings = ui.doc_settings and ui.doc_settings.data or {}
     local state = ui.view and ui.view.state
 
     -- Get title and authors
-    local title = doc_props.display_title or doc_props.title or "Unknown Title"
+    local title = doc_props.display_title or doc_props.title or _("Unknown Title")
     local authors = doc_props.authors or ""
     if authors:find("\n") then
         local authors_array = util.splitToArray(authors, "\n")
@@ -68,7 +81,7 @@ function ReadingDisplay:getDocumentInfo()
         page_current = (state and state.page) or 1
     end
 
-    if page_total <= 0 or page_total == nil then page_total = 1 end
+    if page_total == nil or page_total <= 0 then page_total = 1 end
     if page_current < 1 then page_current = 1 end
     if page_current > page_total then page_current = page_total end
 
@@ -79,6 +92,83 @@ function ReadingDisplay:getDocumentInfo()
     if ui.bookinfo and ui.document then
         cover_bb = ui.bookinfo:getCoverImage(ui.document)
     end
+
+    return {
+        title = title,
+        authors = authors,
+        page_no = page_current,
+        page_total = page_total,
+        progress = progress,
+        cover_bb = cover_bb,
+    }
+end
+
+function ReadingDisplay:getDocumentInfoFromFile(file)
+    local BookList = require("ui/widget/booklist")
+    local DocSettings = require("docsettings")
+    local DocumentRegistry = require("document/documentregistry")
+    local FileManager = require("apps/filemanager/filemanager")
+
+    local title = nil
+    local authors = nil
+    local page_current = nil
+    local page_total = nil
+    local progress = nil
+    local cover_bb = nil
+
+    -- Try to get doc_props from saved settings
+    if BookList.hasBookBeenOpened(file) then
+        local doc_settings = BookList.getDocSettings(file)
+        local doc_props = doc_settings:readSetting("doc_props")
+
+        if doc_props then
+            title = doc_props.display_title or doc_props.title
+            authors = doc_props.authors or ""
+            if authors and authors:find("\n") then
+                local authors_array = util.splitToArray(authors, "\n")
+                if authors_array and authors_array[1] then
+                    authors = authors_array[1]
+                    if #authors_array > 1 then
+                        authors = authors .. " et al."
+                    end
+                end
+            end
+        end
+
+        -- Get progress info
+        local book_info = BookList.getBookInfo(file)
+        if book_info then
+            progress = book_info.percent_finished
+            page_total = book_info.pages
+            if progress and page_total then
+                page_current = math.floor(progress * page_total + 0.5)
+            end
+        end
+    end
+
+    -- Try to get cover image
+    -- First check if FileManager instance has bookinfo
+    local fm = FileManager.instance
+    if fm and fm.bookinfo then
+        cover_bb = fm.bookinfo:getCoverImage(nil, file)
+    else
+        -- Fallback: try to open document just for cover
+        if DocumentRegistry:hasProvider(file) then
+            local document = DocumentRegistry:openDocument(file)
+            if document then
+                cover_bb = document:getCoverPageImage()
+                document:close()
+            end
+        end
+    end
+
+    -- Use filename as title if we couldn't get it
+    if not title then
+        local filemanagerutil = require("apps/filemanager/filemanagerutil")
+        title = filemanagerutil.splitFileNameType(file)
+    end
+
+    logger.dbg("Reading display: Got info from lastfile:", file)
 
     return {
         title = title,
@@ -123,11 +213,17 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     -- Get document information
     local doc_info = self:getDocumentInfo()
 
+    -- If no doc_info at all (no lastfile), create a minimal placeholder
     if not doc_info then
-        -- Fallback to weather-only display if no book is open
-        logger.dbg("Reading display: No document info, falling back")
-        local fallback_module = require("display_default")
-        return fallback_module:create(weather_lockscreen, weather_data)
+        doc_info = {
+            title = _("No book"),
+            authors = nil,
+            page_no = nil,
+            page_total = nil,
+            progress = nil,
+            cover_bb = nil,
+        }
+        logger.dbg("Reading display: No document info available, using placeholder")
     end
 
     -- Background: Large book cover fitted or zoom to fill the screen
@@ -285,11 +381,11 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         table.insert(card_widgets, top_row)
         table.insert(card_widgets, VerticalSpan:new { width = spacing })
 
-        -- Middle row: Progress bar and percentage
-        if doc_info.progress then
-            local progress_row = HorizontalGroup:new { align = "center" }
+        -- Middle row: Progress bar and percentage (show "?" if no progress data)
+        local progress_row = HorizontalGroup:new { align = "center" }
+        local progress_bar_width = math.floor(screen_width * (CARD_WIDTH - 0.05) - 2 * card_padding)
 
-            local progress_bar_width = math.floor(screen_width * (CARD_WIDTH - 0.05) - 2 * card_padding)
+        if doc_info.progress then
             table.insert(progress_row, ProgressWidget:new {
                 width = progress_bar_width,
                 height = math.floor(12 * scale_factor),
@@ -311,30 +407,54 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 bold = true,
                 fgcolor = Blitbuffer.COLOR_BLACK,
             })
+        else
+            -- Show empty progress bar with "?" when progress is unknown
+            table.insert(progress_row, ProgressWidget:new {
+                width = progress_bar_width,
+                height = math.floor(12 * scale_factor),
+                percentage = 0,
+                margin_v = 0,
+                margin_h = 0,
+                radius = math.floor(6 * scale_factor),
+                bordersize = 0,
+                bgcolor = Blitbuffer.COLOR_GRAY_9,
+                fillcolor = Blitbuffer.COLOR_BLACK,
+            })
 
-            table.insert(card_widgets, progress_row)
-            table.insert(card_widgets, VerticalSpan:new { width = spacing })
-        end
+            table.insert(progress_row, HorizontalSpan:new { width = spacing })
 
-        -- Bottom row: Page info (left) and Weather/Location/Time (right)
-        local bottom_row = HorizontalGroup:new { align = "top" }
-
-        -- Left: Page numbers
-        local page_text = ""
-        if doc_info.page_no and doc_info.page_total then
-            page_text = T(_("Page %1 of %2"), doc_info.page_no, doc_info.page_total)
-            table.insert(bottom_row, TextWidget:new {
-                text = page_text,
+            table.insert(progress_row, TextWidget:new {
+                text = "?",
                 face = Font:getFace("cfont", progress_font_size),
+                bold = true,
                 fgcolor = Blitbuffer.COLOR_DARK_GRAY,
             })
         end
 
-        -- Spacer to push right content to the right
-        local left_width = page_text ~= "" and TextWidget:new {
+        table.insert(card_widgets, progress_row)
+        table.insert(card_widgets, VerticalSpan:new { width = spacing })
+
+        -- Bottom row: Page info (left) and Weather/Location/Time (right)
+        local bottom_row = HorizontalGroup:new { align = "top" }
+
+        -- Left: Page numbers (show "?" if unknown)
+        local page_text
+        if doc_info.page_no and doc_info.page_total then
+            page_text = T(_("Page %1 of %2"), doc_info.page_no, doc_info.page_total)
+        else
+            page_text = T(_("Page %1 of %2"), "?", "?")
+        end
+        table.insert(bottom_row, TextWidget:new {
             text = page_text,
             face = Font:getFace("cfont", progress_font_size),
-        }:getSize().w or 0
+            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
+        })
+
+        -- Spacer to push right content to the right
+        local left_width = TextWidget:new {
+            text = page_text,
+            face = Font:getFace("cfont", progress_font_size),
+        }:getSize().w
 
         local right_content = {}
 
