@@ -160,8 +160,6 @@ end
 function WeatherUtils:installIcons()
     local icons_path = DataStorage:getDataDir() .. "/icons"
     local icons_list = {
-        "sun",
-        "moon",
         "hourglass",
     }
 

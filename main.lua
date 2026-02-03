@@ -83,6 +83,9 @@ function WeatherLockscreen:initDefaultSettings()
         weather_periodic_refresh_dashboard = 0, -- Off by default
         weather_active_sleep_min_battery = 20,
 
+        -- Fallback settings (when weather data unavailable)
+        weather_fallback_type = "cover", -- Default: show book cover
+
         -- Debug Options
         weather_debug_options = false, -- Off by default
     }
@@ -289,7 +292,7 @@ function WeatherLockscreen:patchScreensaver()
                     logger.dbg("WeatherLockscreen: Weather widget created successfully")
                     local bg_color = Blitbuffer.COLOR_WHITE
                     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-                    if display_style == "nightowl" and not fallback then
+                    if display_style == "nightowl" then
                         bg_color = G_reader_settings:isTrue("night_mode") and Blitbuffer.COLOR_WHITE or
                             Blitbuffer.COLOR_BLACK
                     end
@@ -305,9 +308,26 @@ function WeatherLockscreen:patchScreensaver()
                     UIManager:show(screensaver_instance.screensaver_widget, "full")
                     logger.dbg("WeatherLockscreen: Widget displayed")
                 else
-                    logger.warn("WeatherLockscreen: Failed to create widget, falling back")
-                    screensaver_instance.screensaver_type = "disable"
+                    -- Use configured fallback screensaver type
+                    local fallback_type = G_reader_settings:readSetting("weather_fallback_type") or "cover"
+                    logger.warn("WeatherLockscreen: No weather data, using fallback:", fallback_type)
+
+                    -- Reset state we've already set up so original screensaver can set it properly
+                    Device.screen_saver_mode = false
+                    if Device.orig_rotation_mode then
+                        Screen:setRotationMode(Device.orig_rotation_mode)
+                        Device.orig_rotation_mode = nil
+                    end
+
+                    -- Temporarily set screensaver type to fallback (don't flush to disk)
+                    G_reader_settings:saveSetting("screensaver_type", fallback_type)
+
+                    -- Let KOReader's screensaver handle setup and display
+                    Screensaver:setup()
                     Screensaver._orig_show_before_weather(screensaver_instance)
+
+                    -- Restore weather as the screensaver type (don't flush to disk)
+                    G_reader_settings:saveSetting("screensaver_type", "weather")
                 end
             end
             -- Create weather widget
@@ -393,12 +413,10 @@ end
 function WeatherLockscreen:createWeatherWidget()
     logger.dbg("WeatherLockscreen: Creating widget")
     local weather_data = WeatherAPI:fetchWeatherData(self)
-    local fallback = false
 
     if not weather_data or not weather_data.current or not weather_data.current.icon_path then
-        logger.warn("WeatherLockscreen: No weather data available, trying fallback")
-        fallback = true
-        return DisplayHelper:createFallbackWidget(), fallback
+        logger.warn("WeatherLockscreen: No weather data available, using fallback")
+        return nil, true -- Signal to use fallback screensaver
     end
 
     -- Check display style setting
@@ -421,7 +439,7 @@ function WeatherLockscreen:createWeatherWidget()
         display_module = require("display_default")
     end
 
-    return display_module:create(self, weather_data), fallback
+    return display_module:create(self, weather_data), false
 end
 
 function WeatherLockscreen:schedulePeriodicRefresh()

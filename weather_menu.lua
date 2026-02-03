@@ -40,6 +40,7 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
     end
 
     table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
+    table.insert(menu_items, self:getFallbackMenuItem())
     table.insert(menu_items, self:getRtcModeMenuItem(plugin_instance))
     table.insert(menu_items, self:getDashboardModeMenuItem(plugin_instance))
 
@@ -458,7 +459,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
             local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
             local spin_widget = SpinWidget:new {
                 title_text = _("Maximum Cache duration"),
-                info_text = _("When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."),
+                info_text = _("When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."),
                 value = current_hours,
                 value_min = 1,
                 value_max = 24,
@@ -502,6 +503,63 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
     return {
         text = _("Cache Settings"),
         sub_item_table = sub_items,
+        separator = true,
+    }
+end
+
+function WeatherMenu:getFallbackMenuItem()
+    local lfs = require("libs/libkoreader-lfs")
+
+    local function hasLastFile()
+        local last_file = G_reader_settings:readSetting("lastfile")
+        return last_file and lfs.attributes(last_file, "mode") == "file"
+    end
+
+    local function isReaderProgressEnabled()
+        local ui = require("apps/reader/readerui").instance or require("apps/filemanager/filemanager").instance
+        return ui and ui.statistics ~= nil
+    end
+
+    local function genFallbackOption(text, value, enabled_func, separator, help_text)
+        return {
+            text = text,
+            help_text = help_text,
+            enabled_func = enabled_func,
+            checked_func = function()
+                return G_reader_settings:readSetting("weather_fallback_type") == value
+            end,
+            callback = function()
+                G_reader_settings:saveSetting("weather_fallback_type", value)
+                G_reader_settings:flush()
+            end,
+            radio = true,
+            separator = separator,
+        }
+    end
+
+    return {
+        text_func = function()
+            local fallback_type = G_reader_settings:readSetting("weather_fallback_type") or "cover"
+            local type_names = {
+                cover = _("Book cover"),
+                document_cover = _("Custom image"),
+                random_image = _("Random image"),
+                readingprogress = _("Reading progress"),
+                bookstatus = _("Book status"),
+                disable = _("Leave as-is"),
+            }
+            return T(_("Fallback (%1)"), type_names[fallback_type] or fallback_type)
+        end,
+        sub_item_table = {
+            genFallbackOption(_("Show book cover on sleep screen"), "cover", hasLastFile),
+            genFallbackOption(_("Show custom image or cover on sleep screen"), "document_cover"),
+            genFallbackOption(_("Show random image from folder on sleep screen"), "random_image"),
+            genFallbackOption(_("Show reading progress on sleep screen"), "readingprogress", isReaderProgressEnabled),
+            genFallbackOption(_("Show book status on sleep screen"), "bookstatus", hasLastFile),
+            genFallbackOption(_("Leave screen as-is"), "disable", nil, true),
+        },
+        help_text = _(
+            "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."),
         separator = true,
     }
 end
