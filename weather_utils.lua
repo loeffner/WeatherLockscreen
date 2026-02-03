@@ -712,8 +712,8 @@ function WeatherUtils:koLangAsWeatherAPILang()
     return WeatherUtils.lang_map[lang_locale] or "en"
 end
 
-WeatherUtils.target_hours = { 6, 12, 18 }                -- For basic display
-WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For detailed display
+WeatherUtils.target_hours = { 6, 12, 18 }                -- For today & tomorrow display
+WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For today display
 
 
 -- Static KOReader to WeatherAPI language code mapping

@@ -258,15 +258,6 @@ You can find a user patch to modify the hours here:
 [2-weather-detailed-view-hours.lua](https://github.com/loeffner/KOReader.patches?tab=readme-ov-file#-2-weather-detailed-view-hourslua)
 </details>
 
-<details>
-<summary>Fallback Icons (sun/moon)</summary>
-
-You can customize the fallback sun/moon icons:
-
-1. Create or download `sun.svg` and `moon.svg` icons
-2. Place them in `<koreader_data_dir>/icons/`
-3. The plugin will use these icons when weather data is unavailable
-</details>
 
 ## Contributing
 
@@ -276,6 +267,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 <details>
 <summary>Done</summary>
 
+- Fallback: A more configurable fallback, when no weather data is available.
 </details>
 
 <details>
@@ -287,7 +279,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 - A landscape display mode
 - A transparent display mode (either transparent image over weather or transparent weather over image)
-- Fallback: A more configurable fallback, when no weather data is available.
 </details>
 
 ## Related Projects

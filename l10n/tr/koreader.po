@@ -130,12 +130,18 @@ msgstr "Ekrana sığdır"
 msgid "Zoom to fill"
 msgstr "Doldurmak için yakınlaştır"
 
+msgid "Stretch to fill"
+msgstr "Doldurmak için ger"
+
 # Dynamic setting values (for menu display)
 msgid "fit"
 msgstr "sığdır"
 
 msgid "zoom"
 msgstr "yakınlaştır"
+
+msgid "stretch"
+msgstr "ger"
 
 # Cache Settings
 msgid "Cache Settings"
@@ -144,8 +150,8 @@ msgstr "Önbellek ayarları"
 msgid "Maximum Cache duration"
 msgstr "Maksimum önbellek süresi"
 
-msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
-msgstr "Çevrimdışıyken bu yaşa kadar olan önbellekteki hava durumu verileri gösterilir. Daha eski veriler yerine yedek bir simge gösterilir."
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "Çevrimdışıyken bu yaşa kadar olan önbellekteki hava durumu verileri gösterilir. Daha eski veriler yapılandırılmış yedeği gösterir."
 
 msgid "Minimum Cache duration"
 msgstr "Minimum önbellek süresi"
@@ -361,3 +367,31 @@ msgstr "Son Dördün"
 
 msgid "Waning Crescent"
 msgstr "Küçülen Hilal"
+
+# ============================================================================
+# Fallback Settings (weather_menu.lua)
+# ============================================================================
+
+msgid "Fallback (%1)"
+msgstr "Yedek (%1)"
+
+msgid "Book cover"
+msgstr "Kitap kapağı"
+
+msgid "Custom image"
+msgstr "Özel resim"
+
+msgid "Random image"
+msgstr "Rastgele resim"
+
+msgid "Reading progress"
+msgstr "Okuma ilerlemesi"
+
+msgid "Book status"
+msgstr "Kitap durumu"
+
+msgid "Leave as-is"
+msgstr "Olduğu gibi bırak"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "Hava durumu verileri mevcut olmadığında ne gösterileceğini seçin (internet yok, API hatası, vb.). Resim klasörleri ve diğer seçenekler KOReader'ın Uyku ekranı ayarlarında yapılandırılır."

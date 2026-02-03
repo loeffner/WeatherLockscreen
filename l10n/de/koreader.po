@@ -127,12 +127,18 @@ msgstr "An Bildschirm anpassen"
 msgid "Zoom to fill"
 msgstr "Bildschirm ausfüllen"
 
+msgid "Stretch to fill"
+msgstr "Auf Bildschirm strecken"
+
 # Dynamic setting values (for menu display)
 msgid "fit"
 msgstr "anpassen"
 
 msgid "zoom"
 msgstr "ausfüllen"
+
+msgid "stretch"
+msgstr "strecken"
 
 # Cache Settings
 msgid "Cache Settings"
@@ -141,8 +147,8 @@ msgstr "Cache-Einstellungen"
 msgid "Maximum Cache duration"
 msgstr "Maximale Cache-Dauer"
 
-msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
-msgstr "Bei fehlender Internetverbindung werden zwischengespeicherte Wetterdaten bis zu diesem Alter angezeigt. Ältere Daten zeigen ein Fallback-Symbol."
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "Bei fehlender Internetverbindung werden zwischengespeicherte Wetterdaten bis zu diesem Alter angezeigt. Ältere Daten zeigen den konfigurierten Fallback."
 
 msgid "Minimum Cache duration"
 msgstr "Minimale Cache-Dauer"
@@ -358,3 +364,31 @@ msgstr "Drittes Viertel"
 
 msgid "Waning Crescent"
 msgstr "Abnehmende Sichel"
+
+# ==============================================================================
+# Fallback Settings (weather_menu.lua)
+# ==============================================================================
+
+msgid "Fallback (%1)"
+msgstr "Fallback (%1)"
+
+msgid "Book cover"
+msgstr "Buchcover"
+
+msgid "Custom image"
+msgstr "Eigenes Bild"
+
+msgid "Random image"
+msgstr "Zufälliges Bild"
+
+msgid "Reading progress"
+msgstr "Lesefortschritt"
+
+msgid "Book status"
+msgstr "Buchstatus"
+
+msgid "Leave as-is"
+msgstr "Unverändert"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "Wähle, was angezeigt werden soll, wenn Wetterdaten nicht verfügbar sind (kein Internet, API-Fehler, etc.). Bilderordner und andere Optionen werden in KOReaders Ruhebildschirm-Einstellungen konfiguriert."

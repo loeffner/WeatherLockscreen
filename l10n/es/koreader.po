@@ -131,12 +131,18 @@ msgstr "Ajustar a la pantalla"
 msgid "Zoom to fill"
 msgstr "Zoom para llenar"
 
+msgid "Stretch to fill"
+msgstr "Estirar para llenar"
+
 # Dynamic setting values (for menu display)
 msgid "fit"
 msgstr "ajustar"
 
 msgid "zoom"
 msgstr "zoom"
+
+msgid "stretch"
+msgstr "estirar"
 
 # Cache Settings
 msgid "Cache Settings"
@@ -145,8 +151,8 @@ msgstr "Configuración de caché"
 msgid "Maximum Cache duration"
 msgstr "Duración máxima del caché"
 
-msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
-msgstr "Sin conexión, se mostrarán datos del clima en caché hasta esta antigüedad. Los datos más antiguos mostrarán un ícono alternativo."
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "Sin conexión, se mostrarán datos del clima en caché hasta esta antigüedad. Los datos más antiguos mostrarán el respaldo configurado."
 
 msgid "Minimum Cache duration"
 msgstr "Duración mínima del caché"
@@ -362,3 +368,31 @@ msgstr "Tercer cuarto"
 
 msgid "Waning Crescent"
 msgstr "Luna menguante"
+
+# ==============================================================================
+# Fallback Settings (weather_menu.lua)
+# ==============================================================================
+
+msgid "Fallback (%1)"
+msgstr "Respaldo (%1)"
+
+msgid "Book cover"
+msgstr "Portada del libro"
+
+msgid "Custom image"
+msgstr "Imagen personalizada"
+
+msgid "Random image"
+msgstr "Imagen aleatoria"
+
+msgid "Reading progress"
+msgstr "Progreso de lectura"
+
+msgid "Book status"
+msgstr "Estado del libro"
+
+msgid "Leave as-is"
+msgstr "Dejar como está"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "Elige qué mostrar cuando los datos del clima no están disponibles (sin internet, error de API, etc.). Las carpetas de imágenes y otras opciones se configuran en los ajustes de pantalla de suspensión de KOReader."

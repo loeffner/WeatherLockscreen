@@ -132,11 +132,17 @@ msgstr ""
 msgid "Zoom to fill"
 msgstr ""
 
+msgid "Stretch to fill"
+msgstr ""
+
 # Dynamic setting values (for menu display)
 msgid "fit"
 msgstr ""
 
 msgid "zoom"
+msgstr ""
+
+msgid "stretch"
 msgstr ""
 
 # Cache Settings
@@ -146,7 +152,7 @@ msgstr ""
 msgid "Maximum Cache duration"
 msgstr ""
 
-msgid "When offline, cached weather data up to this age will be shown. Older data displays a fallback icon instead."
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
 msgstr ""
 
 msgid "Minimum Cache duration"
@@ -362,4 +368,50 @@ msgid "Third Quarter"
 msgstr ""
 
 msgid "Waning Crescent"
+msgstr ""
+
+# ==============================================================================
+# Fallback Settings (weather_menu.lua)
+# ==============================================================================
+
+msgid "Fallback (%1)"
+msgstr ""
+
+msgid "Book cover"
+msgstr ""
+
+msgid "Custom image"
+msgstr ""
+
+msgid "Random image"
+msgstr ""
+
+msgid "Reading progress"
+msgstr ""
+
+msgid "Book status"
+msgstr ""
+
+msgid "Leave as-is"
+msgstr ""
+
+msgid "Show book cover on sleep screen"
+msgstr ""
+
+msgid "Show custom image or cover on sleep screen"
+msgstr ""
+
+msgid "Show random image from folder on sleep screen"
+msgstr ""
+
+msgid "Show reading progress on sleep screen"
+msgstr ""
+
+msgid "Show book status on sleep screen"
+msgstr ""
+
+msgid "Leave screen as-is"
+msgstr ""
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr ""
