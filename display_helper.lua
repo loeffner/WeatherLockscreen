@@ -26,7 +26,6 @@ local logger = require("logger")
 local DisplayHelper = {}
 
 function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data, text_color, is_cached)
-
     local header_widgets = {}
     local show_header = G_reader_settings:nilOrTrue("weather_show_header")
 
@@ -52,7 +51,7 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
         local formatted_time = ""
         if year and month and day and hour and min then
             -- Use os.date for localized month abbreviation
-            local time_obj = os.time{year=tonumber(year), month=tonumber(month), day=tonumber(day)}
+            local time_obj = os.time { year = tonumber(year), month = tonumber(month), day = tonumber(day) }
             local date_str = os.date("%b %d", time_obj)
             local twelve_hour_clock = G_reader_settings:isTrue("twelve_hour_clock")
             local hour_num = tonumber(hour)
@@ -93,38 +92,6 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
     return OverlapGroup:new {
         dimen = { w = Screen:getWidth(), h = header_font_size + header_margin * 2 },
         unpack(header_widgets)
-    }
-end
-
-function DisplayHelper:createFallbackWidget()
-    logger.dbg("WeatherLockscreen: Creating fallback icon")
-
-    local icon_size = Screen:scaleBySize(200)
-
-    local current_hour = tonumber(os.date("%H"))
-    local is_daytime = current_hour >= 6 and current_hour < 18
-
-    local icon_filename = is_daytime and "sun.svg" or "moon.svg"
-    local icon_path = DataStorage:getDataDir() .. "/icons/" .. icon_filename
-
-    if not util.pathExists(icon_path) then
-        return nil
-    end
-
-    local icon_widget = ImageWidget:new {
-        file = icon_path,
-        width = icon_size,
-        height = icon_size,
-        alpha = true,
-        original_in_nightmode = false
-    }
-
-    return CenterContainer:new {
-        dimen = Screen:getSize(),
-        VerticalGroup:new {
-            align = "center",
-            icon_widget,
-        },
     }
 end
 
