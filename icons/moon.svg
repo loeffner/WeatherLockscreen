@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Crescent moon - two overlapping circles to create crescent -->
-  <circle cx="50" cy="50" r="30" fill="black"/>
-  <circle cx="60" cy="50" r="25" fill="white"/>
-</svg>
