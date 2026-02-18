@@ -194,17 +194,21 @@ function WeatherLockscreen:addToMainMenu(menu_items)
 end
 
 function WeatherLockscreen:setPeriodicRefreshInterval(interval, type, touchmenu_instance)
-    if interval == 0 or WeatherUtils:periodicRefreshEnabled(type) then
-        if type == "rtc" then
-            G_reader_settings:saveSetting("weather_periodic_refresh_rtc", interval)
-        else
-            G_reader_settings:saveSetting("weather_periodic_refresh_dashboard", interval)
-        end
+    local setting_key = type == "rtc"
+        and "weather_periodic_refresh_rtc"
+        or "weather_periodic_refresh_dashboard"
+
+    local function applyInterval()
+        G_reader_settings:saveSetting(setting_key, interval)
         G_reader_settings:flush()
         touchmenu_instance:updateItems()
+    end
+
+    if interval == 0 or WeatherUtils:periodicRefreshEnabled(type) then
+        applyInterval()
     else
         local ConfirmBox = require("ui/widget/confirmbox")
-        local warning_msg = ""
+        local warning_msg
         if type == "rtc" then
             warning_msg = _(
                 "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?")
@@ -215,15 +219,7 @@ function WeatherLockscreen:setPeriodicRefreshInterval(interval, type, touchmenu_
         UIManager:show(ConfirmBox:new {
             text = warning_msg,
             ok_text = _("Enable"),
-            ok_callback = function()
-                if type == "rtc" then
-                    G_reader_settings:saveSetting("weather_periodic_refresh_rtc", interval)
-                else
-                    G_reader_settings:saveSetting("weather_periodic_refresh_dashboard", interval)
-                end
-                G_reader_settings:flush()
-                touchmenu_instance:updateItems()
-            end,
+            ok_callback = applyInterval,
         })
     end
 end
