@@ -332,9 +332,14 @@ function WeatherUtils:saveWeatherCache(weather_data)
     }
 
     local json = require("json")
+    local success, encoded = pcall(json.encode, cache_data)
+    if not success or not encoded then
+        logger.warn("WeatherLockscreen: Failed to encode cache data")
+        return false
+    end
     local f = io.open(cache_file, "w")
     if f then
-        f:write(json.encode(cache_data))
+        f:write(encoded)
         f:close()
         return true
     end
@@ -726,8 +731,8 @@ WeatherUtils.lang_map = {
     da = "da",         -- Danish
     de = "de",         -- German
     el = "el",         -- Greek
-    en_GB = "en",      -- Englush (GB)
-    en_US = "en",      -- Englush (US)
+    en_GB = "en",      -- English (GB)
+    en_US = "en",      -- English (US)
     es = "es",         -- Spanish
     fi = "fi",         -- Finnish
     fr = "fr",         -- French
