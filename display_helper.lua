@@ -95,6 +95,38 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
     }
 end
 
+--- Build content with a build function, measure it, and rescale to fit available height.
+--- @param buildFunc function(scale_factor) → widget  Builder that creates the content widget at the given scale.
+--- @param available_height number  The pixel height the content should fit into.
+--- @param default_fill number|nil  Default fill percentage when override is off (default 90).
+--- @return widget, number  The (possibly rebuilt) widget and the final scale factor.
+function DisplayHelper:scaleToFit(buildFunc, available_height, default_fill)
+    default_fill = default_fill or 90
+
+    local widget = buildFunc(1.0)
+    local content_height = widget:getSize().h
+
+    local fill_percent = G_reader_settings:readSetting("weather_override_scaling")
+        and tonumber(G_reader_settings:readSetting("weather_fill_percent"))
+        or default_fill
+    local min_fill = math.max(50, fill_percent - 5)
+    local max_fill = math.min(100, fill_percent + 5)
+
+    local min_target = available_height * (min_fill / 100)
+    local max_target = available_height * (max_fill / 100)
+
+    local scale = 1.0
+    if content_height > max_target then
+        scale = max_target / content_height
+        widget = buildFunc(scale)
+    elseif content_height < min_target then
+        scale = min_target / content_height
+        widget = buildFunc(scale)
+    end
+
+    return widget, scale
+end
+
 function DisplayHelper:createLoadingWidget()
     logger.dbg("WeatherLockscreen: Creating loading icon")
 

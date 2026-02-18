@@ -265,36 +265,13 @@ function RetroAnalogDisplay:create(weather_lockscreen, weather_data)
         }
     end
 
-    -- Build content at scale 1.0 to measure actual size
-    local content_scale = 1.0
-    local weather_group = buildRetroContent(content_scale)
-    local content_height = weather_group:getSize().h
-
     -- Calculate header height
     local header_group = DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data, Blitbuffer.COLOR_DARK_GRAY, weather_data.is_cached)
     local header_height = header_group:getSize().h
 
-    -- Calculate available height
+    -- Scale content to fit available height
     local available_height = screen_height - header_height - top_bottom_margin
-
-    -- Get user fill percent (default 90)
-    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
-    local min_fill = math.max(50, fill_percent - 5)
-    local max_fill = math.min(100, fill_percent + 5)
-
-    local min_target_height = available_height * (min_fill / 100)
-    local max_target_height = available_height * (max_fill / 100)
-
-    -- Determine the scale factor
-    if content_height > max_target_height then
-        -- Content too large, scale down to max_fill
-        content_scale = max_target_height / content_height
-        weather_group = buildRetroContent(content_scale)
-    elseif content_height < min_target_height then
-        -- Content too small, scale up to min_fill
-        content_scale = min_target_height / content_height
-        weather_group = buildRetroContent(content_scale)
-    end
+    local weather_group = DisplayHelper:scaleToFit(buildRetroContent, available_height)
 
     local main_content = CenterContainer:new{
         dimen = Screen:getSize(),

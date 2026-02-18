@@ -184,16 +184,6 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
     local screen_width = Screen:getWidth()
     local screen_height = Screen:getHeight()
 
-    -- Get user fill percent (default 90)
-    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and
-        tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 60
-    local min_fill = math.max(50, fill_percent - 5)
-    local max_fill = math.min(100, fill_percent + 5)
-
-    -- Target height is percent of half the screen height
-    local min_target_height = (screen_height * 0.5) * (min_fill / 100)
-    local max_target_height = (screen_height * 0.5) * (max_fill / 100)
-
     -- Base sizes for card content (will be scaled down to fit target height)
     local base_title_font_size = 28
     local base_author_font_size = 22
@@ -509,23 +499,9 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
         }
     end
 
-    -- Build card at scale 1.0 and measure height
-    local card_scale = 1.0
-    local card = buildCard(card_scale)
-    local card_height = card:getSize().h
-
-    -- Rescale if height is outside [min_target_height, max_target_height]
-    if card_height > max_target_height then
-        card_scale = max_target_height / card_height
-        logger.dbg("Reading display: Card height", card_height, "exceeds max", max_target_height,
-            "- rebuilding with scale", card_scale)
-        card = buildCard(card_scale)
-    elseif card_height < min_target_height then
-        card_scale = min_target_height / card_height
-        logger.dbg("Reading display: Card height", card_height, "below min", min_target_height, "- rebuilding with scale",
-            card_scale)
-        card = buildCard(card_scale)
-    end
+    -- Scale card to fit half the screen height
+    local card_available_height = screen_height * 0.5
+    local card, card_scale = DisplayHelper:scaleToFit(buildCard, card_available_height, 60)
 
     -- Position card at bottom of screen
     local card_container = BottomContainer:new {
