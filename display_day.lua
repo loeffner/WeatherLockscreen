@@ -156,31 +156,9 @@ function DayDisplay:create(weather_lockscreen, weather_data)
         }
     end
 
-    -- Build content with initial scale of 1.0 and measure it
-    local content_scale = 1.0
-    local weather_group = buildWeatherContent(content_scale)
-    local content_height = weather_group:getSize().h
+    -- Scale content to fit available height
     local available_height = screen_height - header_height
-
-    -- Get user fill percent (default 90)
-    local fill_percent = G_reader_settings:readSetting("weather_override_scaling") and
-        tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
-    local min_fill = math.max(50, fill_percent - 5)
-    local max_fill = math.min(100, fill_percent + 5)
-
-    local min_target_height = available_height * (min_fill / 100)
-    local max_target_height = available_height * (max_fill / 100)
-
-    -- Determine the scale factor
-    if content_height > max_target_height then
-        -- Content too large, scale down to max_fill
-        content_scale = max_target_height / content_height
-        weather_group = buildWeatherContent(content_scale)
-    elseif content_height < min_target_height then
-        -- Content too small, scale up to min_fill
-        content_scale = min_target_height / content_height
-        weather_group = buildWeatherContent(content_scale)
-    end
+    local weather_group = DisplayHelper:scaleToFit(buildWeatherContent, available_height)
 
     local main_content = CenterContainer:new {
         dimen = Screen:getSize(),
