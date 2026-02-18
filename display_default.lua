@@ -6,8 +6,6 @@
 local ImageWidget = require("ui/widget/imagewidget")
 local TextWidget = require("ui/widget/textwidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
-local HorizontalGroup = require("ui/widget/horizontalgroup")
-local HorizontalSpan = require("ui/widget/horizontalspan")
 local VerticalSpan = require("ui/widget/verticalspan")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local OverlapGroup = require("ui/widget/overlapgroup")
@@ -87,123 +85,30 @@ function DefaultDisplay:create(weather_lockscreen, weather_data)
         table.insert(widgets, VerticalSpan:new { width = vertical_spacing })
 
         -- Today's hourly forecast
-        if weather_data.hourly_today_all and #weather_data.hourly_today_all > 0 then
+        local today_row = DisplayHelper:buildHourlyRow(
+            weather_data.hourly_today_all, WeatherUtils.target_hours,
+            hourly_icon_size, hour_font_size, horizontal_spacing)
+        if today_row then
             table.insert(widgets, TextWidget:new {
                 text = _("Today"),
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })
-
-            local today_row = {}
-            for i = 1, #weather_data.hourly_today_all do
-                local hour_data = weather_data.hourly_today_all[i]
-                -- Filter the hours to show
-                local show_hour = false
-                for j = 1, #WeatherUtils.target_hours do
-                    local target_hour = WeatherUtils.target_hours[j]
-                    if hour_data.hour_num == target_hour then
-                        show_hour = true
-                        break
-                    end
-                end
-                if show_hour then
-                    if #today_row > 1 then
-                        table.insert(today_row, HorizontalSpan:new { width = horizontal_spacing })
-                    end
-
-                    local hour_widgets = {}
-                    table.insert(hour_widgets, TextWidget:new {
-                        text = hour_data.hour,
-                        face = Font:getFace("cfont", hour_font_size),
-                    })
-
-                    if hour_data.icon_path then
-                        table.insert(hour_widgets, ImageWidget:new {
-                            file = hour_data.icon_path,
-                            width = hourly_icon_size,
-                            height = hourly_icon_size,
-                            alpha = true,
-                            original_in_nightmode = false
-                        })
-                    end
-
-                    table.insert(hour_widgets, TextWidget:new {
-                        text = WeatherUtils:getHourlyTemp(hour_data, false),
-                        face = Font:getFace("cfont", hour_font_size),
-                    })
-
-                    table.insert(today_row, VerticalGroup:new {
-                        align = "center",
-                        unpack(hour_widgets)
-                    })
-                end
-            end
-
-            table.insert(widgets, HorizontalGroup:new {
-                align = "center",
-                unpack(today_row)
-            })
-
+            table.insert(widgets, today_row)
             table.insert(widgets, VerticalSpan:new { width = vertical_spacing })
         end
 
         -- Tomorrow's hourly forecast
-        if weather_data.hourly_tomorrow_all and #weather_data.hourly_tomorrow_all > 0 then
+        local tomorrow_row = DisplayHelper:buildHourlyRow(
+            weather_data.hourly_tomorrow_all, WeatherUtils.target_hours,
+            hourly_icon_size, hour_font_size, horizontal_spacing)
+        if tomorrow_row then
             table.insert(widgets, TextWidget:new {
                 text = _("Tomorrow"),
                 face = Font:getFace("cfont", label_font_size),
                 bold = true,
             })
-
-            local tomorrow_row = {}
-            for i = 1, #weather_data.hourly_tomorrow_all do
-                local hour_data = weather_data.hourly_tomorrow_all[i]
-                -- Filter the hours to show
-                local show_hour = false
-                for j = 1, #WeatherUtils.target_hours do
-                    local target_hour = WeatherUtils.target_hours[j]
-                    if hour_data.hour_num == target_hour then
-                        show_hour = true
-                        break
-                    end
-                end
-                if show_hour then
-                    if #tomorrow_row > 1 then
-                        table.insert(tomorrow_row, HorizontalSpan:new { width = horizontal_spacing })
-                    end
-
-                    local hour_widgets = {}
-                    table.insert(hour_widgets, TextWidget:new {
-                        text = hour_data.hour,
-                        face = Font:getFace("cfont", hour_font_size),
-                    })
-
-                    if hour_data.icon_path then
-                        table.insert(hour_widgets, ImageWidget:new {
-                            file = hour_data.icon_path,
-                            width = hourly_icon_size,
-                            height = hourly_icon_size,
-                            alpha = true,
-                            original_in_nightmode = false
-                        })
-                    end
-
-                    table.insert(hour_widgets, TextWidget:new {
-                        text = WeatherUtils:getHourlyTemp(hour_data, false),
-                        face = Font:getFace("cfont", hour_font_size),
-                    })
-
-                    table.insert(tomorrow_row, VerticalGroup:new {
-                        align = "center",
-                        unpack(hour_widgets)
-                    })
-                end
-            end
-
-            table.insert(widgets, HorizontalGroup:new {
-                align = "center",
-                unpack(tomorrow_row)
-            })
+            table.insert(widgets, tomorrow_row)
         end
 
         return VerticalGroup:new {
