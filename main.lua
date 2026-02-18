@@ -167,7 +167,6 @@ end
 
 function WeatherLockscreen:onClearWeatherCache()
     logger.info("WeatherLockscreen: Clear cache triggered")
-    local UIManager = require("ui/uimanager")
     local InfoMessage = require("ui/widget/infomessage")
 
     if WeatherUtils:clearCache() then
@@ -424,20 +423,14 @@ function WeatherLockscreen:createWeatherWidget()
     logger.dbg("WeatherLockscreen: Using display style: " .. display_style)
 
     -- Load appropriate display module
-    local display_module
-    if display_style == "card" then
-        display_module = require("display_card")
-    elseif display_style == "day" then
-        display_module = require("display_day")
-    elseif display_style == "nightowl" then
-        display_module = require("display_nightowl")
-    elseif display_style == "retro" then
-        display_module = require("display_retro")
-    elseif display_style == "reading" then
-        display_module = require("display_reading")
-    else
-        display_module = require("display_default")
-    end
+    local display_modules = {
+        card = "display_card",
+        day = "display_day",
+        nightowl = "display_nightowl",
+        retro = "display_retro",
+        reading = "display_reading",
+    }
+    local display_module = require(display_modules[display_style] or "display_default")
 
     return display_module:create(self, weather_data), false
 end
