@@ -32,7 +32,7 @@ local DisplayHelper = require("display_helper")
 
 local ReadingDisplay = {}
 
-CARD_WIDTH = 0.8 -- Card width as fraction of screen width
+local CARD_WIDTH = 0.8 -- Card width as fraction of screen width
 
 function ReadingDisplay:getDocumentInfo()
     -- First try: Get active ReaderUI instance
@@ -502,7 +502,10 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
             bordersize = math.floor(2 * scale_factor),
             background = Blitbuffer.COLOR_WHITE,
             radius = math.floor(15 * scale_factor),
-            VerticalGroup:new(card_widgets),
+            VerticalGroup:new {
+                align = "left",
+                unpack(card_widgets)
+            },
         }
     end
 
