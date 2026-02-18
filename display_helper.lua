@@ -13,6 +13,8 @@ local DataStorage = require("datastorage")
 local util = require("util")
 local ImageWidget = require("ui/widget/imagewidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
+local HorizontalGroup = require("ui/widget/horizontalgroup")
+local HorizontalSpan = require("ui/widget/horizontalspan")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local LeftContainer = require("ui/widget/container/leftcontainer")
@@ -22,6 +24,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local TextWidget = require("ui/widget/textwidget")
 local Font = require("ui/font")
 local logger = require("logger")
+local WeatherUtils = require("weather_utils")
 
 local DisplayHelper = {}
 
@@ -125,6 +128,57 @@ function DisplayHelper:scaleToFit(buildFunc, available_height, default_fill)
     end
 
     return widget, scale
+end
+
+--- Build a horizontal row of hourly forecast columns (hour label, icon, temperature).
+--- @param hourly_data table  Array of hour entries (each with hour, hour_num, icon_path, temp_c, temp_f).
+--- @param target_hours table  Array of hour numbers to include (e.g. {6, 12, 18}).
+--- @param icon_size number  Pixel size for the weather icons.
+--- @param font_size number  Font size for the hour label and temperature text.
+--- @param spacing number  Horizontal spacing between columns.
+--- @return widget|nil  HorizontalGroup widget, or nil if no hours matched.
+function DisplayHelper:buildHourlyRow(hourly_data, target_hours, icon_size, font_size, spacing)
+    if not hourly_data or #hourly_data == 0 then return nil end
+
+    -- Build a fast lookup set from target_hours
+    local target_set = {}
+    for _, h in ipairs(target_hours) do target_set[h] = true end
+
+    local row = {}
+    for _, hour_data in ipairs(hourly_data) do
+        if target_set[hour_data.hour_num] then
+            if #row > 0 then
+                table.insert(row, HorizontalSpan:new { width = spacing })
+            end
+
+            local col = {}
+            table.insert(col, TextWidget:new {
+                text = hour_data.hour,
+                face = Font:getFace("cfont", font_size),
+            })
+            if hour_data.icon_path then
+                table.insert(col, ImageWidget:new {
+                    file = hour_data.icon_path,
+                    width = icon_size,
+                    height = icon_size,
+                    alpha = true,
+                    original_in_nightmode = false,
+                })
+            end
+            table.insert(col, TextWidget:new {
+                text = WeatherUtils:getHourlyTemp(hour_data, false),
+                face = Font:getFace("cfont", font_size),
+            })
+
+            table.insert(row, VerticalGroup:new {
+                align = "center",
+                unpack(col),
+            })
+        end
+    end
+
+    if #row == 0 then return nil end
+    return HorizontalGroup:new { align = "center", unpack(row) }
 end
 
 function DisplayHelper:createLoadingWidget()
