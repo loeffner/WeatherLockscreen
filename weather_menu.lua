@@ -247,6 +247,7 @@ function WeatherMenu:getDisplayStyleOption(plugin_instance, style_value, style_l
             logger.dbg("WeatherLockscreen: Saved display style:", style_value)
             touchmenu_instance:updateItems()
         end,
+        radio = true,
     }
 end
 
@@ -271,6 +272,7 @@ function WeatherMenu:getTemperatureScaleMenuItem(plugin_instance)
                     logger.dbg("WeatherLockscreen: Saved temp scale: C")
                     touchmenu_instance:updateItems()
                 end,
+                radio = true,
             },
             {
                 text = _("Fahrenheit"),
@@ -286,6 +288,7 @@ function WeatherMenu:getTemperatureScaleMenuItem(plugin_instance)
                     logger.dbg("WeatherLockscreen: Saved temp scale: F")
                     touchmenu_instance:updateItems()
                 end,
+                radio = true,
             }
         }
     }
@@ -345,7 +348,7 @@ function WeatherMenu:getContentFillMenuItem(display_style)
                 unit = "%",
                 ok_text = _("Save"),
                 callback = function(spin)
-                    G_reader_settings:saveSetting("weather_fill_percent", tostring(spin.value))
+                    G_reader_settings:saveSetting("weather_fill_percent", spin.value)
                     G_reader_settings:flush()
                     touchmenu_instance:updateItems()
                 end,
@@ -366,7 +369,7 @@ function WeatherMenu:getCoverScalingMenuItem()
             {
                 text = _("Fit to screen"),
                 checked_func = function()
-                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
+                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "zoom"
                     return cover_scaling == "fit"
                 end,
                 keep_menu_open = true,
@@ -376,11 +379,12 @@ function WeatherMenu:getCoverScalingMenuItem()
                     logger.dbg("WeatherLockscreen: Saved cover scaling: fit")
                     touchmenu_instance:updateItems()
                 end,
+                radio = true,
             },
             {
                 text = _("Zoom to fill"),
                 checked_func = function()
-                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
+                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "zoom"
                     return cover_scaling == "zoom"
                 end,
                 keep_menu_open = true,
@@ -390,11 +394,12 @@ function WeatherMenu:getCoverScalingMenuItem()
                     logger.dbg("WeatherLockscreen: Saved cover scaling: zoom")
                     touchmenu_instance:updateItems()
                 end,
+                radio = true,
             },
             {
                 text = _("Stretch to fill"),
                 checked_func = function()
-                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "fit"
+                    local cover_scaling = G_reader_settings:readSetting("weather_cover_scaling") or "zoom"
                     return cover_scaling == "stretch"
                 end,
                 keep_menu_open = true,
@@ -404,6 +409,7 @@ function WeatherMenu:getCoverScalingMenuItem()
                     logger.dbg("WeatherLockscreen: Saved cover scaling: stretch")
                     touchmenu_instance:updateItems()
                 end,
+                radio = true,
             },
         },
         separator = true,
@@ -700,6 +706,7 @@ function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, l
         callback = function(touchmenu_instance)
             plugin_instance:setPeriodicRefreshInterval(interval, type, touchmenu_instance)
         end,
+        radio = true,
     }
 end
 
