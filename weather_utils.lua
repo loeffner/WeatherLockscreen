@@ -158,167 +158,86 @@ end
 
 -- This function was inspired by Project: Title. Thanks!
 function WeatherUtils:installIcons()
-    local icons_path = DataStorage:getDataDir() .. "/icons"
-    local icons_list = {
-        "hourglass",
+    -- Icon groups: { dest_dir, bundled_subdir, file_list }
+    local icon_groups = {
+        {
+            dest = DataStorage:getDataDir() .. "/icons",
+            src_subdir = "icons",
+            files = { "hourglass" },
+        },
+        {
+            dest = DataStorage:getDataDir() .. "/icons/moonphases",
+            src_subdir = "icons/moonphases",
+            files = {
+                "new_moon", "waxing_crescent", "first_quarter", "waxing_gibbous",
+                "full_moon", "waning_gibbous", "last_quarter", "waning_crescent",
+            },
+        },
+        {
+            dest = DataStorage:getDataDir() .. "/icons/arrows",
+            src_subdir = "icons/arrows",
+            files = {
+                "arrow_n", "arrow_ne", "arrow_e", "arrow_se",
+                "arrow_s", "arrow_sw", "arrow_w", "arrow_nw",
+            },
+        },
     }
 
-    -- Moon phase icons (used in night owl mode)
-    local moonphases_path = DataStorage:getDataDir() .. "/icons/moonphases"
-    local moonphases_list = {
-        "new_moon",
-        "waxing_crescent",
-        "first_quarter",
-        "waxing_gibbous",
-        "full_moon",
-        "waning_gibbous",
-        "last_quarter",
-        "waning_crescent",
-    }
-
-    -- Arrow icons for wind direction (used in retro analog mode)
-    local arrows_path = DataStorage:getDataDir() .. "/icons/arrows"
-    local arrows_list = {
-        "arrow_n",
-        "arrow_ne",
-        "arrow_e",
-        "arrow_se",
-        "arrow_s",
-        "arrow_sw",
-        "arrow_w",
-        "arrow_nw",
-    }
-
-    local function checkicons()
-        logger.dbg("WeatherLockscreen: Checking for icons")
-        local icons_found = true
-        for _, icon in ipairs(icons_list) do
-            local icon_file = icons_path .. "/" .. icon .. ".svg"
-            if not util.fileExists(icon_file) then
-                icons_found = false
-                break
+    --- Check whether all .svg files in a group exist at their destination.
+    local function allPresent(group)
+        for _, name in ipairs(group.files) do
+            if not util.fileExists(group.dest .. "/" .. name .. ".svg") then
+                return false
             end
         end
-        if icons_found then
-            logger.dbg("WeatherLockscreen: All icons found")
-            return true
-        else
-            return false
+        return true
+    end
+
+    -- Fast path: everything already installed
+    local all_ok = true
+    for _, group in ipairs(icon_groups) do
+        if not allPresent(group) then
+            all_ok = false
+            break
+        end
+    end
+    if all_ok then return true end
+
+    -- Ensure destination directories exist
+    for _, group in ipairs(icon_groups) do
+        if not util.directoryExists(group.dest) then
+            logger.dbg("WeatherLockscreen: Creating folder", group.dest)
+            if not util.makePath(group.dest .. "/") then return false end
         end
     end
 
-    local function checkmoonphases()
-        logger.dbg("WeatherLockscreen: Checking for moon phase icons")
-        local moonphases_found = true
-        for _, moonphase in ipairs(moonphases_list) do
-            local moonphase_file = moonphases_path .. "/" .. moonphase .. ".svg"
-            if not util.fileExists(moonphase_file) then
-                moonphases_found = false
-                break
-            end
-        end
-        if moonphases_found then
-            logger.dbg("WeatherLockscreen: All moon phase icons found")
-            return true
-        else
-            return false
-        end
+    local plugin_dir = self:getPluginDir()
+    if not plugin_dir then
+        logger.warn("WeatherLockscreen: plugin dir unknown; cannot copy bundled icons")
+        return false
     end
 
-    local function checkarrows()
-        logger.dbg("WeatherLockscreen: Checking for arrow icons")
-        local arrows_found = true
-        for _, arrow in ipairs(arrows_list) do
-            local arrow_file = arrows_path .. "/" .. arrow .. ".svg"
-            if not util.fileExists(arrow_file) then
-                arrows_found = false
-                break
-            end
-        end
-        if arrows_found then
-            logger.dbg("WeatherLockscreen: All arrow icons found")
-            return true
-        else
-            return false
-        end
-    end
-
-    if checkicons() and checkmoonphases() and checkarrows() then return true end
-
-    local result
-    if not util.directoryExists(icons_path) then
-        result = util.makePath(icons_path .. "/")
-        logger.dbg("WeatherLockscreen: Creating icons folder")
-        if not result then return false end
-    end
-
-    if not util.directoryExists(moonphases_path) then
-        result = util.makePath(moonphases_path .. "/")
-        logger.dbg("WeatherLockscreen: Creating moonphases folder")
-        if not result then return false end
-    end
-
-    if not util.directoryExists(arrows_path) then
-        result = util.makePath(arrows_path .. "/")
-        logger.dbg("WeatherLockscreen: Creating arrows folder")
-        if not result then return false end
-    end
-
-    if util.directoryExists(icons_path) then
-        local plugin_dir = self:getPluginDir()
-        if not plugin_dir then
-            logger.warn("WeatherLockscreen: plugin dir unknown; cannot copy bundled icons")
-            return false
-        end
-
-        for _, icon in ipairs(icons_list) do
-            -- check icon files one at a time, and only copy when missing
-            -- this will preserve custom icons set by the user
-            local icon_file = icons_path .. "/" .. icon .. ".svg"
-            if not util.fileExists(icon_file) then
-                local bundled_icon_file = plugin_dir .. "/icons/" .. icon .. ".svg"
-                if util.fileExists(bundled_icon_file) then
-                    logger.dbg("WeatherLockscreen: Copying icon " .. icon)
-                    ffiUtil.copyFile(bundled_icon_file, icon_file)
+    -- Copy missing icons (preserves user-customised files)
+    for _, group in ipairs(icon_groups) do
+        for _, name in ipairs(group.files) do
+            local dest_file = group.dest .. "/" .. name .. ".svg"
+            if not util.fileExists(dest_file) then
+                local src_file = plugin_dir .. "/" .. group.src_subdir .. "/" .. name .. ".svg"
+                if util.fileExists(src_file) then
+                    logger.dbg("WeatherLockscreen: Copying icon", name)
+                    ffiUtil.copyFile(src_file, dest_file)
                 else
-                    logger.warn("WeatherLockscreen: bundled icon missing: " .. bundled_icon_file)
-                end
-            end
-        end
-
-        for _, moonphase in ipairs(moonphases_list) do
-            -- check moonphase files one at a time, and only copy when missing
-            -- this will preserve custom moonphases set by the user
-            local moonphase_file = moonphases_path .. "/" .. moonphase .. ".svg"
-            if not util.fileExists(moonphase_file) then
-                local bundled_moonphase_file = plugin_dir .. "/icons/moonphases/" .. moonphase .. ".svg"
-                if util.fileExists(bundled_moonphase_file) then
-                    logger.dbg("WeatherLockscreen: Copying moon phase " .. moonphase)
-                    ffiUtil.copyFile(bundled_moonphase_file, moonphase_file)
-                else
-                    logger.warn("WeatherLockscreen: bundled moon phase missing: " .. bundled_moonphase_file)
-                end
-            end
-        end
-
-        for _, arrow in ipairs(arrows_list) do
-            -- check arrow files one at a time, and only copy when missing
-            -- this will preserve custom arrows set by the user
-            local arrow_file = arrows_path .. "/" .. arrow .. ".svg"
-            if not util.fileExists(arrow_file) then
-                local bundled_arrow_file = plugin_dir .. "/icons/arrows/" .. arrow .. ".svg"
-                if util.fileExists(bundled_arrow_file) then
-                    logger.dbg("WeatherLockscreen: Copying arrow " .. arrow)
-                    ffiUtil.copyFile(bundled_arrow_file, arrow_file)
-                else
-                    logger.warn("WeatherLockscreen: bundled arrow missing: " .. bundled_arrow_file)
+                    logger.warn("WeatherLockscreen: bundled icon missing:", src_file)
                 end
             end
         end
     end
 
-    if checkicons() and checkmoonphases() and checkarrows() then return true end
-    return false
+    -- Final verification
+    for _, group in ipairs(icon_groups) do
+        if not allPresent(group) then return false end
+    end
+    return true
 end
 
 function WeatherUtils:saveWeatherCache(weather_data)
