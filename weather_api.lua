@@ -270,7 +270,7 @@ function WeatherAPI:searchLocations(query, api_key)
     local code, err = http_request_code(url, sink_table)
     if not code then
         logger.warn("WeatherLockscreen: Location search HTTP request failed:", err or "unknown error")
-        return nil, _("API error") .. " (" .. code .. ")"
+        return nil, _("API error") .. " (" .. (err or "unknown") .. ")"
     end
 
     if code == 200 then
