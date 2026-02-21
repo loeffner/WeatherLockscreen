@@ -263,22 +263,20 @@ You can find a user patch to modify the hours here:
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Work in Progress for 0.9.6
+## Work in Progress for 0.9.7
 <details>
 <summary>Done</summary>
 
-- Fallback: A more configurable fallback, when no weather data is available.
 </details>
 
 <details>
 <summary>In progress</summary>
+
 </details>
 
 <details>
 <summary>Backlog</summary>
 
-- A landscape display mode
-- A transparent display mode (either transparent image over weather or transparent weather over image)
 </details>
 
 ## Related Projects
