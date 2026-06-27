@@ -93,6 +93,26 @@ msgstr ""
 msgid "Cover"
 msgstr ""
 
+# Orientation Settings
+msgid "Orientation"
+msgstr ""
+
+msgid "Portrait"
+msgstr ""
+
+msgid "Landscape"
+msgstr ""
+
+# Hourly Forecast Settings
+msgid "Forecast hours shown"
+msgstr ""
+
+msgid "Forecast hours"
+msgstr ""
+
+msgid "How many hourly forecast entries to show."
+msgstr ""
+
 # Temperature Scale Settings
 msgid "Temperature Scale"
 msgstr ""

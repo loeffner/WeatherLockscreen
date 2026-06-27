@@ -70,6 +70,7 @@ function WeatherLockscreen:initDefaultSettings()
 
         -- Display settings
         weather_show_header = true, -- nilOrTrue default is true
+        weather_orientation = "portrait", -- "portrait" or "landscape" (day/default only)
         weather_override_scaling = false,
         weather_fill_percent = 90,
         weather_cover_scaling = "zoom",
@@ -254,14 +255,27 @@ function WeatherLockscreen:patchScreensaver()
             -- Set device to screen saver mode first
             Device.screen_saver_mode = true
 
-            -- Handle rotation if needed
+            -- Handle rotation: portrait by default; landscape only for the
+            -- supported modes (Today / Today & Tomorrow) when the user opted in.
+            local rotation_display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+            local want_landscape = G_reader_settings:readSetting("weather_orientation") == "landscape"
+                and (rotation_display_style == "day" or rotation_display_style == "default")
             local rotation_mode = Screen:getRotationMode()
             Device.orig_rotation_mode = rotation_mode
             local bit = require("bit")
-            if bit.band(Device.orig_rotation_mode, 1) == 1 then
-                Screen:setRotationMode(Screen.DEVICE_ROTATED_UPRIGHT)
+            local is_currently_landscape = bit.band(rotation_mode, 1) == 1
+            if want_landscape then
+                if not is_currently_landscape then
+                    Screen:setRotationMode(Screen.DEVICE_ROTATED_CLOCKWISE)
+                else
+                    Device.orig_rotation_mode = nil
+                end
             else
-                Device.orig_rotation_mode = nil
+                if is_currently_landscape then
+                    Screen:setRotationMode(Screen.DEVICE_ROTATED_UPRIGHT)
+                else
+                    Device.orig_rotation_mode = nil
+                end
             end
 
             -- Show loading icon while fetching weather data

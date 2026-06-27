@@ -88,6 +88,26 @@ msgstr "Retro Analog"
 msgid "Cover"
 msgstr "Cover"
 
+# Orientation Settings
+msgid "Orientation"
+msgstr "Ausrichtung"
+
+msgid "Portrait"
+msgstr "Hochformat"
+
+msgid "Landscape"
+msgstr "Querformat"
+
+# Hourly Forecast Settings
+msgid "Forecast hours shown"
+msgstr "Angezeigte Vorhersagestunden"
+
+msgid "Forecast hours"
+msgstr "Vorhersagestunden"
+
+msgid "How many hourly forecast entries to show."
+msgstr "Wie viele stündliche Vorhersageeinträge angezeigt werden sollen."
+
 # Temperature Scale Settings
 msgid "Temperature Scale"
 msgstr "Temperatureinheit"

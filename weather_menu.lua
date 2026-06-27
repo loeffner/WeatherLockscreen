@@ -39,6 +39,12 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
         table.insert(menu_items, self:getCoverScalingMenuItem())
     end
 
+    -- Conditionally add orientation + hourly-forecast options for modes that show hours
+    if display_style == "day" or display_style == "default" then
+        table.insert(menu_items, self:getOrientationMenuItem(plugin_instance))
+        table.insert(menu_items, self:getHourlyHoursMenuItem(plugin_instance, display_style))
+    end
+
     table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
     table.insert(menu_items, self:getFallbackMenuItem())
     table.insert(menu_items, self:getRtcModeMenuItem(plugin_instance))
@@ -251,6 +257,38 @@ function WeatherMenu:getDisplayStyleOption(plugin_instance, style_value, style_l
     }
 end
 
+function WeatherMenu:getOrientationMenuItem(plugin_instance)
+    return {
+        text_func = function()
+            local orientation = G_reader_settings:readSetting("weather_orientation") or "portrait"
+            local names = { portrait = _("Portrait"), landscape = _("Landscape") }
+            return T(_("Orientation") .. " (" .. (names[orientation] or names.portrait) .. ")")
+        end,
+        sub_item_table = {
+            self:getOrientationOption(plugin_instance, "portrait", _("Portrait")),
+            self:getOrientationOption(plugin_instance, "landscape", _("Landscape")),
+        },
+    }
+end
+
+function WeatherMenu:getOrientationOption(plugin_instance, orientation_value, orientation_label)
+    return {
+        text = orientation_label,
+        checked_func = function()
+            local orientation = G_reader_settings:readSetting("weather_orientation") or "portrait"
+            return orientation == orientation_value
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            G_reader_settings:saveSetting("weather_orientation", orientation_value)
+            G_reader_settings:flush()
+            logger.dbg("WeatherLockscreen: Saved orientation:", orientation_value)
+            touchmenu_instance:updateItems()
+        end,
+        radio = true,
+    }
+end
+
 function WeatherMenu:getTemperatureScaleMenuItem(plugin_instance)
     return {
         text_func = function()
@@ -356,6 +394,39 @@ function WeatherMenu:getContentFillMenuItem(display_style)
             UIManager:show(spin_widget)
         end,
         separator = display_style ~= "reading",
+    }
+end
+
+function WeatherMenu:getHourlyHoursMenuItem(plugin_instance, display_style)
+    local default_count = display_style == "day" and #WeatherUtils.target_hours_expand or #WeatherUtils.target_hours
+    return {
+        text_func = function()
+            local count = G_reader_settings:readSetting("weather_hourly_count") or default_count
+            return T(_("Forecast hours shown") .. " (" .. count .. ")")
+        end,
+        keep_menu_open = true,
+        callback = function(touchmenu_instance)
+            local SpinWidget = require("ui/widget/spinwidget")
+            local count = G_reader_settings:readSetting("weather_hourly_count") or default_count
+            local spin_widget = SpinWidget:new {
+                title_text = _("Forecast hours"),
+                info_text = _("How many hourly forecast entries to show."),
+                value = count,
+                value_min = 3,
+                value_max = 12,
+                value_step = 1,
+                value_hold_step = 2,
+                default_value = default_count,
+                ok_text = _("Save"),
+                callback = function(spin)
+                    G_reader_settings:saveSetting("weather_hourly_count", spin.value)
+                    G_reader_settings:flush()
+                    touchmenu_instance:updateItems()
+                end,
+            }
+            UIManager:show(spin_widget)
+        end,
+        separator = true,
     }
 end
 
