@@ -91,6 +91,26 @@ msgstr "Retro Analog"
 msgid "Cover"
 msgstr "Kapak"
 
+# Orientation Settings
+msgid "Orientation"
+msgstr "Yönlendirme"
+
+msgid "Portrait"
+msgstr "Dikey"
+
+msgid "Landscape"
+msgstr "Yatay"
+
+# Hourly Forecast Settings
+msgid "Forecast hours shown"
+msgstr "Gösterilen tahmin saatleri"
+
+msgid "Forecast hours"
+msgstr "Tahmin saatleri"
+
+msgid "How many hourly forecast entries to show."
+msgstr "Kaç saatlik tahmin girişi gösterilsin."
+
 # Temperature Scale Settings
 msgid "Temperature Scale"
 msgstr "Sıcaklık ölçeği"

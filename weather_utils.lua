@@ -639,6 +639,32 @@ end
 WeatherUtils.target_hours = { 6, 12, 18 }                -- For today & tomorrow display
 WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For today display
 
+--- Generate `count` hour numbers evenly spread across a 24-hour day.
+--- @param count number  How many hours to produce.
+--- @return table  Sorted list of hour numbers (0-23).
+function WeatherUtils:spreadHours(count)
+    if not count or count <= 0 then return {} end
+    local hours = {}
+    local step = 24 / count
+    for i = 0, count - 1 do
+        hours[#hours + 1] = math.floor(i * step + 0.5) % 24
+    end
+    return hours
+end
+
+--- Resolve which hours the hourly forecast should show for a display.
+--- Returns the curated default unless the user has chosen a different count
+--- via the "weather_hourly_count" setting (so unchanged installs render identically).
+--- @param default_hours table  The mode's curated default hour list.
+--- @return table  List of hour numbers to display.
+function WeatherUtils:getHourlySelection(default_hours)
+    local count = G_reader_settings:readSetting("weather_hourly_count")
+    if not count or count == #default_hours then
+        return default_hours
+    end
+    return self:spreadHours(count)
+end
+
 
 -- Static KOReader to WeatherAPI language code mapping
 WeatherUtils.lang_map = {

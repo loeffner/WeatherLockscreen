@@ -13,6 +13,7 @@ local DataStorage = require("datastorage")
 local util = require("util")
 local ImageWidget = require("ui/widget/imagewidget")
 local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
 local HorizontalSpan = require("ui/widget/horizontalspan")
 local CenterContainer = require("ui/widget/container/centercontainer")
@@ -102,12 +103,15 @@ end
 --- @param buildFunc function(scale_factor) → widget  Builder that creates the content widget at the given scale.
 --- @param available_height number  The pixel height the content should fit into.
 --- @param default_fill number|nil  Default fill percentage when override is off (default 90).
+--- @param available_width number|nil  Optional pixel width cap (used by width-dominated landscape layouts).
 --- @return widget, number  The (possibly rebuilt) widget and the final scale factor.
-function DisplayHelper:scaleToFit(buildFunc, available_height, default_fill)
+function DisplayHelper:scaleToFit(buildFunc, available_height, default_fill, available_width)
     default_fill = default_fill or 90
 
     local widget = buildFunc(1.0)
-    local content_height = widget:getSize().h
+    local content_size = widget:getSize()
+    local content_height = content_size.h
+    local content_width = content_size.w
 
     local fill_percent = G_reader_settings:readSetting("weather_override_scaling")
         and tonumber(G_reader_settings:readSetting("weather_fill_percent"))
@@ -121,64 +125,117 @@ function DisplayHelper:scaleToFit(buildFunc, available_height, default_fill)
     local scale = 1.0
     if content_height > max_target then
         scale = max_target / content_height
-        widget = buildFunc(scale)
     elseif content_height < min_target then
         scale = min_target / content_height
+    end
+
+    -- Landscape layouts are width-dominated: never let content overflow the width.
+    if available_width and content_width > 0 then
+        local width_max_scale = (available_width * (max_fill / 100)) / content_width
+        if scale > width_max_scale then
+            scale = width_max_scale
+        end
+    end
+
+    if scale ~= 1.0 then
         widget = buildFunc(scale)
     end
 
     return widget, scale
 end
 
---- Build a horizontal row of hourly forecast columns (hour label, icon, temperature).
+--- Build a single hourly forecast column (hour label, icon, temperature).
+local function buildHourColumn(hour_data, icon_size, font_size)
+    local col = {}
+    table.insert(col, TextWidget:new {
+        text = hour_data.hour,
+        face = Font:getFace("cfont", font_size),
+    })
+    if hour_data.icon_path then
+        table.insert(col, ImageWidget:new {
+            file = hour_data.icon_path,
+            width = icon_size,
+            height = icon_size,
+            alpha = true,
+            original_in_nightmode = false,
+        })
+    end
+    table.insert(col, TextWidget:new {
+        text = WeatherUtils:getHourlyTemp(hour_data, false),
+        face = Font:getFace("cfont", font_size),
+    })
+    return VerticalGroup:new {
+        align = "center",
+        unpack(col),
+    }
+end
+
+--- Build a grid of hourly forecast columns, wrapping into rows of `cols` columns.
 --- @param hourly_data table  Array of hour entries (each with hour, hour_num, icon_path, temp_c, temp_f).
+--- @param target_hours table  Array of hour numbers to include (e.g. {6, 12, 18}).
+--- @param cols number|nil  Columns per row; nil or <= 0 puts every column in a single row.
+--- @param icon_size number  Pixel size for the weather icons.
+--- @param font_size number  Font size for the hour label and temperature text.
+--- @param h_spacing number  Horizontal spacing between columns.
+--- @param v_spacing number|nil  Vertical spacing between rows (default 0).
+--- @return widget|nil  VerticalGroup of HorizontalGroup rows (or a single HorizontalGroup), or nil if no hours matched.
+function DisplayHelper:buildHourlyGrid(hourly_data, target_hours, cols, icon_size, font_size, h_spacing, v_spacing)
+    if not hourly_data or #hourly_data == 0 then return nil end
+    v_spacing = v_spacing or 0
+
+    -- Build a fast lookup set from target_hours
+    local target_set = {}
+    for _, h in ipairs(target_hours) do target_set[h] = true end
+
+    -- Collect matching columns in chronological order
+    local columns = {}
+    for _, hour_data in ipairs(hourly_data) do
+        if target_set[hour_data.hour_num] then
+            table.insert(columns, buildHourColumn(hour_data, icon_size, font_size))
+        end
+    end
+
+    if #columns == 0 then return nil end
+    if not cols or cols <= 0 then cols = #columns end
+
+    -- Chunk columns into rows of `cols`
+    local rows = {}
+    local row = {}
+    for i, column in ipairs(columns) do
+        if #row > 0 then
+            table.insert(row, HorizontalSpan:new { width = h_spacing })
+        end
+        table.insert(row, column)
+        if i % cols == 0 or i == #columns then
+            table.insert(rows, HorizontalGroup:new { align = "center", unpack(row) })
+            row = {}
+        end
+    end
+
+    if #rows == 1 then
+        return rows[1]
+    end
+
+    local grid = {}
+    for i, r in ipairs(rows) do
+        if i > 1 then
+            table.insert(grid, VerticalSpan:new { width = v_spacing })
+        end
+        table.insert(grid, r)
+    end
+    return VerticalGroup:new { align = "center", unpack(grid) }
+end
+
+--- Build a single horizontal row of hourly forecast columns.
+--- Thin wrapper over buildHourlyGrid for callers that want all hours in one row.
+--- @param hourly_data table  Array of hour entries.
 --- @param target_hours table  Array of hour numbers to include (e.g. {6, 12, 18}).
 --- @param icon_size number  Pixel size for the weather icons.
 --- @param font_size number  Font size for the hour label and temperature text.
 --- @param spacing number  Horizontal spacing between columns.
 --- @return widget|nil  HorizontalGroup widget, or nil if no hours matched.
 function DisplayHelper:buildHourlyRow(hourly_data, target_hours, icon_size, font_size, spacing)
-    if not hourly_data or #hourly_data == 0 then return nil end
-
-    -- Build a fast lookup set from target_hours
-    local target_set = {}
-    for _, h in ipairs(target_hours) do target_set[h] = true end
-
-    local row = {}
-    for _, hour_data in ipairs(hourly_data) do
-        if target_set[hour_data.hour_num] then
-            if #row > 0 then
-                table.insert(row, HorizontalSpan:new { width = spacing })
-            end
-
-            local col = {}
-            table.insert(col, TextWidget:new {
-                text = hour_data.hour,
-                face = Font:getFace("cfont", font_size),
-            })
-            if hour_data.icon_path then
-                table.insert(col, ImageWidget:new {
-                    file = hour_data.icon_path,
-                    width = icon_size,
-                    height = icon_size,
-                    alpha = true,
-                    original_in_nightmode = false,
-                })
-            end
-            table.insert(col, TextWidget:new {
-                text = WeatherUtils:getHourlyTemp(hour_data, false),
-                face = Font:getFace("cfont", font_size),
-            })
-
-            table.insert(row, VerticalGroup:new {
-                align = "center",
-                unpack(col),
-            })
-        end
-    end
-
-    if #row == 0 then return nil end
-    return HorizontalGroup:new { align = "center", unpack(row) }
+    return self:buildHourlyGrid(hourly_data, target_hours, nil, icon_size, font_size, spacing, 0)
 end
 
 function DisplayHelper:createLoadingWidget()
