@@ -683,18 +683,15 @@ function WeatherUtils:getOrientationMode()
 end
 
 --- Apply the configured lockscreen orientation. Only takes effect when the user
---- has enabled "Override rotation" and is on a mode with landscape layouts
---- (Today / Today & Tomorrow); otherwise KOReader's own rotation is left in place.
+--- has enabled "Override rotation"; otherwise KOReader's own rotation is left in
+--- place. Applies to every display mode (each view builds from the current screen
+--- dimensions, so it renders in the chosen orientation).
 --- Shared by the sleep screen and the dashboard so they behave identically.
 --- @return number|nil  The previous rotation mode if it was changed (so the caller
 ---   can restore it later), or nil if no change was needed.
 function WeatherUtils:applyOrientation()
     if not G_reader_settings:isTrue("weather_override_rotation") then
         return nil -- use KOReader's rotation
-    end
-    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-    if display_style ~= "day" and display_style ~= "default" then
-        return nil
     end
     local Screen = require("device").screen
     local target = self:getOrientationMode()
