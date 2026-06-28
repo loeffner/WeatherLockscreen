@@ -56,6 +56,18 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     logger.dbg("WeatherLockscreen: Using API key:", api_key and (api_key:sub(1, 8) .. "...") or "none")
     logger.dbg("WeatherLockscreen: Using language:", lang)
 
+    -- Instant cache-first render (e.g. active-sleep RTC wake): return the last
+    -- cached data within the max-age window and never touch the network, so the
+    -- weather shows immediately instead of the library.
+    if weather_lockscreen.prefer_cache then
+        logger.dbg("WeatherLockscreen: prefer_cache set, returning cached data without network")
+        local cached_data = WeatherUtils:loadWeatherCache(WeatherUtils:getCacheMaxAge())
+        if cached_data then
+            cached_data.is_cached = true
+        end
+        return cached_data
+    end
+
     if not refresh_required then
         local cached_data = WeatherUtils:loadWeatherCache(WeatherUtils:getMinDelayBetweenUpdates())
         if cached_data and lang == cached_data.lang then

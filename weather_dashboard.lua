@@ -98,25 +98,26 @@ function WeatherDashboard:showWidget(weather_lockscreen)
 
     logger.info("WeatherLockscreen: Showing dashboard widget")
 
-    -- Close existing widget if any
-    if weather_lockscreen.dashboard_widget then
-        UIManager:close(weather_lockscreen.dashboard_widget)
-        weather_lockscreen.dashboard_widget = nil
-        logger.dbg("WeatherLockscreen: Closed existing dashboard widget")
-    end
+    -- An in-place refresh has a dashboard widget already on screen. In that case
+    -- we keep the existing weather visible and swap it once the new one is built,
+    -- instead of flashing the loading icon. The loading icon is shown only on the
+    -- first start, when nothing of ours is displayed yet.
+    local is_refresh = weather_lockscreen.dashboard_widget ~= nil
 
-    -- Close any existing loading widget
+    -- Close any stale loading widget
     if weather_lockscreen.loading_widget then
         UIManager:close(weather_lockscreen.loading_widget)
         weather_lockscreen.loading_widget = nil
     end
 
-    -- Show loading icon while fetching weather data
-    local DisplayHelper = require("display_helper")
-    weather_lockscreen.loading_widget = DisplayHelper:createLoadingWidget()
-    if weather_lockscreen.loading_widget then
-        UIManager:show(weather_lockscreen.loading_widget, "full")
-        logger.dbg("WeatherLockscreen: Loading widget displayed")
+    if not is_refresh then
+        -- Show loading icon while fetching weather data (initial start only)
+        local DisplayHelper = require("display_helper")
+        weather_lockscreen.loading_widget = DisplayHelper:createLoadingWidget()
+        if weather_lockscreen.loading_widget then
+            UIManager:show(weather_lockscreen.loading_widget, "full")
+            logger.dbg("WeatherLockscreen: Loading widget displayed")
+        end
     end
 
     -- Force refresh to fetch new data
@@ -124,16 +125,14 @@ function WeatherDashboard:showWidget(weather_lockscreen)
 
     -- Define function to create and show dashboard widget
     local function dashboardShow()
-        -- Close loading widget first
-        if weather_lockscreen.loading_widget then
-            UIManager:close(weather_lockscreen.loading_widget)
-            weather_lockscreen.loading_widget = nil
-            logger.dbg("WeatherLockscreen: Loading widget closed")
-        end
-
         local weather_widget, fallback = weather_lockscreen:createWeatherWidget()
         if not weather_widget then
             logger.warn("WeatherLockscreen: Failed to create weather widget")
+            -- Close the loading widget (shown on first start) before stopping
+            if weather_lockscreen.loading_widget then
+                UIManager:close(weather_lockscreen.loading_widget)
+                weather_lockscreen.loading_widget = nil
+            end
             self:stop(weather_lockscreen)
             return
         end
@@ -163,6 +162,10 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         -- Capture references for closures
         local plugin_instance = weather_lockscreen
         local dashboard_module = self
+
+        -- Keep the old widget (if any) up until the new one is shown, then close
+        -- it, so a refresh swaps with no flash of the reader underneath.
+        local old_widget = weather_lockscreen.dashboard_widget
 
         -- Create the dashboard widget as a modal fullscreen widget
         -- This ensures it blocks all events from reaching widgets below (like ReaderUI)
@@ -227,6 +230,17 @@ function WeatherDashboard:showWidget(weather_lockscreen)
         end
 
         UIManager:show(weather_lockscreen.dashboard_widget, "full")
+
+        -- Now that the new widget is up, close the previous one (refresh) and any
+        -- loading widget (first start), so there's never a blank/loading frame.
+        if old_widget then
+            UIManager:close(old_widget)
+        end
+        if weather_lockscreen.loading_widget then
+            UIManager:close(weather_lockscreen.loading_widget)
+            weather_lockscreen.loading_widget = nil
+            logger.dbg("WeatherLockscreen: Loading widget closed")
+        end
 
         -- Trigger screen refresh (like TRMNL does)
         UIManager:setDirty(weather_lockscreen.dashboard_widget, "full")

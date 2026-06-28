@@ -37,6 +37,16 @@ local WeatherLockscreen = WidgetContainer:extend {
     hourglass_widget = nil,
     loading_widget = nil,
     saved_frontlight_intensity = nil,
+    -- One-shot: the next screensaver show is a periodic (active-sleep) refresh,
+    -- so skip the loading icon even when no widget is currently on screen.
+    active_sleep_refresh = false,
+    -- When true, fetchWeatherData renders the last cache instantly without any
+    -- network access (used for the instant cache-first show on RTC wake).
+    prefer_cache = false,
+    -- Our own reference to the weather screensaver widget currently on screen.
+    -- KOReader nils screensaver_instance.screensaver_widget on wake, so we track
+    -- our own to reliably close the previous widget and avoid stacking them.
+    weather_screensaver_widget = nil,
     -- Dashboard mode support
     dashboard_mode_enabled = false,
     dashboard_refresh_task = nil,
@@ -132,6 +142,10 @@ function WeatherLockscreen:init()
     self.rtcRefreshCallback = function()
         logger.info("WeatherLockscreen: RTC periodic refresh triggered")
         WeatherLockscreen.refresh = true
+        -- Mark the upcoming screensaver show as a refresh so it skips the loading
+        -- icon (on Kobo this re-show happens just below; on Kindle it happens
+        -- after the wake, re-affirmed in onResume).
+        self.active_sleep_refresh = true
 
         if Device:isKobo() then
             -- Schedule redraw on the UI loop to avoid running a full Screensaver refresh while
@@ -247,35 +261,39 @@ function WeatherLockscreen:patchScreensaver()
             -- Schedule periodic refresh when screen locks
             plugin_instance:schedulePeriodicRefresh()
 
-            -- Close any existing screensaver widget
-            if screensaver_instance.screensaver_widget then
-                UIManager:close(screensaver_instance.screensaver_widget)
-                screensaver_instance.screensaver_widget = nil
-            end
+            -- Detect an in-place refresh: a weather widget is already on screen
+            -- (e.g. a periodic RTC refresh re-entering Screensaver:show), or the
+            -- active-sleep path flagged this show as a refresh (on Kindle the wake
+            -- destroys the widget, so widget-presence alone can't detect it). In
+            -- either case we keep weather visible / swap without the loading icon.
+            local is_refresh = screensaver_instance.screensaver_widget ~= nil
+                or plugin_instance.active_sleep_refresh
+            -- Consume the one-shot active-sleep flag.
+            plugin_instance.active_sleep_refresh = false
 
             -- Set device to screen saver mode first
             Device.screen_saver_mode = true
 
             -- Apply the configured orientation. KOReader's ScreenSaverWidget
             -- restores Device.orig_rotation_mode when the sleep screen closes.
-            Device.orig_rotation_mode = WeatherUtils:applyOrientation()
+            -- On an in-place refresh the rotation is already applied; don't
+            -- re-apply (it would clobber the saved original with the current).
+            if not is_refresh then
+                Device.orig_rotation_mode = WeatherUtils:applyOrientation()
+            end
 
-            -- Show loading icon while fetching weather data
-            screensaver_instance.hourglass_widget = DisplayHelper:createLoadingWidget()
-            if screensaver_instance.hourglass_widget then
-                UIManager:show(screensaver_instance.hourglass_widget, "full")
-                logger.dbg("WeatherLockscreen: Loading widget displayed")
+            -- Show the loading icon only on the initial show (nothing of ours is
+            -- displayed yet). On a refresh the existing weather stays up instead.
+            if not is_refresh then
+                screensaver_instance.hourglass_widget = DisplayHelper:createLoadingWidget()
+                if screensaver_instance.hourglass_widget then
+                    UIManager:show(screensaver_instance.hourglass_widget, "full")
+                    logger.dbg("WeatherLockscreen: Loading widget displayed")
+                end
             end
 
             -- Define function to create and show weather widget
             local function screensaverShow()
-                -- Close loading widget first
-                if screensaver_instance.hourglass_widget then
-                    UIManager:close(screensaver_instance.hourglass_widget)
-                    screensaver_instance.hourglass_widget = nil
-                    logger.dbg("WeatherLockscreen: Loading widget closed")
-                end
-
                 logger.dbg("WeatherLockscreen: Creating widget")
                 local weather_widget, fallback = plugin_instance:createWeatherWidget()
 
@@ -288,17 +306,53 @@ function WeatherLockscreen:patchScreensaver()
                             Blitbuffer.COLOR_BLACK
                     end
 
-                    screensaver_instance.screensaver_widget = ScreenSaverWidget:new {
+                    -- Keep the old widget (if any) up until the new one is shown,
+                    -- then close it, so a refresh swaps with no blank frame.
+                    -- Track our widget on the plugin instance, not on
+                    -- screensaver_instance: KOReader nils its own reference when
+                    -- the device wakes, which would leak the previous cycle's
+                    -- widget (they'd stack up across active-sleep refreshes).
+                    local old_widget = plugin_instance.weather_screensaver_widget
+
+                    local new_widget = ScreenSaverWidget:new {
                         widget = weather_widget,
                         background = bg_color,
                         covers_fullscreen = true,
                     }
-                    screensaver_instance.screensaver_widget.modal = true
-                    screensaver_instance.screensaver_widget.dithered = true
+                    new_widget.modal = true
+                    new_widget.dithered = true
+                    screensaver_instance.screensaver_widget = new_widget
+                    plugin_instance.weather_screensaver_widget = new_widget
 
-                    UIManager:show(screensaver_instance.screensaver_widget, "full")
+                    UIManager:show(new_widget, "full")
                     logger.dbg("WeatherLockscreen: Widget displayed")
+
+                    if old_widget and old_widget ~= new_widget then
+                        UIManager:close(old_widget)
+                    end
+
+                    -- Close the loading widget (only shown on the initial show)
+                    if screensaver_instance.hourglass_widget then
+                        UIManager:close(screensaver_instance.hourglass_widget)
+                        screensaver_instance.hourglass_widget = nil
+                        logger.dbg("WeatherLockscreen: Loading widget closed")
+                    end
                 else
+                    -- Close the loading widget before falling back
+                    if screensaver_instance.hourglass_widget then
+                        UIManager:close(screensaver_instance.hourglass_widget)
+                        screensaver_instance.hourglass_widget = nil
+                        logger.dbg("WeatherLockscreen: Loading widget closed")
+                    end
+
+                    -- Close any existing weather widget (e.g. a refresh that
+                    -- failed to fetch) so it isn't left under the fallback.
+                    if plugin_instance.weather_screensaver_widget then
+                        UIManager:close(plugin_instance.weather_screensaver_widget)
+                        plugin_instance.weather_screensaver_widget = nil
+                    end
+                    screensaver_instance.screensaver_widget = nil
+
                     -- Use configured fallback screensaver type
                     local fallback_type = G_reader_settings:readSetting("weather_fallback_type") or "cover"
                     logger.warn("WeatherLockscreen: No weather data, using fallback:", fallback_type)
@@ -322,7 +376,7 @@ function WeatherLockscreen:patchScreensaver()
                 end
             end
             -- Create weather widget
-            if WeatherUtils:wifiEnableActionTurnOn() then
+            if WeatherUtils:wifiEnableActionTurnOn() and not plugin_instance.prefer_cache then
                 -- TODO: See if we want to use the cache before turning on the wifi (needs refactoring)
                 logger.dbg("WeatherLockscreen: Creating widget (will wait for network if needed)")
 
@@ -478,6 +532,18 @@ function WeatherLockscreen:onSuspend()
     end
 end
 
+-- Close the weather screensaver widget we currently track (if any). Safe to call
+-- repeatedly; UIManager:close on an already-closed widget is a no-op.
+function WeatherLockscreen:closeWeatherScreensaver()
+    if self.weather_screensaver_widget then
+        UIManager:close(self.weather_screensaver_widget)
+        self.weather_screensaver_widget = nil
+        local Screensaver = require("ui/screensaver")
+        Screensaver.screensaver_widget = nil
+        logger.dbg("WeatherLockscreen: Closed weather screensaver widget")
+    end
+end
+
 function WeatherLockscreen:onResume()
     logger.dbg("WeatherLockscreen: Device resuming")
 
@@ -493,21 +559,33 @@ function WeatherLockscreen:onResume()
         self.simulated_wakeup = false
         logger.info("WeatherLockscreen: Woke up from scheduled RTC alarm")
 
-        -- Close any existing loading widget
+        -- Close any existing loading widget.
         if self.loading_widget then
             UIManager:close(self.loading_widget)
             self.loading_widget = nil
             logger.dbg("WeatherLockscreen: Closed existing loading widget")
         end
 
-        -- Show loading widget during refresh
-        self.loading_widget = DisplayHelper:createLoadingWidget()
-        if self.loading_widget then
-            UIManager:show(self.loading_widget, "full")
-            logger.dbg("WeatherLockscreen: Loading widget displayed during RTC refresh")
-        end
+        -- Cache-first refresh: on a Kindle RTC wake the screensaver widget is
+        -- gone (the library is showing). Re-display the last cached weather
+        -- instantly (no network, no loading icon) so weather stays on screen,
+        -- then fetch fresh data and swap it in place, then re-suspend.
+        local Screensaver = require("ui/screensaver")
 
-        -- Trigger suspend again after refresh completes
+        -- Step 1: instant cached render (prefer_cache short-circuits the network).
+        self.active_sleep_refresh = true
+        self.prefer_cache = true
+        Screensaver:show()
+        self.prefer_cache = false
+
+        -- Step 2: fetch fresh data and swap in place (the existing cached widget
+        -- stays visible during the Wi-Fi connect; no loading icon). Re-affirm the
+        -- flag in case step 1 had no cache to show (so we still skip the icon).
+        self.active_sleep_refresh = true
+        self.refresh = true
+        Screensaver:show()
+
+        -- Step 3: re-suspend after the refresh has had time to complete.
         UIManager:scheduleIn(10, function()
             logger.info("WeatherLockscreen: Triggering suspend after refresh")
             WeatherUtils:toggleSuspend()
@@ -521,6 +599,11 @@ function WeatherLockscreen:onResume()
             logger.dbg("WeatherLockscreen: Closed existing loading widget")
         end
 
+        -- Real unlock: close any weather screensaver widget we left on screen
+        -- (the cache-first cover-up shown during active-sleep refreshes), so the
+        -- user doesn't have to tap through stale widgets to reach the reader.
+        self:closeWeatherScreensaver()
+
         if not WeatherDashboard:onResume(self) then
             -- Resume frontlight intensity
             WeatherUtils:resumeFrontlight(self)
@@ -533,6 +616,9 @@ function WeatherLockscreen:onCloseWidget()
     if self.dashboard_mode_enabled then
         WeatherDashboard:stop(self)
     end
+
+    -- Close any lingering weather screensaver widget
+    self:closeWeatherScreensaver()
 
     -- Cancel RTC wakeup tasks on close
     if self.rtc_wakeup_scheduled and self.wakeup_mgr then
