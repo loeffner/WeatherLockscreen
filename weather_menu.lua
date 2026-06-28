@@ -17,16 +17,36 @@ local WeatherUtils = require("weather_utils")
 
 local WeatherMenu = {}
 
--- Prefix a menu item's label with a glyph. Works for both static `text` and
--- dynamic `text_func` items. Returns the item for convenient inline use.
--- Encode a BMP Unicode codepoint as UTF-8 (LuaJIT has no \u{} escape). Used for
--- Nerd Font icons (Private Use Area) so every menu icon comes from one
--- consistently-sized set (bundled nerdfonts/symbols.ttf) instead of mismatched
--- FreeSans/FreeSerif symbols. See memory koreader-menu-glyph-fonts.
+-- Encode a BMP Unicode codepoint as UTF-8 (LuaJIT has no \u{} escape). Used to
+-- build the icon set below from Nerd Font (Private Use Area) codepoints.
 local function nf(cp)
     return string.char(0xE0 + math.floor(cp / 0x1000), 0x80 + math.floor(cp / 0x40) % 0x40, 0x80 + cp % 0x40)
 end
 
+-- Menu icons, addressable by name. All come from one consistently-sized set
+-- (bundled nerdfonts/symbols.ttf); keys match the Material Design Icon names.
+-- See memory koreader-menu-glyph-fonts before changing/adding any.
+local ICON = {
+    map_marker       = nf(0xEA4D),
+    palette          = nf(0xEAD7),
+    thermometer      = nf(0xE20A),
+    format_title     = nf(0xECF3),
+    arrow_expand_all = nf(0xE74B),
+    crop             = nf(0xE89D),
+    screen_rotation  = nf(0xEB74),
+    crop_portrait    = nf(0xE8A0),
+    database         = nf(0xE8B7),
+    backup_restore   = nf(0xE76E),
+    sleep            = nf(0xEBB1),
+    view_dashboard   = nf(0xEC6D),
+    clock            = nf(0xE84F),
+    timer            = nf(0xEC1A),
+    timer_sand       = nf(0xEC1E),
+    broom            = nf(0xE7E1),
+}
+
+-- Prefix a menu item's label with a glyph. Works for both static `text` and
+-- dynamic `text_func` items. Returns the item for convenient inline use.
 local function withGlyph(item, glyph)
     if item.text_func then
         local orig_func = item.text_func
@@ -39,37 +59,35 @@ end
 
 function WeatherMenu:getSubMenuItems(plugin_instance)
     local menu_items = {
-        withGlyph(self:getLocationMenuItem(plugin_instance), nf(0xEA4D)),        -- map-marker
-        withGlyph(self:getDisplayStyleMenuItem(plugin_instance), nf(0xEAD7)),    -- palette
-        withGlyph(self:getTemperatureScaleMenuItem(plugin_instance), nf(0xE20A)), -- thermometer
-        withGlyph(self:getShowHeaderMenuItem(), nf(0xECF3)),                     -- format-title
+        withGlyph(self:getLocationMenuItem(plugin_instance), ICON.map_marker),
+        withGlyph(self:getDisplayStyleMenuItem(plugin_instance), ICON.palette),
+        withGlyph(self:getTemperatureScaleMenuItem(plugin_instance), ICON.thermometer),
+        withGlyph(self:getShowHeaderMenuItem(), ICON.format_title),
     }
 
     -- Conditionally add content scaling menu when not in nightowl mode
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style ~= "nightowl" then
-        table.insert(menu_items, withGlyph(self:getOverrideScalingMenuItem(plugin_instance, display_style), nf(0xE74B))) -- arrow-expand-all
+        table.insert(menu_items, withGlyph(self:getOverrideScalingMenuItem(plugin_instance, display_style), ICON.arrow_expand_all))
         if G_reader_settings:readSetting("weather_override_scaling") then
-            table.insert(menu_items, withGlyph(self:getContentFillMenuItem(display_style), nf(0xE74B))) -- arrow-expand-all
+            table.insert(menu_items, withGlyph(self:getContentFillMenuItem(display_style), ICON.arrow_expand_all))
         end
     end
 
-    -- Conditionally add orientation options for modes that show hours.
-    -- (Forecast hours lives inside the Display Style submenu.)
-    if display_style == "day" or display_style == "default" then
-        table.insert(menu_items, withGlyph(self:getOverrideRotationMenuItem(plugin_instance), nf(0xEB74))) -- screen-rotation
-        if G_reader_settings:isTrue("weather_override_rotation") then
-            table.insert(menu_items, withGlyph(self:getOrientationMenuItem(plugin_instance), nf(0xE8A0))) -- crop-portrait
-        end
+    -- Orientation override (applies to every display mode).
+    -- (Forecast hours / Cover scaling live in the Display Style submenu.)
+    table.insert(menu_items, withGlyph(self:getOverrideRotationMenuItem(plugin_instance), ICON.screen_rotation))
+    if G_reader_settings:isTrue("weather_override_rotation") then
+        table.insert(menu_items, withGlyph(self:getOrientationMenuItem(plugin_instance), ICON.crop_portrait))
     end
 
     -- Separate the display/rotation group from the cache & refresh group
     menu_items[#menu_items].separator = true
 
-    table.insert(menu_items, withGlyph(self:getCacheMenuItem(plugin_instance), nf(0xE8B7)))       -- database
-    table.insert(menu_items, withGlyph(self:getFallbackMenuItem(), nf(0xE76E)))                   -- backup-restore
-    table.insert(menu_items, withGlyph(self:getRtcModeMenuItem(plugin_instance), nf(0xEBB1)))     -- sleep
-    table.insert(menu_items, withGlyph(self:getDashboardModeMenuItem(plugin_instance), nf(0xEC6D))) -- view-dashboard
+    table.insert(menu_items, withGlyph(self:getCacheMenuItem(plugin_instance), ICON.database))
+    table.insert(menu_items, withGlyph(self:getFallbackMenuItem(), ICON.backup_restore))
+    table.insert(menu_items, withGlyph(self:getRtcModeMenuItem(plugin_instance), ICON.sleep))
+    table.insert(menu_items, withGlyph(self:getDashboardModeMenuItem(plugin_instance), ICON.view_dashboard))
 
     return menu_items
 end
@@ -269,10 +287,10 @@ function WeatherMenu:getDisplayStyleSubItems(plugin_instance)
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style == "day" or display_style == "default" then
         items[#items].separator = true
-        table.insert(items, withGlyph(self:getHourlyHoursMenuItem(plugin_instance, display_style), nf(0xE84F))) -- clock
+        table.insert(items, withGlyph(self:getHourlyHoursMenuItem(plugin_instance, display_style), ICON.clock))
     elseif display_style == "reading" then
         items[#items].separator = true
-        table.insert(items, withGlyph(self:getCoverScalingMenuItem(), nf(0xE89D))) -- crop
+        table.insert(items, withGlyph(self:getCoverScalingMenuItem(), ICON.crop))
     end
     return items
 end
@@ -582,7 +600,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
         table.insert(sub_items, {
             text_func = function()
                 local current_minutes = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
-                return nf(0xEC1A) .. " " .. T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. _("minutes") .. ")") -- timer
+                return ICON.timer .. " " .. T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. _("minutes") .. ")")
             end,
             keep_menu_open = true,
             callback = function(touchmenu_instance)
@@ -615,7 +633,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
         text_func = function()
             local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
             local hour_text = current_hours == 1 and _("hour") or _("hours")
-            return nf(0xEC1E) .. " " .. T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")") -- timer-sand
+            return ICON.timer_sand .. " " .. T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")")
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
@@ -642,7 +660,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
     })
 
     table.insert(sub_items, {
-        text = nf(0xE7E1) .. " " .. _("Clear cache"), -- broom
+        text = ICON.broom .. " " .. _("Clear cache"),
         keep_menu_open = true,
         callback = function()
             local ConfirmBox = require("ui/widget/confirmbox")
