@@ -97,10 +97,7 @@ msgstr ""
 msgid "Orientation"
 msgstr ""
 
-msgid "Portrait"
-msgstr ""
-
-msgid "Landscape"
+msgid "Override rotation"
 msgstr ""
 
 # Hourly Forecast Settings
@@ -110,7 +107,7 @@ msgstr ""
 msgid "Forecast hours"
 msgstr ""
 
-msgid "How many hourly forecast entries to show."
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
 msgstr ""
 
 # Temperature Scale Settings

@@ -95,11 +95,8 @@ msgstr "Kapak"
 msgid "Orientation"
 msgstr "Yönlendirme"
 
-msgid "Portrait"
-msgstr "Dikey"
-
-msgid "Landscape"
-msgstr "Yatay"
+msgid "Override rotation"
+msgstr "Döndürmeyi geçersiz kıl"
 
 # Hourly Forecast Settings
 msgid "Forecast hours shown"
@@ -108,8 +105,8 @@ msgstr "Gösterilen tahmin saatleri"
 msgid "Forecast hours"
 msgstr "Tahmin saatleri"
 
-msgid "How many hourly forecast entries to show."
-msgstr "Kaç saatlik tahmin girişi gösterilsin."
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "Gösterilecek saatleri (0-23) virgülle ayırarak girin. Varsayılan için boş bırakın."
 
 # Temperature Scale Settings
 msgid "Temperature Scale"
