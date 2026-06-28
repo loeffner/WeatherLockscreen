@@ -639,53 +639,71 @@ end
 WeatherUtils.target_hours = { 6, 12, 18 }                -- For today & tomorrow display
 WeatherUtils.target_hours_expand = { 6, 10, 14, 18, 22 } -- For today display
 
---- Generate `count` hour numbers evenly spread across a 24-hour day.
---- @param count number  How many hours to produce.
---- @return table  Sorted list of hour numbers (0-23).
-function WeatherUtils:spreadHours(count)
-    if not count or count <= 0 then return {} end
+--- Parse a user-entered hours string (e.g. "8, 10, 12") into a sorted, deduped
+--- list of valid hour numbers (0-23). Non-numeric / out-of-range tokens are ignored.
+--- @param str string|nil
+--- @return table  List of hour numbers.
+function WeatherUtils:parseHours(str)
     local hours = {}
-    local step = 24 / count
-    for i = 0, count - 1 do
-        hours[#hours + 1] = math.floor(i * step + 0.5) % 24
+    if not str then return hours end
+    local seen = {}
+    for token in str:gmatch("%d+") do
+        local h = tonumber(token)
+        if h and h >= 0 and h <= 23 and not seen[h] then
+            seen[h] = true
+            hours[#hours + 1] = h
+        end
     end
+    table.sort(hours)
     return hours
 end
 
 --- Resolve which hours the hourly forecast should show for a display.
---- Returns the curated default unless the user has chosen a different count
---- via the "weather_hourly_count" setting (so unchanged installs render identically).
+--- Returns the curated default unless the user has entered specific hours via the
+--- "weather_hourly_hours" setting (so unchanged installs render identically).
 --- @param default_hours table  The mode's curated default hour list.
 --- @return table  List of hour numbers to display.
 function WeatherUtils:getHourlySelection(default_hours)
-    local count = G_reader_settings:readSetting("weather_hourly_count")
-    if not count or count == #default_hours then
+    local hours_str = G_reader_settings:readSetting("weather_hourly_hours")
+    if not hours_str or hours_str == "" then
         return default_hours
     end
-    return self:spreadHours(count)
+    local parsed = self:parseHours(hours_str)
+    if #parsed == 0 then
+        return default_hours
+    end
+    return parsed
 end
 
---- Apply the configured lockscreen orientation (portrait/landscape) for the
---- supported display modes. Shared by the sleep screen and the dashboard so they
---- behave identically.
+--- Resolve the configured orientation as a Screen rotation mode (0-3).
+--- @return number  A Screen.DEVICE_ROTATED_* value.
+function WeatherUtils:getOrientationMode()
+    local Screen = require("device").screen
+    return G_reader_settings:readSetting("weather_orientation") or Screen.DEVICE_ROTATED_UPRIGHT
+end
+
+--- Apply the configured lockscreen orientation. Only takes effect when the user
+--- has enabled "Override rotation" and is on a mode with landscape layouts
+--- (Today / Today & Tomorrow); otherwise KOReader's own rotation is left in place.
+--- Shared by the sleep screen and the dashboard so they behave identically.
 --- @return number|nil  The previous rotation mode if it was changed (so the caller
 ---   can restore it later), or nil if no change was needed.
 function WeatherUtils:applyOrientation()
-    local Device = require("device")
-    local Screen = Device.screen
-    local bit = require("bit")
+    if not G_reader_settings:isTrue("weather_override_rotation") then
+        return nil -- use KOReader's rotation
+    end
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-    local want_landscape = G_reader_settings:readSetting("weather_orientation") == "landscape"
-        and (display_style == "day" or display_style == "default")
-    local rotation_mode = Screen:getRotationMode()
-    local is_currently_landscape = bit.band(rotation_mode, 1) == 1
-    if want_landscape == is_currently_landscape then
-        -- Already in the desired orientation; leave rotation (and any inverted
-        -- portrait/landscape variant) untouched.
+    if display_style ~= "day" and display_style ~= "default" then
         return nil
     end
-    Screen:setRotationMode(want_landscape and Screen.DEVICE_ROTATED_CLOCKWISE or Screen.DEVICE_ROTATED_UPRIGHT)
-    return rotation_mode
+    local Screen = require("device").screen
+    local target = self:getOrientationMode()
+    local current = Screen:getRotationMode()
+    if current == target then
+        return nil
+    end
+    Screen:setRotationMode(target)
+    return current
 end
 
 --- Restore a rotation mode previously returned by applyOrientation (no-op if nil).

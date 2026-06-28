@@ -70,7 +70,8 @@ function WeatherLockscreen:initDefaultSettings()
 
         -- Display settings
         weather_show_header = true, -- nilOrTrue default is true
-        weather_orientation = "portrait", -- "portrait" or "landscape" (day/default only)
+        weather_override_rotation = false, -- when false, use KOReader's rotation
+        weather_orientation = 0, -- Screen rotation mode 0-3 (0 = upright portrait); day/default only
         weather_override_scaling = false,
         weather_fill_percent = 90,
         weather_cover_scaling = "zoom",

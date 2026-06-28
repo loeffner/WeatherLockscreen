@@ -17,38 +17,59 @@ local WeatherUtils = require("weather_utils")
 
 local WeatherMenu = {}
 
+-- Prefix a menu item's label with a glyph. Works for both static `text` and
+-- dynamic `text_func` items. Returns the item for convenient inline use.
+-- Encode a BMP Unicode codepoint as UTF-8 (LuaJIT has no \u{} escape). Used for
+-- Nerd Font icons (Private Use Area) so every menu icon comes from one
+-- consistently-sized set (bundled nerdfonts/symbols.ttf) instead of mismatched
+-- FreeSans/FreeSerif symbols. See memory koreader-menu-glyph-fonts.
+local function nf(cp)
+    return string.char(0xE0 + math.floor(cp / 0x1000), 0x80 + math.floor(cp / 0x40) % 0x40, 0x80 + cp % 0x40)
+end
+
+local function withGlyph(item, glyph)
+    if item.text_func then
+        local orig_func = item.text_func
+        item.text_func = function() return glyph .. " " .. orig_func() end
+    elseif item.text then
+        item.text = glyph .. " " .. item.text
+    end
+    return item
+end
+
 function WeatherMenu:getSubMenuItems(plugin_instance)
     local menu_items = {
-        self:getLocationMenuItem(plugin_instance),
-        self:getDisplayStyleMenuItem(plugin_instance),
-        self:getTemperatureScaleMenuItem(plugin_instance),
-        self:getShowHeaderMenuItem(),
+        withGlyph(self:getLocationMenuItem(plugin_instance), nf(0xEA4D)),        -- map-marker
+        withGlyph(self:getDisplayStyleMenuItem(plugin_instance), nf(0xEAD7)),    -- palette
+        withGlyph(self:getTemperatureScaleMenuItem(plugin_instance), nf(0xE20A)), -- thermometer
+        withGlyph(self:getShowHeaderMenuItem(), nf(0xECF3)),                     -- format-title
     }
 
     -- Conditionally add content scaling menu when not in nightowl mode
     local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
     if display_style ~= "nightowl" then
-        table.insert(menu_items, self:getOverrideScalingMenuItem(plugin_instance, display_style))
+        table.insert(menu_items, withGlyph(self:getOverrideScalingMenuItem(plugin_instance, display_style), nf(0xE74B))) -- arrow-expand-all
         if G_reader_settings:readSetting("weather_override_scaling") then
-            table.insert(menu_items, self:getContentFillMenuItem(display_style))
+            table.insert(menu_items, withGlyph(self:getContentFillMenuItem(display_style), nf(0xE74B))) -- arrow-expand-all
         end
     end
 
-    -- Conditionally add Cover scaling menu only when reading mode is selected
-    if display_style == "reading" then
-        table.insert(menu_items, self:getCoverScalingMenuItem())
-    end
-
-    -- Conditionally add orientation + hourly-forecast options for modes that show hours
+    -- Conditionally add orientation options for modes that show hours.
+    -- (Forecast hours lives inside the Display Style submenu.)
     if display_style == "day" or display_style == "default" then
-        table.insert(menu_items, self:getOrientationMenuItem(plugin_instance))
-        table.insert(menu_items, self:getHourlyHoursMenuItem(plugin_instance, display_style))
+        table.insert(menu_items, withGlyph(self:getOverrideRotationMenuItem(plugin_instance), nf(0xEB74))) -- screen-rotation
+        if G_reader_settings:isTrue("weather_override_rotation") then
+            table.insert(menu_items, withGlyph(self:getOrientationMenuItem(plugin_instance), nf(0xE8A0))) -- crop-portrait
+        end
     end
 
-    table.insert(menu_items, self:getCacheMenuItem(plugin_instance))
-    table.insert(menu_items, self:getFallbackMenuItem())
-    table.insert(menu_items, self:getRtcModeMenuItem(plugin_instance))
-    table.insert(menu_items, self:getDashboardModeMenuItem(plugin_instance))
+    -- Separate the display/rotation group from the cache & refresh group
+    menu_items[#menu_items].separator = true
+
+    table.insert(menu_items, withGlyph(self:getCacheMenuItem(plugin_instance), nf(0xE8B7)))       -- database
+    table.insert(menu_items, withGlyph(self:getFallbackMenuItem(), nf(0xE76E)))                   -- backup-restore
+    table.insert(menu_items, withGlyph(self:getRtcModeMenuItem(plugin_instance), nf(0xEBB1)))     -- sleep
+    table.insert(menu_items, withGlyph(self:getDashboardModeMenuItem(plugin_instance), nf(0xEC6D))) -- view-dashboard
 
     return menu_items
 end
@@ -228,15 +249,32 @@ function WeatherMenu:getDisplayStyleMenuItem(plugin_instance)
             }
             return T(_("Display Style (%1)"), style_names[display_style])
         end,
-        sub_item_table = {
-            self:getDisplayStyleOption(plugin_instance, "default", _("Today & Tomorrow")),
-            self:getDisplayStyleOption(plugin_instance, "day", _("Today")),
-            self:getDisplayStyleOption(plugin_instance, "card", _("Current")),
-            self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
-            self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
-            self:getDisplayStyleOption(plugin_instance, "reading", _("Cover")),
-        },
+        sub_item_table_func = function()
+            return self:getDisplayStyleSubItems(plugin_instance)
+        end,
     }
+end
+
+function WeatherMenu:getDisplayStyleSubItems(plugin_instance)
+    local items = {
+        self:getDisplayStyleOption(plugin_instance, "default", _("Today & Tomorrow")),
+        self:getDisplayStyleOption(plugin_instance, "day", _("Today")),
+        self:getDisplayStyleOption(plugin_instance, "card", _("Current")),
+        self:getDisplayStyleOption(plugin_instance, "nightowl", _("Night Owl")),
+        self:getDisplayStyleOption(plugin_instance, "retro", _("Retro Analog")),
+        self:getDisplayStyleOption(plugin_instance, "reading", _("Cover")),
+    }
+    -- Show the mode-specific setting at the bottom, separated from the style list
+    -- by a line: forecast hours for Today / Today & Tomorrow, cover scaling for Cover.
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+    if display_style == "day" or display_style == "default" then
+        items[#items].separator = true
+        table.insert(items, withGlyph(self:getHourlyHoursMenuItem(plugin_instance, display_style), nf(0xE84F))) -- clock
+    elseif display_style == "reading" then
+        items[#items].separator = true
+        table.insert(items, withGlyph(self:getCoverScalingMenuItem(), nf(0xE89D))) -- crop
+    end
+    return items
 end
 
 function WeatherMenu:getDisplayStyleOption(plugin_instance, style_value, style_label)
@@ -251,38 +289,69 @@ function WeatherMenu:getDisplayStyleOption(plugin_instance, style_value, style_l
             G_reader_settings:saveSetting("weather_display_style", style_value)
             G_reader_settings:flush()
             logger.dbg("WeatherLockscreen: Saved display style:", style_value)
+            -- Rebuild this submenu so the Forecast hours item appears/disappears
+            -- for the newly selected mode straight away.
+            touchmenu_instance.item_table = WeatherMenu:getDisplayStyleSubItems(plugin_instance)
+            -- Rebuild the parent menu level too, so its mode-specific items
+            -- (Override rotation, Cover scaling, …) update when we navigate back.
+            -- backToUpperMenu restores the cached parent table, so we refresh the
+            -- cached copy on the stack here.
+            local stack = touchmenu_instance.item_table_stack
+            if stack and #stack > 0 then
+                stack[#stack] = WeatherMenu:getSubMenuItems(plugin_instance)
+            end
             touchmenu_instance:updateItems()
         end,
         radio = true,
     }
 end
 
-function WeatherMenu:getOrientationMenuItem(plugin_instance)
+function WeatherMenu:getOverrideRotationMenuItem(plugin_instance)
     return {
-        text_func = function()
-            local orientation = G_reader_settings:readSetting("weather_orientation") or "portrait"
-            local names = { portrait = _("Portrait"), landscape = _("Landscape") }
-            return T(_("Orientation") .. " (" .. (names[orientation] or names.portrait) .. ")")
+        text = _("Override rotation"),
+        checked_func = function()
+            return G_reader_settings:isTrue("weather_override_rotation")
         end,
-        sub_item_table = {
-            self:getOrientationOption(plugin_instance, "portrait", _("Portrait")),
-            self:getOrientationOption(plugin_instance, "landscape", _("Landscape")),
-        },
+        callback = function(touchmenu_instance)
+            local current = G_reader_settings:isTrue("weather_override_rotation")
+            G_reader_settings:saveSetting("weather_override_rotation", not current)
+            G_reader_settings:flush()
+            touchmenu_instance.item_table = WeatherMenu:getSubMenuItems(plugin_instance)
+            touchmenu_instance:updateItems()
+        end,
     }
 end
 
-function WeatherMenu:getOrientationOption(plugin_instance, orientation_value, orientation_label)
+function WeatherMenu:getOrientationMenuItem(plugin_instance)
+    local optionsutil = require("ui/data/optionsutil")
+    local sub_item_table = {}
+    for i, mode in ipairs(optionsutil.rotation_modes) do
+        table.insert(sub_item_table, self:getOrientationOption(plugin_instance, mode, optionsutil.rotation_labels[i]))
+    end
     return {
-        text = orientation_label,
+        text_func = function()
+            local current = WeatherUtils:getOrientationMode()
+            local label = ""
+            for i, mode in ipairs(optionsutil.rotation_modes) do
+                if mode == current then label = optionsutil.rotation_labels[i] end
+            end
+            return T(_("Orientation") .. " (" .. label .. ")")
+        end,
+        sub_item_table = sub_item_table,
+    }
+end
+
+function WeatherMenu:getOrientationOption(plugin_instance, mode_value, mode_label)
+    return {
+        text = mode_label,
         checked_func = function()
-            local orientation = G_reader_settings:readSetting("weather_orientation") or "portrait"
-            return orientation == orientation_value
+            return WeatherUtils:getOrientationMode() == mode_value
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            G_reader_settings:saveSetting("weather_orientation", orientation_value)
+            G_reader_settings:saveSetting("weather_orientation", mode_value)
             G_reader_settings:flush()
-            logger.dbg("WeatherLockscreen: Saved orientation:", orientation_value)
+            logger.dbg("WeatherLockscreen: Saved orientation rotation mode:", mode_value)
             touchmenu_instance:updateItems()
         end,
         radio = true,
@@ -398,36 +467,54 @@ function WeatherMenu:getContentFillMenuItem(display_style)
 end
 
 function WeatherMenu:getHourlyHoursMenuItem(plugin_instance, display_style)
-    local default_count = display_style == "day" and #WeatherUtils.target_hours_expand or #WeatherUtils.target_hours
+    local default_hours = display_style == "day" and WeatherUtils.target_hours_expand or WeatherUtils.target_hours
     return {
         text_func = function()
-            local count = G_reader_settings:readSetting("weather_hourly_count") or default_count
-            return T(_("Forecast hours shown") .. " (" .. count .. ")")
+            local hours_str = G_reader_settings:readSetting("weather_hourly_hours")
+            if not hours_str or hours_str == "" then
+                hours_str = table.concat(default_hours, ", ")
+            end
+            return T(_("Forecast hours shown") .. " (" .. hours_str .. ")")
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            local SpinWidget = require("ui/widget/spinwidget")
-            local count = G_reader_settings:readSetting("weather_hourly_count") or default_count
-            local spin_widget = SpinWidget:new {
-                title_text = _("Forecast hours"),
-                info_text = _("How many hourly forecast entries to show."),
-                value = count,
-                value_min = 3,
-                value_max = 12,
-                value_step = 1,
-                value_hold_step = 2,
-                default_value = default_count,
-                ok_text = _("Save"),
-                callback = function(spin)
-                    G_reader_settings:saveSetting("weather_hourly_count", spin.value)
-                    G_reader_settings:flush()
-                    touchmenu_instance:updateItems()
-                end,
-            }
-            UIManager:show(spin_widget)
+            self:showHourlyHoursDialog(plugin_instance, touchmenu_instance, default_hours)
         end,
-        separator = true,
     }
+end
+
+function WeatherMenu:showHourlyHoursDialog(plugin_instance, touchmenu_instance, default_hours)
+    local current = G_reader_settings:readSetting("weather_hourly_hours")
+    if not current or current == "" then
+        current = table.concat(default_hours, ", ")
+    end
+    local dialog
+    dialog = InputDialog:new {
+        title = _("Forecast hours"),
+        input = current,
+        input_hint = "8, 10, 12, 14, 16, 18, 20, 22",
+        description = _("Enter the hours to show (0-23), separated by commas. Leave empty for the default."),
+        buttons = { {
+            {
+                text = _("Cancel"),
+                id = "close",
+                callback = function() UIManager:close(dialog) end,
+            },
+            {
+                text = _("Save"),
+                is_enter_default = true,
+                callback = function()
+                    local parsed = WeatherUtils:parseHours(dialog:getInputText())
+                    G_reader_settings:saveSetting("weather_hourly_hours", table.concat(parsed, ","))
+                    G_reader_settings:flush()
+                    UIManager:close(dialog)
+                    if touchmenu_instance then touchmenu_instance:updateItems() end
+                end,
+            },
+        } },
+    }
+    UIManager:show(dialog)
+    dialog:onShowKeyboard()
 end
 
 function WeatherMenu:getCoverScalingMenuItem()
@@ -495,7 +582,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
         table.insert(sub_items, {
             text_func = function()
                 local current_minutes = math.floor(WeatherUtils:getMinDelayBetweenUpdates() / 60)
-                return T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. _("minutes") .. ")")
+                return nf(0xEC1A) .. " " .. T(_("Minimum Cache duration") .. " (" .. current_minutes .. " " .. _("minutes") .. ")") -- timer
             end,
             keep_menu_open = true,
             callback = function(touchmenu_instance)
@@ -528,7 +615,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
         text_func = function()
             local current_hours = math.floor((G_reader_settings:readSetting("weather_cache_max_age") or 3600) / 3600)
             local hour_text = current_hours == 1 and _("hour") or _("hours")
-            return T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")")
+            return nf(0xEC1E) .. " " .. T(_("Maximum Cache duration") .. " (" .. current_hours .. " " .. hour_text .. ")") -- timer-sand
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
@@ -555,7 +642,7 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
     })
 
     table.insert(sub_items, {
-        text = _("Clear cache"),
+        text = nf(0xE7E1) .. " " .. _("Clear cache"), -- broom
         keep_menu_open = true,
         callback = function()
             local ConfirmBox = require("ui/widget/confirmbox")
