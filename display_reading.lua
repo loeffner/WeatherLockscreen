@@ -531,6 +531,11 @@ function ReadingDisplay:create(weather_lockscreen, weather_data)
                 margin = 0,
                 bordersize = 0,
                 background = Blitbuffer.COLOR_GRAY_E,
+                -- FrameContainer:getSize() needs a child for its dimensions
+                CenterContainer:new {
+                    dimen = Geom:new { w = screen_width, h = screen_height },
+                    VerticalSpan:new { width = 0 },
+                },
             },
             card_container,
             header_group,
