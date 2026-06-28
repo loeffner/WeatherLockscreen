@@ -92,11 +92,8 @@ msgstr "Cover"
 msgid "Orientation"
 msgstr "Ausrichtung"
 
-msgid "Portrait"
-msgstr "Hochformat"
-
-msgid "Landscape"
-msgstr "Querformat"
+msgid "Override rotation"
+msgstr "Drehung überschreiben"
 
 # Hourly Forecast Settings
 msgid "Forecast hours shown"
@@ -105,8 +102,8 @@ msgstr "Angezeigte Vorhersagestunden"
 msgid "Forecast hours"
 msgstr "Vorhersagestunden"
 
-msgid "How many hourly forecast entries to show."
-msgstr "Wie viele stündliche Vorhersageeinträge angezeigt werden sollen."
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "Stunden (0-23) durch Kommas getrennt eingeben. Leer lassen für die Standardwerte."
 
 # Temperature Scale Settings
 msgid "Temperature Scale"

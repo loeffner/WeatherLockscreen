@@ -96,11 +96,8 @@ msgstr "Portada"
 msgid "Orientation"
 msgstr "Orientación"
 
-msgid "Portrait"
-msgstr "Vertical"
-
-msgid "Landscape"
-msgstr "Horizontal"
+msgid "Override rotation"
+msgstr "Forzar rotación"
 
 # Hourly Forecast Settings
 msgid "Forecast hours shown"
@@ -109,8 +106,8 @@ msgstr "Horas de pronóstico mostradas"
 msgid "Forecast hours"
 msgstr "Horas de pronóstico"
 
-msgid "How many hourly forecast entries to show."
-msgstr "Cuántas entradas de pronóstico por hora mostrar."
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "Introduce las horas a mostrar (0-23), separadas por comas. Déjalo vacío para el valor predeterminado."
 
 # Temperature Scale Settings
 msgid "Temperature Scale"
