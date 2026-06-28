@@ -42,6 +42,10 @@ function WeatherDashboard:start(weather_lockscreen)
     -- Start periodic AutoSuspend timer reset (every 3 minutes to stay ahead of Kindle's 4-minute t1 check)
     self:scheduleAutosuspendReset(weather_lockscreen)
 
+    -- Apply the configured orientation, exactly like the sleep screen.
+    -- Done once here (not in showWidget, which also runs on every refresh).
+    weather_lockscreen.dashboard_orig_rotation = WeatherUtils:applyOrientation()
+
     -- Show weather widget immediately
     self:showWidget(weather_lockscreen)
 end
@@ -69,6 +73,13 @@ function WeatherDashboard:stop(weather_lockscreen)
     if weather_lockscreen.dashboard_widget then
         UIManager:close(weather_lockscreen.dashboard_widget)
         weather_lockscreen.dashboard_widget = nil
+    end
+
+    -- Restore the orientation we changed when the dashboard opened
+    if weather_lockscreen.dashboard_orig_rotation ~= nil then
+        WeatherUtils:restoreOrientation(weather_lockscreen.dashboard_orig_rotation)
+        weather_lockscreen.dashboard_orig_rotation = nil
+        UIManager:setDirty(nil, "full")
     end
 
     weather_lockscreen.dashboard_mode_enabled = false

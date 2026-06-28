@@ -665,6 +665,37 @@ function WeatherUtils:getHourlySelection(default_hours)
     return self:spreadHours(count)
 end
 
+--- Apply the configured lockscreen orientation (portrait/landscape) for the
+--- supported display modes. Shared by the sleep screen and the dashboard so they
+--- behave identically.
+--- @return number|nil  The previous rotation mode if it was changed (so the caller
+---   can restore it later), or nil if no change was needed.
+function WeatherUtils:applyOrientation()
+    local Device = require("device")
+    local Screen = Device.screen
+    local bit = require("bit")
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+    local want_landscape = G_reader_settings:readSetting("weather_orientation") == "landscape"
+        and (display_style == "day" or display_style == "default")
+    local rotation_mode = Screen:getRotationMode()
+    local is_currently_landscape = bit.band(rotation_mode, 1) == 1
+    if want_landscape == is_currently_landscape then
+        -- Already in the desired orientation; leave rotation (and any inverted
+        -- portrait/landscape variant) untouched.
+        return nil
+    end
+    Screen:setRotationMode(want_landscape and Screen.DEVICE_ROTATED_CLOCKWISE or Screen.DEVICE_ROTATED_UPRIGHT)
+    return rotation_mode
+end
+
+--- Restore a rotation mode previously returned by applyOrientation (no-op if nil).
+--- @param orig_rotation_mode number|nil
+function WeatherUtils:restoreOrientation(orig_rotation_mode)
+    if orig_rotation_mode == nil then return end
+    local Device = require("device")
+    Device.screen:setRotationMode(orig_rotation_mode)
+end
+
 
 -- Static KOReader to WeatherAPI language code mapping
 WeatherUtils.lang_map = {
