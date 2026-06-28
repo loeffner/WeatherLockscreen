@@ -249,35 +249,9 @@ If you want to contribute, but don't know how, feel free to open an issue.
 </details>
 
 
-## Customization
-
-<details>
-<summary>Displayed hours in "Detailed" display</summary>
-
-You can find a user patch to modify the hours here:
-[2-weather-detailed-view-hours.lua](https://github.com/loeffner/KOReader.patches?tab=readme-ov-file#-2-weather-detailed-view-hourslua)
-</details>
-
-
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Work in Progress for 0.9.7
-<details>
-<summary>Done</summary>
-
-</details>
-
-<details>
-<summary>In progress</summary>
-
-</details>
-
-<details>
-<summary>Backlog</summary>
-
-</details>
 
 ## Related Projects
 
