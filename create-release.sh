@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 # Script to create a release zip for weatherlockscreen.koplugin
 
 VERSION=${1:-"dev"}

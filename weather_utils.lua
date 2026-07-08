@@ -163,7 +163,7 @@ function WeatherUtils:installIcons()
         {
             dest = DataStorage:getDataDir() .. "/icons",
             src_subdir = "icons",
-            files = { "hourglass" },
+            files = { "hourglass", "refresh" },
         },
         {
             dest = DataStorage:getDataDir() .. "/icons/moonphases",
@@ -561,6 +561,41 @@ function WeatherUtils:getPeriodicRefreshInterval(type)
         return G_reader_settings:readSetting("weather_periodic_refresh_rtc") or 0
     end
     return G_reader_settings:readSetting("weather_periodic_refresh_dashboard") or 0
+end
+
+-- The optional "while charging" override interval (0 = use the base interval).
+function WeatherUtils:getChargingRefreshInterval(type)
+    if type == "rtc" then
+        return G_reader_settings:readSetting("weather_periodic_refresh_rtc_charging") or 0
+    end
+    return G_reader_settings:readSetting("weather_periodic_refresh_dashboard_charging") or 0
+end
+
+-- Whether the device is on external power (false if it can't be determined).
+-- Treats a full battery as "on power" too: a charged device reports isCharged()
+-- (not isCharging()), but the user still plugged it in and expects the charging
+-- interval.
+function WeatherUtils:isOnExternalPower()
+    local Device = require("device")
+    local Powerd = Device and Device:getPowerDevice()
+    if not Powerd then
+        return false
+    end
+    local ok, on_power = pcall(function()
+        return (Powerd.isCharging and Powerd:isCharging())
+            or (Powerd.isCharged and Powerd:isCharged())
+    end)
+    return ok and on_power or false
+end
+
+-- The interval actually used for scheduling: the charging override when the
+-- device is on external power and that override is set (> 0), else the base.
+function WeatherUtils:getEffectiveRefreshInterval(type)
+    local charging_interval = self:getChargingRefreshInterval(type)
+    if charging_interval > 0 and self:isOnExternalPower() then
+        return charging_interval
+    end
+    return self:getPeriodicRefreshInterval(type)
 end
 
 function WeatherUtils:canScheduleWakeup()

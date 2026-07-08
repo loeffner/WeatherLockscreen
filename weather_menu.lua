@@ -788,6 +788,9 @@ function WeatherMenu:getRtcModeMenuItem(plugin_instance)
                 table.insert(items, self:getCustomIntervalOption(plugin_instance, "rtc"))
             end
 
+            -- Optional faster/slower interval while charging
+            table.insert(items, self:getChargingIntervalMenuItem(plugin_instance, "rtc"))
+
             table.insert(items, {
                 text_func = function()
                     local min_batt = WeatherUtils:getActiveSleepMinBattery()
@@ -844,7 +847,7 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
         end,
         -- Hold to start dashboard
         hold_callback = function()
-            local interval = WeatherUtils:getPeriodicRefreshInterval("dashboard")
+            local interval = WeatherUtils:getEffectiveRefreshInterval("dashboard")
             if interval > 0 then
                 local WeatherDashboard = require("weather_dashboard")
                 WeatherDashboard:start(plugin_instance)
@@ -864,6 +867,9 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
             if G_reader_settings:isTrue("weather_debug_options") then
                 table.insert(items, self:getCustomIntervalOption(plugin_instance, "dashboard"))
             end
+
+            -- Optional faster/slower interval while charging
+            table.insert(items, self:getChargingIntervalMenuItem(plugin_instance, "dashboard"))
             return items
         end,
         help_text = _(
@@ -872,25 +878,66 @@ function WeatherMenu:getDashboardModeMenuItem(plugin_instance)
     }
 end
 
-function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, label)
+function WeatherMenu:getPeriodicRefreshOption(plugin_instance, type, interval, label, charging)
     return {
         text = label,
         checked_func = function()
-            return WeatherUtils:getPeriodicRefreshInterval(type) == interval
+            local current = charging
+                and WeatherUtils:getChargingRefreshInterval(type)
+                or WeatherUtils:getPeriodicRefreshInterval(type)
+            return current == interval
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
-            plugin_instance:setPeriodicRefreshInterval(interval, type, touchmenu_instance)
+            plugin_instance:setPeriodicRefreshInterval(interval, type, touchmenu_instance, charging)
         end,
         radio = true,
     }
 end
 
-function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
+-- A "While charging" override for the given refresh type. 0 = use the base
+-- interval; any value > 0 overrides the base only while the device is charging.
+function WeatherMenu:getChargingIntervalMenuItem(plugin_instance, type)
+    return {
+        text_func = function()
+            local interval = WeatherUtils:getChargingRefreshInterval(type)
+            if interval > 0 then
+                local label = interval < 3600
+                    and (interval / 60 .. " " .. _("min"))
+                    or (interval / 3600 .. " " .. _("h"))
+                return _("While charging") .. " (" .. label .. ")"
+            end
+            return _("While charging") .. " (" .. _("Same as base") .. ")"
+        end,
+        sub_item_table_func = function()
+            local items = {
+                self:getPeriodicRefreshOption(plugin_instance, type, 0, _("Same as base"), true),
+                self:getPeriodicRefreshOption(plugin_instance, type, 1800, _("30 minutes"), true),
+                self:getPeriodicRefreshOption(plugin_instance, type, 3600, _("1 hour"), true),
+                self:getPeriodicRefreshOption(plugin_instance, type, 10800, _("3 hours"), true),
+                self:getPeriodicRefreshOption(plugin_instance, type, 21600, _("6 hours"), true),
+                self:getPeriodicRefreshOption(plugin_instance, type, 43200, _("12 hours"), true),
+            }
+            -- Add custom interval option only in debug mode
+            if G_reader_settings:isTrue("weather_debug_options") then
+                table.insert(items, self:getCustomIntervalOption(plugin_instance, type, true))
+            end
+            return items
+        end,
+    }
+end
+
+function WeatherMenu:getCustomIntervalOption(plugin_instance, type, charging)
     local preset_intervals = { 0, 1800, 3600, 10800, 21600, 43200 }
 
+    local function getCurrent()
+        return charging
+            and WeatherUtils:getChargingRefreshInterval(type)
+            or WeatherUtils:getPeriodicRefreshInterval(type)
+    end
+
     local function isCustomInterval()
-        local current = WeatherUtils:getPeriodicRefreshInterval(type)
+        local current = getCurrent()
         for _, preset in ipairs(preset_intervals) do
             if current == preset then
                 return false
@@ -915,8 +962,7 @@ function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
     return {
         text_func = function()
             if isCustomInterval() then
-                local interval = WeatherUtils:getPeriodicRefreshInterval(type)
-                return T(_("Custom (%1)"), formatInterval(interval))
+                return T(_("Custom (%1)"), formatInterval(getCurrent()))
             else
                 return _("Custom…")
             end
@@ -925,7 +971,7 @@ function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
         keep_menu_open = true,
         callback = function(touchmenu_instance)
             local DoubleSpinWidget = require("ui/widget/doublespinwidget")
-            local current_interval = WeatherUtils:getPeriodicRefreshInterval(type)
+            local current_interval = getCurrent()
             if current_interval == 0 then current_interval = 1800 end -- Default to 30 min
 
             local current_hours = math.floor(current_interval / 3600)
@@ -954,7 +1000,7 @@ function WeatherMenu:getCustomIntervalOption(plugin_instance, type)
                     if interval_seconds < 60 then
                         interval_seconds = 60 -- Minimum 1 minute
                     end
-                    plugin_instance:setPeriodicRefreshInterval(interval_seconds, type, touchmenu_instance)
+                    plugin_instance:setPeriodicRefreshInterval(interval_seconds, type, touchmenu_instance, charging)
                 end,
             }
             UIManager:show(spin_widget)

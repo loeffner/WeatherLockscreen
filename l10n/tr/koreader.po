@@ -231,6 +231,16 @@ msgstr "6 saat"
 msgid "12 hours"
 msgstr "12 saat"
 
+msgid "While charging"
+msgstr "Şarj olurken"
+
+msgid "Same as base"
+msgstr "Temel ile aynı"
+
+# Refresh indicator (header)
+msgid "Refreshing, please wait…"
+msgstr "Yenileniyor, lütfen bekleyin…"
+
 # Custom Interval Settings
 msgid "Custom…"
 msgstr "Özel..."

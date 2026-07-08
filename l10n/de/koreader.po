@@ -228,6 +228,16 @@ msgstr "6 Stunden"
 msgid "12 hours"
 msgstr "12 Stunden"
 
+msgid "While charging"
+msgstr "Beim Laden"
+
+msgid "Same as base"
+msgstr "Wie Standard"
+
+# Refresh indicator (header)
+msgid "Refreshing, please wait…"
+msgstr "Wird aktualisiert, bitte warten…"
+
 # Custom Interval Settings
 msgid "Custom…"
 msgstr "Benutzerdefiniert…"

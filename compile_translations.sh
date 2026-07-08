@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to compile .po files to .mo files for KOReader plugin
 
 # Requires gettext tools (msgfmt)

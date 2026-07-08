@@ -281,7 +281,7 @@ function WeatherDashboard:scheduleNextRefresh(weather_lockscreen)
         return
     end
 
-    local interval = WeatherUtils:getPeriodicRefreshInterval("dashboard")
+    local interval = WeatherUtils:getEffectiveRefreshInterval("dashboard")
     if interval > 0 then
         logger.info("WeatherLockscreen: Scheduling next dashboard refresh in", interval, "seconds")
         UIManager:scheduleIn(interval, weather_lockscreen.dashboard_refresh_task)

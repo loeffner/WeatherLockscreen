@@ -57,11 +57,13 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
     logger.dbg("WeatherLockscreen: Using language:", lang)
 
     -- Instant cache-first render (e.g. active-sleep RTC wake): return the last
-    -- cached data within the max-age window and never touch the network, so the
-    -- weather shows immediately instead of the library.
+    -- cached data and never touch the network, so the weather shows immediately
+    -- instead of the library. Age doesn't matter here: the data is only bridging
+    -- the fetch that follows, and stale weather (marked with *) still beats
+    -- falling back to the cover.
     if weather_lockscreen.prefer_cache then
         logger.dbg("WeatherLockscreen: prefer_cache set, returning cached data without network")
-        local cached_data = WeatherUtils:loadWeatherCache(WeatherUtils:getCacheMaxAge())
+        local cached_data = WeatherUtils:loadWeatherCache(math.huge)
         if cached_data then
             cached_data.is_cached = true
         end

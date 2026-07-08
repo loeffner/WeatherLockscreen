@@ -233,6 +233,16 @@ msgstr ""
 msgid "12 hours"
 msgstr ""
 
+msgid "While charging"
+msgstr ""
+
+msgid "Same as base"
+msgstr ""
+
+# Refresh indicator (header)
+msgid "Refreshing, please wait…"
+msgstr ""
+
 # Custom Interval Settings
 msgid "Custom…"
 msgstr ""

@@ -26,6 +26,7 @@ local TextWidget = require("ui/widget/textwidget")
 local Font = require("ui/font")
 local logger = require("logger")
 local WeatherUtils = require("weather_utils")
+local _ = require("l10n/gettext")
 
 local DisplayHelper = {}
 
@@ -33,7 +34,40 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
     local header_widgets = {}
     local show_header = G_reader_settings:nilOrTrue("weather_show_header")
 
-    if show_header and weather_data.current.location then
+    if show_header and weather_data.refreshing then
+        -- A refresh is in progress: replace the location (left slot) with a thin
+        -- "refreshing" line so the user knows not to unlock until it's done. The
+        -- refresh icon is black, so skip it on the dark-background nightowl theme
+        -- where it would be invisible; the text alone still reads clearly.
+        local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+        local line = HorizontalGroup:new { align = "center" }
+        local icon_path = DataStorage:getDataDir() .. "/icons/refresh.svg"
+        if display_style ~= "nightowl" and util.pathExists(icon_path) then
+            local icon_px = Screen:scaleBySize(header_font_size)
+            table.insert(line, ImageWidget:new {
+                file = icon_path,
+                width = icon_px,
+                height = icon_px,
+                alpha = true,
+                original_in_nightmode = false,
+            })
+            table.insert(line, HorizontalSpan:new { width = Screen:scaleBySize(6) })
+        end
+        table.insert(line, TextWidget:new {
+            text = _("Refreshing, please wait…"),
+            face = Font:getFace("cfont", header_font_size),
+            fgcolor = text_color,
+        })
+        table.insert(header_widgets, LeftContainer:new {
+            dimen = { w = Screen:getWidth(), h = header_font_size + header_margin * 2 },
+            FrameContainer:new {
+                padding = header_margin,
+                margin = 0,
+                bordersize = 0,
+                line,
+            },
+        })
+    elseif show_header and weather_data.current.location then
         table.insert(header_widgets, LeftContainer:new {
             dimen = { w = Screen:getWidth(), h = header_font_size + header_margin * 2 },
             FrameContainer:new {
