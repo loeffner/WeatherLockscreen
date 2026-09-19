@@ -201,6 +201,7 @@ The plugin supports multiple languages through a hybrid localization approach:
 - 🇩🇪 German (de) - Complete
 - 🇪🇸 Spanish (es) - Complete by @jeubm
 - 🇹🇷 Turkish (tr) - Complete by @omer-faruq
+- 🇨🇳 Chinese (Simplified)) (zh_CN) - Complete by @lianyis
 
 **English (en)** - Default language (no translation needed)
 
