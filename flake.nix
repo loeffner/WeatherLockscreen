@@ -12,14 +12,14 @@
       packages = forAllSystems (pkgs: {
         default = pkgs.buildEnv {
           name = "weatherlockscreen-tools";
-          paths = [ pkgs.lua5_1 pkgs.gettext pkgs.bash ];
+          paths = [ pkgs.lua5_1 pkgs.gettext pkgs.bash pkgs.rsync pkgs.zip pkgs.unzip ];
         };
       });
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           name = "weatherlockscreen-dev";
-          buildInputs = [ pkgs.lua5_1 pkgs.gettext pkgs.bash ];
+          buildInputs = [ pkgs.lua5_1 pkgs.gettext pkgs.bash pkgs.rsync pkgs.zip pkgs.unzip ];
           shellHook = ''
             echo "WeatherLockscreen dev shell: luac $(luac -v 2>&1 | head -n1), $(msgfmt --version | head -n1)"
           '';

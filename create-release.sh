@@ -9,7 +9,7 @@ echo "Creating release archive: $OUTPUT_FILE"
 
 # Compile translations
 echo "Compiling translations..."
-./compile_translations.sh
+bash ./compile_translations.sh
 
 # Create temporary directory
 TEMP_DIR=$(mktemp -d)
@@ -20,10 +20,13 @@ mkdir -p "$PLUGIN_DIR"
 rsync -av --exclude='.git' \
           --exclude='.gitignore' \
           --exclude='.github' \
+          --exclude='.claude' \
           --exclude='resources' \
           --exclude='*.zip' \
           --exclude='*.log' \
           --exclude='*.sh' \
+          --exclude='flake.nix' \
+          --exclude='flake.lock' \
           ./ "$PLUGIN_DIR/"
 
 # Create zip archive
