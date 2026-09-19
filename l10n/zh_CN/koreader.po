@@ -1,0 +1,372 @@
+# Chinese (Simplified) translation for WeatherLockscreen
+# This file is distributed under the same license as the WeatherLockscreen package.
+
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"Last-Translator: \n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgid "Weather Lockscreen"
+msgstr "天气锁屏"
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "在睡眠屏幕上显示天气信息。在睡眠屏幕 > 壁纸菜单中选择“天气”选项以启用。"
+
+msgid "Location"
+msgstr "位置"
+
+msgid "City, postal code, or coordinates"
+msgstr "城市、邮政编码或坐标"
+
+msgid "Enter your postal code or city name"
+msgstr "输入邮政编码或城市名称"
+
+msgid "Search"
+msgstr "搜索"
+
+msgid "Searching..."
+msgstr "搜索中..."
+
+msgid "Select Location (1 result)"
+msgstr "选择位置(1 个结果)"
+
+msgid "Select Location (%1 results)"
+msgstr "选择位置(%1 个结果)"
+
+msgid "No location found"
+msgstr "未找到位置"
+
+msgid "Search again"
+msgstr "重新搜索"
+
+msgid "Location search failed: %1"
+msgstr "位置搜索失败: %1"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Display Style (%1)"
+msgstr "显示样式 (%1)"
+
+msgid "Today & Tomorrow"
+msgstr "今天和明天"
+
+msgid "Today"
+msgstr "今天"
+
+msgid "Current"
+msgstr "当前"
+
+msgid "Night Owl"
+msgstr "夜猫子"
+
+msgid "Retro Analog"
+msgstr "复古模拟"
+
+msgid "Cover"
+msgstr "封面"
+
+msgid "Orientation"
+msgstr "方向"
+
+msgid "Override rotation"
+msgstr "覆盖旋转"
+
+msgid "Forecast hours shown"
+msgstr "显示的预报小时"
+
+msgid "Forecast hours"
+msgstr "预报小时"
+
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "输入要显示的小时(0-23),用逗号分隔。留空则使用默认值。"
+
+msgid "Temperature Scale"
+msgstr "温度单位"
+
+msgid "Celsius"
+msgstr "摄氏度"
+
+msgid "Fahrenheit"
+msgstr "华氏度"
+
+msgid "(feels like %1)"
+msgstr "(体感 %1)"
+
+msgid "Show header"
+msgstr "显示标题栏"
+
+msgid "Override scaling"
+msgstr "覆盖缩放"
+
+msgid "Content Fill (%1%)"
+msgstr "内容填充 (%1%)"
+
+msgid "Content Fill Percentage"
+msgstr "内容填充百分比"
+
+msgid "How much of the available screen height should be filled?"
+msgstr "希望填充多少可用屏幕高度?"
+
+msgid "Cover scaling"
+msgstr "封面缩放"
+
+msgid "Fit to screen"
+msgstr "适应屏幕"
+
+msgid "Zoom to fill"
+msgstr "缩放填充"
+
+msgid "Stretch to fill"
+msgstr "拉伸填充"
+
+msgid "fit"
+msgstr "适应"
+
+msgid "zoom"
+msgstr "缩放"
+
+msgid "stretch"
+msgstr "拉伸"
+
+msgid "Cache Settings"
+msgstr "缓存设置"
+
+msgid "Maximum Cache duration"
+msgstr "最长缓存时长"
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "离线时,会显示不超过此时长的缓存天气数据。更旧的数据将显示配置的备用内容。"
+
+msgid "Minimum Cache duration"
+msgstr "最短缓存时长"
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr "锁定设备时两次 API 请求之间的最短时间。在此期间内会自动使用缓存数据。"
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
+msgstr "调试:控制 API 请求之间的最短时间。不影响定期刷新间隔。"
+
+msgid "hour"
+msgstr "小时"
+
+msgid "hours"
+msgstr "小时"
+
+msgid "h"
+msgstr "时"
+
+msgid "min"
+msgstr "分"
+
+msgid "minutes"
+msgstr "分钟"
+
+msgid "Clear cache"
+msgstr "清除缓存"
+
+msgid "Clear weather cache"
+msgstr "清除天气缓存"
+
+msgid "Clear cached weather data and icons?"
+msgstr "清除缓存的天气数据和图标?"
+
+msgid "Cache cleared"
+msgstr "缓存已清除"
+
+msgid "Weather cache cleared"
+msgstr "天气缓存已清除"
+
+msgid "No cache to clear"
+msgstr "没有可清除的缓存"
+
+msgid "Off"
+msgstr "关闭"
+
+msgid "30 minutes"
+msgstr "30 分钟"
+
+msgid "1 hour"
+msgstr "1 小时"
+
+msgid "3 hours"
+msgstr "3 小时"
+
+msgid "6 hours"
+msgstr "6 小时"
+
+msgid "12 hours"
+msgstr "12 小时"
+
+msgid "Custom…"
+msgstr "自定义…"
+
+msgid "Custom (%1)"
+msgstr "自定义 (%1)"
+
+msgid "Custom refresh interval"
+msgstr "自定义刷新间隔"
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr "设置刷新间隔的小时和分钟。"
+
+msgid "Hours"
+msgstr "小时"
+
+msgid "Minutes"
+msgstr "分钟"
+
+msgid "%1 h"
+msgstr "%1 时"
+
+msgid "%1 min"
+msgstr "%1 分"
+
+msgid "%1 h %2 min"
+msgstr "%1 时 %2 分"
+
+msgid "Show weather on sleep screen"
+msgstr "在睡眠屏幕上显示天气"
+
+msgid "Dashboard"
+msgstr "仪表盘"
+
+msgid "Weather dashboard"
+msgstr "天气仪表盘"
+
+msgid "Dashboard (Tap to set interval)"
+msgstr "仪表盘(点按设置间隔)"
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr "全屏显示天气并定期刷新。适用于所有设备。点按屏幕退出。比普通睡眠屏幕耗电更多。"
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr "仪表盘会让设备保持唤醒状态并定期更新天气数据。\n仪表盘运行期间会增加耗电量。\n\n是否继续?"
+
+msgid "Active Sleep"
+msgstr "主动睡眠"
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr "主动睡眠(点按设置间隔)"
+
+msgid "Active Sleep (Unsupported device)"
+msgstr "主动睡眠(设备不支持)"
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr "主动睡眠(请先启用 Wi-Fi“开启”选项)"
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr "主动睡眠(Kobo 实验性功能 - 长按查看帮助)"
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr "设备会从睡眠中唤醒以刷新天气数据。比仪表盘更省电。\n\n支持的设备:Kindle。Kobo(实验性)请查看 README 了解更多信息。"
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr "主动睡眠会将设备从睡眠中唤醒以更新天气数据。\n设备锁定期间会增加耗电量。\n\n是否继续?"
+
+msgid "Lock to Start"
+msgstr "锁定以开始"
+
+msgid "Hold to Start"
+msgstr "长按以开始"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Debug options enabled"
+msgstr "调试选项已启用"
+
+msgid "Debug options disabled"
+msgstr "调试选项已禁用"
+
+msgid "API error"
+msgstr "API 错误"
+
+msgid "Unknown error"
+msgstr "未知错误"
+
+msgid "Failed to parse response"
+msgstr "解析响应失败"
+
+msgid "Preserve Battery"
+msgstr "省电保护"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "电量低于此水平时禁用主动睡眠。设为 0 可关闭此功能。"
+
+msgid "Tomorrow"
+msgstr "明天"
+
+msgid "TEMPERATURE"
+msgstr "温度"
+
+msgid "WIND"
+msgstr "风速"
+
+msgid "HUMIDITY"
+msgstr "湿度"
+
+msgid "Page %1 of %2"
+msgstr "第 %1 页,共 %2 页"
+
+msgid "New Moon"
+msgstr "新月"
+
+msgid "Waxing Crescent"
+msgstr "娥眉月"
+
+msgid "First Quarter"
+msgstr "上弦月"
+
+msgid "Waxing Gibbous"
+msgstr "盈凸月"
+
+msgid "Full Moon"
+msgstr "满月"
+
+msgid "Waning Gibbous"
+msgstr "亏凸月"
+
+msgid "Last Quarter"
+msgstr "下弦月"
+
+msgid "Third Quarter"
+msgstr "下弦月"
+
+msgid "Waning Crescent"
+msgstr "残月"
+
+msgid "Fallback (%1)"
+msgstr "备用内容 (%1)"
+
+msgid "Book cover"
+msgstr "书籍封面"
+
+msgid "Custom image"
+msgstr "自定义图片"
+
+msgid "Random image"
+msgstr "随机图片"
+
+msgid "Reading progress"
+msgstr "阅读进度"
+
+msgid "Book status"
+msgstr "书籍状态"
+
+msgid "Leave as-is"
+msgstr "保持不变"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "选择当天气数据不可用时(无网络、API 错误等)显示的内容。图片文件夹和其它选项在 KOReader 的睡眠屏幕设置中配置。"
