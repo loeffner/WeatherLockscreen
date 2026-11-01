@@ -29,6 +29,7 @@ local changeLang = function(new_lang)
     local original_context = GetText.context
     local original_translation = GetText.translation
     local original_wrapUntranslated_func = GetText.wrapUntranslated
+    local original_getPlural = GetText.getPlural
     local original_current_lang = GetText.current_lang
 
     -- Temporarily point to plugin's l10n directory
@@ -42,15 +43,6 @@ local changeLang = function(new_lang)
             -- Deep copy the loaded translation
             NewGetText = util.tableDeepCopy(GetText)
 
-            -- Optimize memory: remove translations that exist in KOReader
-            -- This prioritizes KOReader's translations and reduces memory usage
-            if NewGetText.translation and original_translation then
-                for k, v in pairs(NewGetText.translation) do
-                    if original_translation[k] then
-                        NewGetText.translation[k] = nil
-                    end
-                end
-            end
         end
     else
         logger.dbg("WeatherLockscreen: Failed to load translation for lang", new_lang, "error:", err)
@@ -61,6 +53,7 @@ local changeLang = function(new_lang)
     GetText.translation = original_translation
     GetText.dirname = original_l10n_dirname
     GetText.wrapUntranslated = original_wrapUntranslated_func
+    GetText.getPlural = original_getPlural
     GetText.current_lang = original_current_lang
 
     original_translation = nil
@@ -74,53 +67,49 @@ local function createGetTextProxy(new_gettext, gettext)
         return gettext
     end
 
-    -- Helper to determine the comparison string based on gettext function type
-    local function getCompareStr(key, args)
-        if key == "gettext" then
-            return args[1]
-        elseif key == "pgettext" then
-            return args[2]
-        elseif key == "ngettext" then
-            local n = args[3]
-            return (new_gettext.getPlural and new_gettext.getPlural(n) == 0) and args[1] or args[2]
-        elseif key == "npgettext" then
-            local n = args[4]
-            return (new_gettext.getPlural and new_gettext.getPlural(n) == 0) and args[2] or args[3]
+    -- Look up plugin entries directly: copied gettext functions retain
+    -- closures over KOReader's original translation tables.
+    local function lookup(kind, ...)
+        local args = {...}
+        local has_context = kind == "pgettext" or kind == "npgettext"
+        local has_plural = kind == "ngettext" or kind == "npgettext"
+        local msgid = args[has_context and 2 or 1]
+        local translations
+        if has_context then
+            translations = new_gettext.context[args[1]]
+        else
+            translations = new_gettext.translation
         end
-        return nil
+        local value = translations and translations[msgid]
+        if has_plural then
+            local n = args[has_context and 4 or 3]
+            value = type(value) == "table" and value[new_gettext.getPlural(n)] or nil
+        elseif kind == "gettext" and type(value) == "table" then
+            value = value[0]
+        end
+        -- A translation identical to msgid is still a valid catalog entry.
+        if type(value) == "string" and value ~= "" then
+            return value
+        end
+        if kind == "gettext" then
+            return gettext(msgid)
+        end
+        return gettext[kind](...)
     end
 
-    -- Create metatable for proxy
     local mt = {
         __index = function(_, key)
-            local value = new_gettext[key]
-            if type(value) ~= "function" then
-                return value
-            end
-
-            local fallback_func = gettext[key]
-            return function(...)
-                local args = {...}
-                local msgstr = value(...)
-                local compare_str = getCompareStr(key, args)
-
-                -- If plugin translation returns untranslated string, try KOReader's translation
-                if msgstr and compare_str and msgstr == compare_str then
-                    if type(fallback_func) == "function" then
-                        msgstr = fallback_func(...)
-                    end
+            if key == "gettext" or key == "pgettext"
+                or key == "ngettext" or key == "npgettext" then
+                return function(...)
+                    return lookup(key, ...)
                 end
-                return msgstr
             end
+            return new_gettext[key]
         end,
         __call = function(_, msgid)
-            local msgstr = new_gettext(msgid)
-            -- If plugin has no translation, fall back to KOReader
-            if msgstr and msgstr == msgid then
-                msgstr = gettext(msgid)
-            end
-            return msgstr
-        end
+            return lookup("gettext", msgid)
+        end,
     }
 
     return setmetatable({
