@@ -422,23 +422,5 @@ msgstr ""
 msgid "Leave as-is"
 msgstr ""
 
-msgid "Show book cover on sleep screen"
-msgstr ""
-
-msgid "Show custom image or cover on sleep screen"
-msgstr ""
-
-msgid "Show random image from folder on sleep screen"
-msgstr ""
-
-msgid "Show reading progress on sleep screen"
-msgstr ""
-
-msgid "Show book status on sleep screen"
-msgstr ""
-
-msgid "Leave screen as-is"
-msgstr ""
-
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr ""

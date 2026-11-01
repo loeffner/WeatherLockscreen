@@ -422,23 +422,5 @@ msgstr "Könyvállapot"
 msgid "Leave as-is"
 msgstr "Képernyő változatlanul hagyása"
 
-msgid "Show book cover on sleep screen"
-msgstr "Könyvborító megjelenítése"
-
-msgid "Show custom image or cover on sleep screen"
-msgstr "Egyéni kép vagy borító megjelenítése"
-
-msgid "Show random image from folder on sleep screen"
-msgstr "Véletlen kép megjelenítése egy mappából"
-
-msgid "Show reading progress on sleep screen"
-msgstr "Olvasási előrehaladás megjelenítése"
-
-msgid "Show book status on sleep screen"
-msgstr "Könyvállapot megjelenítése"
-
-msgid "Leave screen as-is"
-msgstr "Változatlan képernyő"
-
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr "Válaszd ki, mi jelenjen meg, ha nem érhetők el időjárási adatok (nincs internet, API-hiba stb.). A képmappák és más lehetőségek a KOReader alvóképernyő-beállításainál adhatók meg."
