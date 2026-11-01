@@ -4,5 +4,5 @@ return {
     fullname = _("Weather Lockscreen"),
     description = _(
         [[Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable.]]),
-    version = "v1.0.0"
+    version = "v1.1.0"
 }
