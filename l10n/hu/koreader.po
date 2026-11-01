@@ -1,0 +1,444 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-18 12:00+0000\n"
+"PO-Revision-Date: 2026-10-31 18:00+0100\n"
+"Last-Translator: Hungarian community translation\n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+
+# ==============================================================================
+# Plugin Metadata (_meta.lua)
+# ==============================================================================
+
+msgid "Weather Lockscreen"
+msgstr "Időjárásos képernyővédő"
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "Időjárási adatokat jelenít meg az alvóképernyőn. Az engedélyezéshez válaszd az Alvóképernyő > Háttérkép menü Időjárás lehetőségét."
+
+# ==============================================================================
+# Main Menu (weather_menu.lua)
+# ==============================================================================
+
+# Location Settings
+msgid "Location"
+msgstr "Helyzet"
+
+msgid "City, postal code, or coordinates"
+msgstr "Település, irányítószám vagy koordináták"
+
+msgid "Enter your postal code or city name"
+msgstr "Add meg az irányítószámot vagy a település nevét"
+
+msgid "Search"
+msgstr "Keresés"
+
+msgid "Searching..."
+msgstr "Keresés folyamatban…"
+
+msgid "Select Location (1 result)"
+msgstr "Hely kiválasztása (1 találat)"
+
+msgid "Select Location (%1 results)"
+msgstr "Hely kiválasztása (%1 találat)"
+
+msgid "No location found"
+msgstr "Nem található hely"
+
+msgid "Search again"
+msgstr "Új keresés"
+
+msgid "Location search failed: %1"
+msgstr "A hely keresése sikertelen: %1"
+
+msgid "Cancel"
+msgstr "Mégse"
+
+msgid "Save"
+msgstr "Mentés"
+
+msgid "Delete"
+msgstr "Törlés"
+
+# Display Style Settings
+msgid "Display Style (%1)"
+msgstr "Megjelenítési stílus (%1)"
+
+msgid "Today & Tomorrow"
+msgstr "Ma és holnap"
+
+msgid "Today"
+msgstr "Ma"
+
+msgid "Current"
+msgstr "Jelenlegi"
+
+msgid "Night Owl"
+msgstr "Holdfázisok"
+
+msgid "Retro Analog"
+msgstr "Retró analóg"
+
+msgid "Cover"
+msgstr "Borító"
+
+# Orientation Settings
+msgid "Orientation"
+msgstr "Tájolás"
+
+msgid "Override rotation"
+msgstr "Elforgatás felülbírálása"
+
+# Hourly Forecast Settings
+msgid "Forecast hours shown"
+msgstr "Megjelenített előrejelzési időpontok"
+
+msgid "Forecast hours"
+msgstr "Előrejelzési időpontok"
+
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "Add meg a megjelenítendő időpontokat (0–23), vesszővel elválasztva. Az alapértelmezéshez hagyd üresen."
+
+# Temperature Scale Settings
+msgid "Temperature Scale"
+msgstr "Hőmérsékleti skála"
+
+msgid "Celsius"
+msgstr "Celsius"
+
+msgid "Fahrenheit"
+msgstr "Fahrenheit"
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
+msgstr "(hőérzet: %1)"
+
+# Display Settings
+msgid "Show header"
+msgstr "Fejléc megjelenítése"
+
+msgid "Override scaling"
+msgstr "Méretezés felülbírálása"
+
+msgid "Content Fill (%1%)"
+msgstr "Tartalom kitöltése (%1%)"
+
+msgid "Content Fill Percentage"
+msgstr "Tartalom kitöltési aránya"
+
+msgid "How much of the available screen height should be filled?"
+msgstr "A rendelkezésre álló képernyőmagasság mekkora részét töltse ki?"
+
+msgid "Cover scaling"
+msgstr "Borító méretezése"
+
+msgid "Fit to screen"
+msgstr "Képernyőhöz illesztés"
+
+msgid "Zoom to fill"
+msgstr "Kitöltés nagyítással"
+
+msgid "Stretch to fill"
+msgstr "Kitöltés nyújtással"
+
+# Dynamic setting values (for menu display)
+msgid "fit"
+msgstr "illesztés"
+
+msgid "zoom"
+msgstr "nagyítás"
+
+msgid "stretch"
+msgstr "nyújtás"
+
+# Cache Settings
+msgid "Cache Settings"
+msgstr "Gyorsítótár beállításai"
+
+msgid "Maximum Cache duration"
+msgstr "Gyorsítótár maximális érvényessége"
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "Kapcsolat nélkül legfeljebb ilyen régi tárolt időjárási adatok jelennek meg. Régebbi adatok esetén a beállított tartalék megjelenítés lép életbe."
+
+msgid "Minimum Cache duration"
+msgstr "Gyorsítótár minimális érvényessége"
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr "A készülék lezárásakor indított API-kérések közötti minimális idő. Ezen belül automatikusan a tárolt adatok használatosak."
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
+msgstr "Hibakeresés: az API-kérések közötti minimális időt szabályozza. Az időszakos frissítés gyakoriságát nem érinti."
+
+msgid "hour"
+msgstr "óra"
+
+msgid "hours"
+msgstr "óra"
+
+msgid "h"
+msgstr "ó"
+
+msgid "min"
+msgstr "perc"
+
+msgid "minutes"
+msgstr "perc"
+
+msgid "Clear cache"
+msgstr "Gyorsítótár törlése"
+
+msgid "Clear weather cache"
+msgstr "Időjárási gyorsítótár törlése"
+
+msgid "Clear cached weather data and icons?"
+msgstr "Törlöd a tárolt időjárási adatokat és ikonokat?"
+
+msgid "Cache cleared"
+msgstr "Gyorsítótár törölve"
+
+msgid "Weather cache cleared"
+msgstr "Időjárási gyorsítótár törölve"
+
+msgid "No cache to clear"
+msgstr "Nincs törölhető gyorsítótár"
+
+# Periodic Refresh Settings
+msgid "Off"
+msgstr "Ki"
+
+msgid "30 minutes"
+msgstr "30 perc"
+
+msgid "1 hour"
+msgstr "1 óra"
+
+msgid "3 hours"
+msgstr "3 óra"
+
+msgid "6 hours"
+msgstr "6 óra"
+
+msgid "12 hours"
+msgstr "12 óra"
+
+msgid "While charging"
+msgstr "Töltés közben"
+
+msgid "Same as base"
+msgstr "Alapbeállítás szerint"
+
+# Refresh indicator (header)
+msgid "Refreshing, please wait…"
+msgstr "Frissítés, kis türelmet…"
+
+# Custom Interval Settings
+msgid "Custom…"
+msgstr "Egyéni…"
+
+msgid "Custom (%1)"
+msgstr "Egyéni (%1)"
+
+msgid "Custom refresh interval"
+msgstr "Egyéni frissítési időköz"
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr "Add meg a frissítési időközt órában és percben."
+
+msgid "Hours"
+msgstr "Óra"
+
+msgid "Minutes"
+msgstr "Perc"
+
+msgid "%1 h"
+msgstr "%1 óra"
+
+msgid "%1 min"
+msgstr "%1 perc"
+
+msgid "%1 h %2 min"
+msgstr "%1 óra %2 perc"
+
+# Language Settings
+msgid "Show weather on sleep screen"
+msgstr "Időjárás megjelenítése az alvóképernyőn"
+
+# Dashboard/Active Sleep Settings
+msgid "Dashboard"
+msgstr "Irányítópult"
+
+msgid "Weather dashboard"
+msgstr "Időjárási irányítópult"
+
+msgid "Dashboard (Tap to set interval)"
+msgstr "Irányítópult (beállításhoz érintsd meg)"
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr "Teljes képernyőn jeleníti meg az időjárást, és rendszeresen frissít. Minden készüléken működik. Bezáráshoz érintsd meg a képernyőt. A szokásos alvóképernyőnél több energiát fogyaszt."
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr "Az irányítópult ébren tartja a készüléket, és rendszeresen frissíti az időjárási adatokat.\nEz növeli az energiafogyasztást, amíg az irányítópult aktív.\n\nFolytatod?"
+
+msgid "Active Sleep"
+msgstr "Aktív alvás"
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr "Aktív alvás (Beállításhoz érintsd meg)"
+
+msgid "Active Sleep (Unsupported device)"
+msgstr "Aktív alvás (nem támogatott készülék)"
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr "Aktív alvás (Wi-Fi bekapcsolása szükséges)"
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr "Aktív alvás (Kobón kísérleti – segítséghez tartsd nyomva)"
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr "A készülék felébred az alvó állapotból az időjárási adatok frissítéséhez. Az irányítópultnál kevesebb energiát fogyaszt.\n\nTámogatott készülékek: Kindle; Kobo (kísérleti, részletek a README-ben)."
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr "Az aktív alvás felébreszti a készüléket az időjárási adatok frissítéséhez.\nEz növeli az energiafogyasztást, amíg a készülék zárolva van.\n\nFolytatod?"
+
+msgid "Lock to Start"
+msgstr "Indítás lezárással"
+
+msgid "Hold to Start"
+msgstr "Indítás hosszú nyomással"
+
+msgid "Enable"
+msgstr "Engedélyezés"
+
+# Debug Settings
+msgid "Debug options enabled"
+msgstr "Hibakeresési beállítások engedélyezve"
+
+msgid "Debug options disabled"
+msgstr "Hibakeresési beállítások letiltva"
+
+# Error Messages
+msgid "API error"
+msgstr "API-hiba"
+
+msgid "Unknown error"
+msgstr "Ismeretlen hiba"
+
+msgid "Failed to parse response"
+msgstr "Nem sikerült feldolgozni a választ"
+
+msgid "Preserve Battery"
+msgstr "Akkumulátor kímélése"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "Az aktív alvás kikapcsolása ezen akkumulátortöltöttség alatt. A korlátozás kikapcsolásához állítsd 0-ra."
+
+# ==============================================================================
+# Display Views
+# ==============================================================================
+
+# Weather API (weather_api.lua)
+# Note: "Today" is defined in Display Style Settings section above
+
+msgid "Tomorrow"
+msgstr "Holnap"
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr "HŐMÉRSÉKLET"
+
+msgid "WIND"
+msgstr "SZÉL"
+
+msgid "HUMIDITY"
+msgstr "PÁRATARTALOM"
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr "%1. oldal / %2"
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+# These are dynamically translated via _(moon_phase) in weather_utils.lua
+msgid "New Moon"
+msgstr "Újhold"
+
+msgid "Waxing Crescent"
+msgstr "Növekvő holdsarló"
+
+msgid "First Quarter"
+msgstr "Első negyed"
+
+msgid "Waxing Gibbous"
+msgstr "Növekvő hold"
+
+msgid "Full Moon"
+msgstr "Telihold"
+
+msgid "Waning Gibbous"
+msgstr "Fogyó hold"
+
+msgid "Last Quarter"
+msgstr "Utolsó negyed"
+
+msgid "Third Quarter"
+msgstr "Harmadik negyed"
+
+msgid "Waning Crescent"
+msgstr "Fogyó holdsarló"
+
+# ==============================================================================
+# Fallback Settings (weather_menu.lua)
+# ==============================================================================
+
+msgid "Fallback (%1)"
+msgstr "Tartalék megjelenítés (%1)"
+
+msgid "Book cover"
+msgstr "Könyvborító"
+
+msgid "Custom image"
+msgstr "Egyéni kép"
+
+msgid "Random image"
+msgstr "Véletlen kép"
+
+msgid "Reading progress"
+msgstr "Olvasási előrehaladás"
+
+msgid "Book status"
+msgstr "Könyvállapot"
+
+msgid "Leave as-is"
+msgstr "Képernyő változatlanul hagyása"
+
+msgid "Show book cover on sleep screen"
+msgstr "Könyvborító megjelenítése"
+
+msgid "Show custom image or cover on sleep screen"
+msgstr "Egyéni kép vagy borító megjelenítése"
+
+msgid "Show random image from folder on sleep screen"
+msgstr "Véletlen kép megjelenítése egy mappából"
+
+msgid "Show reading progress on sleep screen"
+msgstr "Olvasási előrehaladás megjelenítése"
+
+msgid "Show book status on sleep screen"
+msgstr "Könyvállapot megjelenítése"
+
+msgid "Leave screen as-is"
+msgstr "Változatlan képernyő"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "Válaszd ki, mi jelenjen meg, ha nem érhetők el időjárási adatok (nincs internet, API-hiba stb.). A képmappák és más lehetőségek a KOReader alvóképernyő-beállításainál adhatók meg."
