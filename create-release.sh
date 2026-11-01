@@ -20,6 +20,7 @@ rsync -av --exclude='.git' \
           --exclude='.gitignore' \
           --exclude='.github' \
           --exclude='.claude' \
+          --exclude='CLAUDE.md' \
           --exclude='resources' \
           --exclude='*.zip' \
           --exclude='*.log' \
