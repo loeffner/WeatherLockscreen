@@ -422,3 +422,36 @@ msgstr "Olduğu gibi bırak"
 
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr "Hava durumu verileri mevcut olmadığında ne gösterileceğini seçin (internet yok, API hatası, vb.). Resim klasörleri ve diğer seçenekler KOReader'ın Uyku ekranı ayarlarında yapılandırılır."
+
+msgid "Update available: %1"
+msgstr "Güncelleme mevcut: %1"
+
+msgid "Check for updates automatically"
+msgstr "Güncellemeleri otomatik denetle"
+
+msgid "Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."
+msgstr "Günde bir kez, hava durumu verileri başarıyla alındıktan sonra GitHub üzerinde bu eklentinin yeni sürümünü denetle."
+
+msgid "Weather Lockscreen %1 is available (installed: %2)."
+msgstr "Weather Lockscreen %1 mevcut (yüklü: %2)."
+
+msgid "Update now"
+msgstr "Şimdi güncelle"
+
+msgid "Downloading Weather Lockscreen %1…"
+msgstr "Weather Lockscreen %1 indiriliyor…"
+
+msgid "Weather Lockscreen has been updated to %1. Restart KOReader now?"
+msgstr "Weather Lockscreen %1 sürümüne güncellendi. KOReader şimdi yeniden başlatılsın mı?"
+
+msgid "Updating Weather Lockscreen failed:\n%1"
+msgstr "Weather Lockscreen güncellenemedi:\n%1"
+
+msgid "Download failed: %1"
+msgstr "İndirme başarısız: %1"
+
+msgid "Extracting the update failed."
+msgstr "Güncelleme açılamadı."
+
+msgid "The downloaded update is not valid."
+msgstr "İndirilen güncelleme geçersiz."

@@ -21,6 +21,7 @@ local WeatherAPI = require("weather_api")
 local WeatherUtils = require("weather_utils")
 local WeatherMenu = require("weather_menu")
 local WeatherDashboard = require("weather_dashboard")
+local WeatherUpdate = require("weather_update")
 local DisplayHelper = require("display_helper")
 
 local WeatherLockscreen = WidgetContainer:extend {
@@ -104,6 +105,14 @@ function WeatherLockscreen:initDefaultSettings()
 
         -- Fallback settings (when weather data unavailable)
         weather_fallback_type = "cover", -- Default: show book cover
+
+        -- Update check settings
+        weather_update_check = true,             -- Daily GitHub release check after a weather fetch
+        weather_update_last_check = 0,           -- os.time() of the last check
+        weather_update_available_version = "",   -- Newer release tag, "" = none
+        weather_update_download_url = "",
+        weather_update_notes = "",
+        weather_update_notified_version = "",    -- Popup already shown for this version
 
         -- Debug Options
         weather_debug_options = false, -- Off by default
@@ -228,6 +237,7 @@ function WeatherLockscreen:addToMainMenu(menu_items)
     menu_items.weather_lockscreen = {
         text = _("Weather Lockscreen"),
         sub_item_table_func = function()
+            UIManager:nextTick(function() WeatherUpdate:maybeNotify() end)
             return WeatherMenu:getSubMenuItems(self)
         end,
         sorting_hint = "tools",
@@ -780,6 +790,10 @@ function WeatherLockscreen:onResume()
             -- Resume frontlight intensity
             WeatherUtils:resumeFrontlight(self)
         end
+
+        -- Offer a found update once the sleep screen is gone (maybeNotify
+        -- re-checks screen_saver_mode, so it never shows on the sleep screen).
+        UIManager:scheduleIn(3, function() WeatherUpdate:maybeNotify() end)
     end
 end
 

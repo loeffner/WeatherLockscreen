@@ -14,6 +14,7 @@ local _ = require("l10n/gettext")
 local T = require("ffi/util").template
 local WeatherAPI = require("weather_api")
 local WeatherUtils = require("weather_utils")
+local WeatherUpdate = require("weather_update")
 
 local WeatherMenu = {}
 
@@ -43,6 +44,7 @@ local ICON = {
     timer            = nf(0xEC1A),
     timer_sand       = nf(0xEC1E),
     broom            = nf(0xE7E1),
+    update           = nf(0xEDAE),
 }
 
 -- Prefix a menu item's label with a glyph. Works for both static `text` and
@@ -88,8 +90,37 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
     table.insert(menu_items, withGlyph(self:getFallbackMenuItem(), ICON.backup_restore))
     table.insert(menu_items, withGlyph(self:getRtcModeMenuItem(plugin_instance), ICON.sleep))
     table.insert(menu_items, withGlyph(self:getDashboardModeMenuItem(plugin_instance), ICON.view_dashboard))
+    menu_items[#menu_items].separator = true
+    table.insert(menu_items, withGlyph(self:getUpdateCheckMenuItem(), ICON.update))
+
+    -- A known update goes first, so it's seen as soon as the menu opens.
+    local update_version = WeatherUpdate:getAvailableVersion()
+    if update_version then
+        table.insert(menu_items, 1, withGlyph({
+            text = T(_("Update available: %1"), update_version),
+            callback = function()
+                WeatherUpdate:showUpdateDialog()
+            end,
+            separator = true,
+        }, ICON.update))
+    end
 
     return menu_items
+end
+
+function WeatherMenu:getUpdateCheckMenuItem()
+    return {
+        text = _("Check for updates automatically"),
+        checked_func = function()
+            return G_reader_settings:nilOrTrue("weather_update_check")
+        end,
+        callback = function()
+            local current = G_reader_settings:nilOrTrue("weather_update_check")
+            G_reader_settings:saveSetting("weather_update_check", not current)
+            G_reader_settings:flush()
+        end,
+        help_text = _("Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."),
+    }
 end
 
 function WeatherMenu:getLocationMenuItem(plugin_instance)

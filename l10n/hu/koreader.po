@@ -424,3 +424,36 @@ msgstr "Képernyő változatlanul hagyása"
 
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr "Válaszd ki, mi jelenjen meg, ha nem érhetők el időjárási adatok (nincs internet, API-hiba stb.). A képmappák és más lehetőségek a KOReader alvóképernyő-beállításainál adhatók meg."
+
+msgid "Update available: %1"
+msgstr "Frissítés elérhető: %1"
+
+msgid "Check for updates automatically"
+msgstr "Frissítések automatikus keresése"
+
+msgid "Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."
+msgstr "Naponta egyszer, sikeres időjárás-lekérés után a GitHubon keresi a bővítmény új verzióját."
+
+msgid "Weather Lockscreen %1 is available (installed: %2)."
+msgstr "A Weather Lockscreen %1 elérhető (telepítve: %2)."
+
+msgid "Update now"
+msgstr "Frissítés most"
+
+msgid "Downloading Weather Lockscreen %1…"
+msgstr "Weather Lockscreen %1 letöltése…"
+
+msgid "Weather Lockscreen has been updated to %1. Restart KOReader now?"
+msgstr "A Weather Lockscreen frissítve erre: %1. Újraindítja most a KOReadert?"
+
+msgid "Updating Weather Lockscreen failed:\n%1"
+msgstr "A Weather Lockscreen frissítése sikertelen:\n%1"
+
+msgid "Download failed: %1"
+msgstr "A letöltés sikertelen: %1"
+
+msgid "Extracting the update failed."
+msgstr "A frissítés kicsomagolása sikertelen."
+
+msgid "The downloaded update is not valid."
+msgstr "A letöltött frissítés érvénytelen."

@@ -423,3 +423,36 @@ msgstr "Dejar como está"
 
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr "Elige qué mostrar cuando los datos del clima no están disponibles (sin internet, error de API, etc.). Las carpetas de imágenes y otras opciones se configuran en los ajustes de pantalla de suspensión de KOReader."
+
+msgid "Update available: %1"
+msgstr "Actualización disponible: %1"
+
+msgid "Check for updates automatically"
+msgstr "Buscar actualizaciones automáticamente"
+
+msgid "Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."
+msgstr "Una vez al día, tras obtener los datos del tiempo correctamente, buscar en GitHub una nueva versión de este complemento."
+
+msgid "Weather Lockscreen %1 is available (installed: %2)."
+msgstr "Weather Lockscreen %1 está disponible (instalada: %2)."
+
+msgid "Update now"
+msgstr "Actualizar ahora"
+
+msgid "Downloading Weather Lockscreen %1…"
+msgstr "Descargando Weather Lockscreen %1…"
+
+msgid "Weather Lockscreen has been updated to %1. Restart KOReader now?"
+msgstr "Weather Lockscreen se ha actualizado a %1. ¿Reiniciar KOReader ahora?"
+
+msgid "Updating Weather Lockscreen failed:\n%1"
+msgstr "Error al actualizar Weather Lockscreen:\n%1"
+
+msgid "Download failed: %1"
+msgstr "Error en la descarga: %1"
+
+msgid "Extracting the update failed."
+msgstr "Error al extraer la actualización."
+
+msgid "The downloaded update is not valid."
+msgstr "La actualización descargada no es válida."

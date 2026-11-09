@@ -370,3 +370,36 @@ msgstr "保持不变"
 
 msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
 msgstr "选择当天气数据不可用时(无网络、API 错误等)显示的内容。图片文件夹和其它选项在 KOReader 的睡眠屏幕设置中配置。"
+
+msgid "Update available: %1"
+msgstr "有可用更新：%1"
+
+msgid "Check for updates automatically"
+msgstr "自动检查更新"
+
+msgid "Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."
+msgstr "每天一次，在成功获取天气数据后，到 GitHub 检查此插件的新版本。"
+
+msgid "Weather Lockscreen %1 is available (installed: %2)."
+msgstr "Weather Lockscreen %1 已发布（已安装：%2）。"
+
+msgid "Update now"
+msgstr "立即更新"
+
+msgid "Downloading Weather Lockscreen %1…"
+msgstr "正在下载 Weather Lockscreen %1…"
+
+msgid "Weather Lockscreen has been updated to %1. Restart KOReader now?"
+msgstr "Weather Lockscreen 已更新到 %1。现在重启 KOReader 吗？"
+
+msgid "Updating Weather Lockscreen failed:\n%1"
+msgstr "Weather Lockscreen 更新失败：\n%1"
+
+msgid "Download failed: %1"
+msgstr "下载失败：%1"
+
+msgid "Extracting the update failed."
+msgstr "解压更新失败。"
+
+msgid "The downloaded update is not valid."
+msgstr "下载的更新无效。"

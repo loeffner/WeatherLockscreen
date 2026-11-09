@@ -122,6 +122,11 @@ function WeatherAPI:fetchWeatherData(weather_lockscreen)
             WeatherUtils:saveWeatherCache(weather_data)
             weather_data.is_cached = false
             weather_lockscreen.refresh = false
+            -- We're demonstrably online: piggyback the (at most daily) update check.
+            local ok_upd, upd_err = pcall(function() require("weather_update"):maybeCheck() end)
+            if not ok_upd then
+                logger.warn("WeatherLockscreen: Update check error:", upd_err)
+            end
             return weather_data
         else
             logger.warn("WeatherLockscreen: Failed to parse weather data")
