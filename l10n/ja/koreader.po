@@ -1,0 +1,457 @@
+# Japanese translation for WeatherLockscreen
+# Copyright (C) 2025
+# This file is distributed under the same license as the WeatherLockscreen package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: WeatherLockscreen\n"
+"POT-Creation-Date: 2025-01-18 12:00+0000\n"
+"PO-Revision-Date: 2026-11-05 21:00+0000\n"
+"Last-Translator: Lesstep <275432938+rogervokma-stack@users.noreply.github.com>\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# ==============================================================================
+# Plugin Metadata (_meta.lua)
+# ==============================================================================
+
+msgid "Weather Lockscreen"
+msgstr "天気ロック画面"
+
+msgid "Displays weather information on the sleep screen. Select Weather option in Sleep screen > Wallpaper menu to enable."
+msgstr "スクリーンセーバーに天気の情報を表示します。有効にするには、スクリーンセーバーの Wallpaper メニューで天気の項目を選んでください。"
+
+# ==============================================================================
+# Main Menu (weather_menu.lua)
+# ==============================================================================
+
+# Location Settings
+msgid "Location"
+msgstr "場所"
+
+msgid "City, postal code, or coordinates"
+msgstr "都市名、郵便番号、または座標"
+
+msgid "Enter your postal code or city name"
+msgstr "郵便番号か都市名を入力してください"
+
+msgid "Search"
+msgstr "検索"
+
+msgid "Searching..."
+msgstr "検索中..."
+
+msgid "Select Location (1 result)"
+msgstr "場所を選択（1 件）"
+
+msgid "Select Location (%1 results)"
+msgstr "場所を選択（%1 件）"
+
+msgid "No location found"
+msgstr "場所が見つかりません"
+
+msgid "Search again"
+msgstr "もう一度検索"
+
+msgid "Location search failed: %1"
+msgstr "場所の検索に失敗しました：%1"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Delete"
+msgstr "削除"
+
+# Display Style Settings
+msgid "Display Style (%1)"
+msgstr "表示スタイル（%1）"
+
+msgid "Today & Tomorrow"
+msgstr "今日と明日"
+
+msgid "Today"
+msgstr "今日"
+
+msgid "Current"
+msgstr "現在"
+
+msgid "Night Owl"
+msgstr "ナイトオウル"
+
+msgid "Retro Analog"
+msgstr "レトロアナログ"
+
+msgid "Cover"
+msgstr "カバー"
+
+# Orientation Settings
+msgid "Orientation"
+msgstr "画面の向き"
+
+msgid "Override rotation"
+msgstr "回転を上書き"
+
+# Hourly Forecast Settings
+msgid "Forecast hours shown"
+msgstr "表示する予報の時刻"
+
+msgid "Forecast hours"
+msgstr "予報の時刻"
+
+msgid "Enter the hours to show (0-23), separated by commas. Leave empty for the default."
+msgstr "表示する時刻（0-23）をカンマ区切りで入力してください。空欄にすると既定になります。"
+
+# Temperature Scale Settings
+msgid "Temperature Scale"
+msgstr "温度の単位"
+
+msgid "Celsius"
+msgstr "摂氏"
+
+msgid "Fahrenheit"
+msgstr "華氏"
+
+# Temperature Display (weather_utils.lua)
+msgid "(feels like %1)"
+msgstr "（体感 %1）"
+
+# Display Settings
+msgid "Show header"
+msgstr "ヘッダーを表示"
+
+msgid "Override scaling"
+msgstr "拡大率を上書き"
+
+msgid "Content Fill (%1%)"
+msgstr "内容の割合（%1%）"
+
+msgid "Content Fill Percentage"
+msgstr "内容の割合（%）"
+
+msgid "How much of the available screen height should be filled?"
+msgstr "画面の高さのうち、どれだけを内容で埋めますか？"
+
+msgid "Cover scaling"
+msgstr "カバーの拡大縮小"
+
+msgid "Fit to screen"
+msgstr "画面に合わせる"
+
+msgid "Zoom to fill"
+msgstr "拡大して埋める"
+
+msgid "Stretch to fill"
+msgstr "引き伸ばして埋める"
+
+# Dynamic setting values (for menu display)
+msgid "fit"
+msgstr "合わせる"
+
+msgid "zoom"
+msgstr "拡大"
+
+msgid "stretch"
+msgstr "引き伸ばし"
+
+# Cache Settings
+msgid "Cache Settings"
+msgstr "キャッシュの設定"
+
+msgid "Maximum Cache duration"
+msgstr "キャッシュの最長期間"
+
+msgid "When offline, cached weather data up to this age will be shown. Older data displays the configured fallback instead."
+msgstr "オフラインのときは、この期間までのキャッシュされた天気データを表示します。それより古い場合は、設定した代替表示になります。"
+
+msgid "Minimum Cache duration"
+msgstr "キャッシュの最短期間"
+
+msgid "Minimum time between API requests when locking device. Within this period, cached data is used automatically."
+msgstr "端末をロックしたときの API リクエストの最短の間隔です。この期間内は、キャッシュされたデータを自動で使います。"
+
+msgid "Debug: Controls minimum time between API requests. Does not affect periodic refresh intervals."
+msgstr "デバッグ：API リクエストの最短の間隔を決めます。定期的な更新の間隔には影響しません。"
+
+msgid "hour"
+msgstr "時間"
+
+msgid "hours"
+msgstr "時間"
+
+msgid "h"
+msgstr "時間"
+
+msgid "min"
+msgstr "分"
+
+msgid "minutes"
+msgstr "分"
+
+msgid "Clear cache"
+msgstr "キャッシュを消去"
+
+msgid "Clear weather cache"
+msgstr "天気のキャッシュを消去"
+
+msgid "Clear cached weather data and icons?"
+msgstr "キャッシュされた天気データとアイコンを消去しますか？"
+
+msgid "Cache cleared"
+msgstr "キャッシュを消去しました"
+
+msgid "Weather cache cleared"
+msgstr "天気のキャッシュを消去しました"
+
+msgid "No cache to clear"
+msgstr "消去するキャッシュはありません"
+
+# Periodic Refresh Settings
+msgid "Off"
+msgstr "オフ"
+
+msgid "30 minutes"
+msgstr "30 分"
+
+msgid "1 hour"
+msgstr "1 時間"
+
+msgid "3 hours"
+msgstr "3 時間"
+
+msgid "6 hours"
+msgstr "6 時間"
+
+msgid "12 hours"
+msgstr "12 時間"
+
+msgid "While charging"
+msgstr "充電中"
+
+msgid "Same as base"
+msgstr "通常と同じ"
+
+# Refresh indicator (header)
+msgid "Refreshing, please wait…"
+msgstr "更新しています。お待ちください…"
+
+# Custom Interval Settings
+msgid "Custom…"
+msgstr "カスタム…"
+
+msgid "Custom (%1)"
+msgstr "カスタム（%1）"
+
+msgid "Custom refresh interval"
+msgstr "カスタムの更新間隔"
+
+msgid "Set hours and minutes for the refresh interval."
+msgstr "更新間隔の時間と分を設定してください。"
+
+msgid "Hours"
+msgstr "時間"
+
+msgid "Minutes"
+msgstr "分"
+
+msgid "%1 h"
+msgstr "%1 時間"
+
+msgid "%1 min"
+msgstr "%1 分"
+
+msgid "%1 h %2 min"
+msgstr "%1 時間 %2 分"
+
+# Language Settings
+msgid "Show weather on sleep screen"
+msgstr "スクリーンセーバーに天気を表示"
+
+# Dashboard/Active Sleep Settings
+msgid "Dashboard"
+msgstr "ダッシュボード"
+
+msgid "Weather dashboard"
+msgstr "天気ダッシュボード"
+
+msgid "Dashboard (Tap to set interval)"
+msgstr "ダッシュボード（タップで間隔を設定）"
+
+msgid "Shows weather fullscreen and refreshes periodically. Works on all devices. Tap screen to dismiss. Uses more battery than regular sleep screen."
+msgstr "天気を全画面で表示し、定期的に更新します。すべての端末で使えます。画面をタップすると閉じます。通常のスクリーンセーバーよりバッテリーを多く使います。"
+
+msgid "The dashboard will keep the device awake and regularly update weather data.\nThis will increase power consumption while the dashboard is active.\n\nContinue?"
+msgstr "ダッシュボードは端末を起こしたままにして、天気データを定期的に更新します。\nダッシュボードの表示中は消費電力が増えます。\n\n続けますか？"
+
+msgid "Active Sleep"
+msgstr "アクティブスリープ"
+
+msgid "Active Sleep (Tap to set interval)"
+msgstr "アクティブスリープ（タップで間隔を設定）"
+
+msgid "Active Sleep (Unsupported device)"
+msgstr "アクティブスリープ（非対応の端末）"
+
+msgid "Active Sleep (Enable Wi-Fi 'Turn on' first)"
+msgstr "アクティブスリープ（先に Wi-Fi の「オンにする」を有効に）"
+
+msgid "Active Sleep (Kobo experimental - hold for help)"
+msgstr "アクティブスリープ（Kobo は試験的・長押しでヘルプ）"
+
+msgid "Device wakes from sleep to refresh weather data. Saves power compared to the dashboard.\n\nSupported devices: Kindle. Kobo (experimental) see README for more information."
+msgstr "端末がスリープから起きて天気データを更新します。ダッシュボードより電力を節約できます。\n\n対応端末：Kindle。Kobo（試験的）については README を参照してください。"
+
+msgid "Active sleep will wake the device from sleep to update weather data.\nThis will increase power consumption while the device is locked.\n\nContinue?"
+msgstr "アクティブスリープは、端末をスリープから起こして天気データを更新します。\n端末のロック中は消費電力が増えます。\n\n続けますか？"
+
+msgid "Lock to Start"
+msgstr "ロックして開始"
+
+msgid "Hold to Start"
+msgstr "長押しで開始"
+
+msgid "Enable"
+msgstr "有効"
+
+# Debug Settings
+msgid "Debug options enabled"
+msgstr "デバッグ オプションを有効にしました"
+
+msgid "Debug options disabled"
+msgstr "デバッグ オプションを無効にしました"
+
+# Error Messages
+msgid "API error"
+msgstr "API エラー"
+
+msgid "Unknown error"
+msgstr "不明なエラー"
+
+msgid "Failed to parse response"
+msgstr "応答を解析できませんでした"
+
+msgid "Preserve Battery"
+msgstr "バッテリーの節約"
+
+msgid "Disable Active Sleep below this battery level. Set to 0 to turn off."
+msgstr "バッテリー残量がこれを下回ると、アクティブスリープを無効にします。0 にすると、この機能はオフになります。"
+
+# ==============================================================================
+# Display Views
+# ==============================================================================
+
+# Weather API (weather_api.lua)
+# Note: "Today" is defined in Display Style Settings section above
+
+msgid "Tomorrow"
+msgstr "明日"
+
+# Retro Analog Display (display_retro.lua)
+msgid "TEMPERATURE"
+msgstr "気温"
+
+msgid "WIND"
+msgstr "風"
+
+msgid "HUMIDITY"
+msgstr "湿度"
+
+# Reading/Cover Display (display_reading.lua)
+msgid "Page %1 of %2"
+msgstr "ページ %1 / %2"
+
+# Night Owl Display (display_nightowl.lua) - Moon Phases
+# These are dynamically translated via _(moon_phase) in weather_utils.lua
+msgid "New Moon"
+msgstr "新月"
+
+msgid "Waxing Crescent"
+msgstr "三日月"
+
+msgid "First Quarter"
+msgstr "上弦の月"
+
+msgid "Waxing Gibbous"
+msgstr "十三夜月"
+
+msgid "Full Moon"
+msgstr "満月"
+
+msgid "Waning Gibbous"
+msgstr "寝待月"
+
+msgid "Last Quarter"
+msgstr "下弦の月"
+
+msgid "Third Quarter"
+msgstr "下弦の月"
+
+msgid "Waning Crescent"
+msgstr "有明月"
+
+# ==============================================================================
+# Fallback Settings (weather_menu.lua)
+# ==============================================================================
+
+msgid "Fallback (%1)"
+msgstr "代替表示（%1）"
+
+msgid "Book cover"
+msgstr "ブックカバー"
+
+msgid "Custom image"
+msgstr "カスタム画像"
+
+msgid "Random image"
+msgstr "ランダムな画像"
+
+msgid "Reading progress"
+msgstr "読書進行状況"
+
+msgid "Book status"
+msgstr "本のステータス"
+
+msgid "Leave as-is"
+msgstr "そのまま"
+
+msgid "Choose what to display when weather data is unavailable (no internet, API error, etc.). Image folders and other options are configured in KOReader's Sleep screen settings."
+msgstr "天気データを取得できないとき（インターネットなし・API エラーなど）に表示するものを選びます。画像のフォルダーなどのオプションは、KOReader のスクリーンセーバーの設定で決めます。"
+
+msgid "Update available: %1"
+msgstr "アップデートがあります：%1"
+
+msgid "Check for updates automatically"
+msgstr "アップデートを自動で確認"
+
+msgid "Once a day, after weather data was fetched successfully, check GitHub for a new version of this plugin."
+msgstr "1日1回、天気データの取得に成功した後で、このプラグインの新しいバージョンが GitHub に出ていないか確認します。"
+
+msgid "Weather Lockscreen %1 is available (installed: %2)."
+msgstr "天気ロック画面 %1 を利用できます（インストール済み：%2）。"
+
+msgid "Update now"
+msgstr "今すぐアップデート"
+
+msgid "Downloading Weather Lockscreen %1…"
+msgstr "天気ロック画面 %1 をダウンロードしています…"
+
+msgid "Weather Lockscreen has been updated to %1. Restart KOReader now?"
+msgstr "天気ロック画面を %1 にアップデートしました。今すぐ KOReader を再起動しますか？"
+
+msgid "Updating Weather Lockscreen failed:\n%1"
+msgstr "天気ロック画面のアップデートに失敗しました：\n%1"
+
+msgid "Download failed: %1"
+msgstr "ダウンロードに失敗しました：%1"
+
+msgid "Extracting the update failed."
+msgstr "アップデートのファイルを展開できませんでした。"
+
+msgid "The downloaded update is not valid."
+msgstr "ダウンロードしたアップデートのファイルが正しくありません。"
