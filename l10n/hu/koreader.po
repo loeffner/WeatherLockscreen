@@ -134,6 +134,15 @@ msgstr "Akkumulátorjelző (%1)"
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr "Megjeleníti az akkumulátor töltöttségét a zárolási képernyőn: vékony sávként az alsó szélen, vagy ikonként és százalékként a jobb felső sarokban."
 
+msgid "Overrides (%1)"
+msgstr "Felülbírálások (%1)"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "Felülbírálja a tartalom automatikus méretezését és a képernyő elforgatását a zárolási képernyőn."
+
+msgid "update available"
+msgstr "frissítés elérhető"
+
 msgid "Bottom bar"
 msgstr "Alsó sáv"
 

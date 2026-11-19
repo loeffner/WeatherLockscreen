@@ -133,6 +133,15 @@ msgstr "Indicador de batería (%1)"
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr "Muestra el nivel de batería en la pantalla de bloqueo: como una barra fina en el borde inferior o como icono y porcentaje en la esquina superior derecha."
 
+msgid "Overrides (%1)"
+msgstr "Ajustes manuales (%1)"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "Sustituye el escalado automático del contenido y la rotación de pantalla de la pantalla de bloqueo."
+
+msgid "update available"
+msgstr "actualización disponible"
+
 msgid "Bottom bar"
 msgstr "Barra inferior"
 
