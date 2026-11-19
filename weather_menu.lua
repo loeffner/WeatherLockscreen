@@ -32,6 +32,7 @@ local ICON = {
     palette          = nf(0xEAD7),
     thermometer      = nf(0xE20A),
     format_title     = nf(0xECF3),
+    battery          = nf(0xE778), -- same glyph powerd:getBatterySymbol uses at 100%
     arrow_expand_all = nf(0xE74B),
     crop             = nf(0xE89D),
     screen_rotation  = nf(0xEB74),
@@ -65,6 +66,7 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
         withGlyph(self:getDisplayStyleMenuItem(plugin_instance), ICON.palette),
         withGlyph(self:getTemperatureScaleMenuItem(plugin_instance), ICON.thermometer),
         withGlyph(self:getShowHeaderMenuItem(), ICON.format_title),
+        withGlyph(self:getBatteryIndicatorMenuItem(), ICON.battery),
     }
 
     -- Conditionally add content scaling menu when not in nightowl mode
@@ -461,6 +463,42 @@ function WeatherMenu:getShowHeaderMenuItem()
             G_reader_settings:saveSetting("weather_show_header", not current)
             G_reader_settings:flush()
         end,
+    }
+end
+
+-- Battery level on the lockscreen, independent of the header setting.
+function WeatherMenu:getBatteryIndicatorMenuItem()
+    local DisplayHelper = require("display_helper")
+    local labels = {
+        off = _("Off"),
+        bar = _("Bottom bar"),
+        header = _("Header"),
+    }
+    local function option(value)
+        return {
+            text = labels[value],
+            checked_func = function()
+                return DisplayHelper:getBatteryStyle() == value
+            end,
+            keep_menu_open = true,
+            callback = function(touchmenu_instance)
+                G_reader_settings:saveSetting("weather_battery_style", value)
+                G_reader_settings:flush()
+                touchmenu_instance:updateItems()
+            end,
+            radio = true,
+        }
+    end
+    return {
+        text_func = function()
+            return T(_("Battery indicator (%1)"), labels[DisplayHelper:getBatteryStyle()])
+        end,
+        help_text = _("Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."),
+        sub_item_table = {
+            option("off"),
+            option("bar"),
+            option("header"),
+        },
         separator = true,
     }
 end

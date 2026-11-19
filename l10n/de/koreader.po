@@ -123,6 +123,18 @@ msgstr "(gefühlt %1)"
 msgid "Show header"
 msgstr "Kopfzeile anzeigen"
 
+msgid "Battery indicator (%1)"
+msgstr "Akkuanzeige (%1)"
+
+msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
+msgstr "Zeigt den Akkustand auf dem Sperrbildschirm: als dünne Leiste am unteren Rand oder als Symbol mit Prozentwert oben rechts."
+
+msgid "Bottom bar"
+msgstr "Leiste unten"
+
+msgid "Header"
+msgstr "Kopfzeile"
+
 msgid "Override scaling"
 msgstr "Skalierung überschreiben"
 

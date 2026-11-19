@@ -107,6 +107,18 @@ msgstr "(体感 %1)"
 msgid "Show header"
 msgstr "显示标题栏"
 
+msgid "Battery indicator (%1)"
+msgstr "电池指示（%1）"
+
+msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
+msgstr "在锁屏上显示电池电量：底部边缘的细条，或右上角的图标和百分比。"
+
+msgid "Bottom bar"
+msgstr "底部进度条"
+
+msgid "Header"
+msgstr "标题栏"
+
 msgid "Override scaling"
 msgstr "覆盖缩放"
 
