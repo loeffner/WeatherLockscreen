@@ -86,6 +86,7 @@ function WeatherLockscreen:initDefaultSettings()
 
         -- Display settings
         weather_show_header = true, -- nilOrTrue default is true
+        weather_battery_style = "off", -- Battery indicator: "off", "bar" (bottom edge) or "header" (top right)
         weather_override_rotation = false, -- when false, use KOReader's rotation
         weather_orientation = 0, -- Screen rotation mode 0-3 (0 = upright portrait); day/default only
         weather_override_scaling = false,
@@ -545,7 +546,29 @@ function WeatherLockscreen:createWeatherWidget()
     }
     local display_module = require(display_modules[display_style] or "display_default")
 
-    return display_module:create(self, weather_data), false
+    local widget = display_module:create(self, weather_data)
+    return self:addBatteryBar(widget, display_style), false
+end
+
+-- Overlay the battery bar along the bottom edge (independent of the header).
+-- Every display returns a full-screen OverlapGroup, so the bar is simply
+-- layered on top.
+function WeatherLockscreen:addBatteryBar(widget, display_style)
+    if not widget or DisplayHelper:getBatteryStyle() ~= "bar" then
+        return widget
+    end
+    -- Nightowl paints on black unless night mode inverts the whole screen
+    local dark = display_style == "nightowl" and not G_reader_settings:isTrue("night_mode")
+    local bar = DisplayHelper:createBatteryBar(dark)
+    if not bar then
+        return widget
+    end
+    local OverlapGroup = require("ui/widget/overlapgroup")
+    return OverlapGroup:new {
+        dimen = Screen:getSize(),
+        widget,
+        bar,
+    }
 end
 
 -- Choose the refresh mechanism based on power state. On external power the

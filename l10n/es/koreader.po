@@ -127,6 +127,18 @@ msgstr "(sensación de %1)"
 msgid "Show header"
 msgstr "Mostrar encabezado"
 
+msgid "Battery indicator (%1)"
+msgstr "Indicador de batería (%1)"
+
+msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
+msgstr "Muestra el nivel de batería en la pantalla de bloqueo: como una barra fina en el borde inferior o como icono y porcentaje en la esquina superior derecha."
+
+msgid "Bottom bar"
+msgstr "Barra inferior"
+
+msgid "Header"
+msgstr "Encabezado"
+
 msgid "Override scaling"
 msgstr "Forzar escalado"
 

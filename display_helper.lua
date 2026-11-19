@@ -30,32 +30,95 @@ local _ = require("l10n/gettext")
 
 local DisplayHelper = {}
 
---- Battery indicator for the header ("<glyph> 85%"), or nil when the device has
---- no battery or the level can't be read. The glyph comes from KOReader's powerd
---- (same as the reader footer) and renders through the bundled symbols font fallback.
-function DisplayHelper:getBatteryText()
+--- How the battery level is shown, independent of the header setting:
+--- "off", "bar" (a thin bar across the bottom edge) or "header" (glyph +
+--- percentage in the top right corner).
+function DisplayHelper:getBatteryStyle()
+    local style = G_reader_settings:readSetting("weather_battery_style")
+    if style == "bar" or style == "header" then
+        return style
+    end
+    return "off"
+end
+
+--- Read the battery state.
+--- @return table|nil { capacity = 0..100, charging = bool, charged = bool, powerd = powerd },
+---         or nil when the device has no battery or the level can't be read.
+function DisplayHelper:getBatteryState()
     if Device.hasBattery and not Device:hasBattery() then
         return nil
     end
-    local ok, text = pcall(function()
+    local ok, state = pcall(function()
         local powerd = Device:getPowerDevice()
         local capacity = powerd and powerd:getCapacity()
         if type(capacity) ~= "number" then
             return nil
         end
-        local symbol = ""
-        if powerd.getBatterySymbol then
-            local is_charged = powerd.isCharged and powerd:isCharged() or false
-            local is_charging = powerd.isCharging and powerd:isCharging() or false
-            symbol = (powerd:getBatterySymbol(is_charged, is_charging, capacity) or "") .. " "
-        end
-        return symbol .. capacity .. "%"
+        return {
+            capacity = math.max(0, math.min(100, capacity)),
+            charging = powerd.isCharging and powerd:isCharging() or false,
+            charged = powerd.isCharged and powerd:isCharged() or false,
+            powerd = powerd,
+        }
     end)
     if not ok then
-        logger.warn("WeatherLockscreen: Failed to read battery level:", text)
+        logger.warn("WeatherLockscreen: Failed to read battery level:", state)
         return nil
     end
-    return text
+    return state
+end
+
+--- Battery indicator for the header ("<glyph> 85%"), or nil when the battery
+--- can't be read. The glyph comes from KOReader's powerd (same as the reader
+--- footer) and renders through the bundled symbols font fallback.
+function DisplayHelper:getBatteryText()
+    local state = self:getBatteryState()
+    if not state then
+        return nil
+    end
+    local glyph = self:getBatteryGlyph(state)
+    return (glyph and (glyph .. " ") or "") .. state.capacity .. "%"
+end
+
+--- KOReader's battery glyph for the current state (level, charging, charged),
+--- or nil when it can't be determined. `state` is optional (read if omitted).
+function DisplayHelper:getBatteryGlyph(state)
+    state = state or self:getBatteryState()
+    if not state or not state.powerd.getBatterySymbol then
+        return nil
+    end
+    local ok, glyph = pcall(state.powerd.getBatterySymbol, state.powerd,
+        state.charged, state.charging, state.capacity)
+    if ok and glyph and glyph ~= "" then
+        return glyph
+    end
+    return nil
+end
+
+--- Full-screen overlay with a thin bar along the bottom edge, filled from the
+--- left according to the battery level. Returns nil when the battery can't be
+--- read. `dark` selects colors for a black background (nightowl).
+function DisplayHelper:createBatteryBar(dark)
+    local state = self:getBatteryState()
+    if not state then
+        return nil
+    end
+    local ProgressWidget = require("ui/widget/progresswidget")
+    local BottomContainer = require("ui/widget/container/bottomcontainer")
+    return BottomContainer:new {
+        dimen = Screen:getSize(),
+        ProgressWidget:new {
+            width = Screen:getWidth(),
+            height = Screen:scaleBySize(9),
+            percentage = state.capacity / 100,
+            margin_h = 0,
+            margin_v = 0,
+            radius = 0,
+            bordersize = 0,
+            bgcolor = dark and Blitbuffer.COLOR_GRAY_3 or Blitbuffer.COLOR_GRAY_E,
+            fillcolor = dark and Blitbuffer.COLOR_LIGHT_GRAY or Blitbuffer.COLOR_DARK_GRAY,
+        },
+    }
 end
 
 function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data, text_color, is_cached)
@@ -144,7 +207,8 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
         right_text = formatted_time
     end
 
-    local battery_text = show_header and self:getBatteryText()
+    -- Battery is its own setting: with the header off it shows alone, top right.
+    local battery_text = self:getBatteryStyle() == "header" and self:getBatteryText()
     if battery_text then
         right_text = right_text and (right_text .. "  " .. battery_text) or battery_text
     end

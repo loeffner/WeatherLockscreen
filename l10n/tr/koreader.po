@@ -126,6 +126,18 @@ msgstr "(hissedilen %1)"
 msgid "Show header"
 msgstr "Başlığı göster"
 
+msgid "Battery indicator (%1)"
+msgstr "Pil göstergesi (%1)"
+
+msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
+msgstr "Pil seviyesini kilit ekranında gösterir: alt kenarda ince bir çubuk ya da sağ üst köşede simge ve yüzde olarak."
+
+msgid "Bottom bar"
+msgstr "Alt çubuk"
+
+msgid "Header"
+msgstr "Başlık"
+
 msgid "Override scaling"
 msgstr "Ölçeklemeyi geçersiz kıl"
 
