@@ -134,6 +134,15 @@ msgstr ""
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr ""
 
+msgid "Overrides (%1)"
+msgstr ""
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr ""
+
+msgid "update available"
+msgstr ""
+
 msgid "Bottom bar"
 msgstr ""
 

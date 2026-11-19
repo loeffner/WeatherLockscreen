@@ -132,6 +132,15 @@ msgstr "Pil göstergesi (%1)"
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr "Pil seviyesini kilit ekranında gösterir: alt kenarda ince bir çubuk ya da sağ üst köşede simge ve yüzde olarak."
 
+msgid "Overrides (%1)"
+msgstr "Geçersiz kılmalar (%1)"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "Kilit ekranı için otomatik içerik ölçeklemesini ve ekran döndürmeyi geçersiz kılar."
+
+msgid "update available"
+msgstr "güncelleme mevcut"
+
 msgid "Bottom bar"
 msgstr "Alt çubuk"
 

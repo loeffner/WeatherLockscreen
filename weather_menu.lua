@@ -35,8 +35,6 @@ local ICON = {
     battery          = nf(0xE778), -- same glyph powerd:getBatterySymbol uses at 100%
     arrow_expand_all = nf(0xE74B),
     crop             = nf(0xE89D),
-    screen_rotation  = nf(0xEB74),
-    crop_portrait    = nf(0xE8A0),
     database         = nf(0xE8B7),
     backup_restore   = nf(0xE76E),
     sleep            = nf(0xEBB1),
@@ -60,52 +58,48 @@ local function withGlyph(item, glyph)
     return item
 end
 
+-- Layout rule: every setting fits on the first menu page (TouchMenu shows 10
+-- items per page by default), so related options share a row with a submenu
+-- (e.g. the scaling and rotation overrides) instead of appearing as extra
+-- rows. Only the update entries may spill onto page 2.
 function WeatherMenu:getSubMenuItems(plugin_instance)
+    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
+
     local menu_items = {
         withGlyph(self:getLocationMenuItem(plugin_instance), ICON.map_marker),
         withGlyph(self:getDisplayStyleMenuItem(plugin_instance), ICON.palette),
         withGlyph(self:getTemperatureScaleMenuItem(plugin_instance), ICON.thermometer),
-        withGlyph(self:getShowHeaderMenuItem(), ICON.format_title),
-        withGlyph(self:getBatteryIndicatorMenuItem(), ICON.battery),
     }
-
-    -- Conditionally add content scaling menu when not in nightowl mode
-    local display_style = G_reader_settings:readSetting("weather_display_style") or "default"
-    if display_style ~= "nightowl" then
-        table.insert(menu_items, withGlyph(self:getOverrideScalingMenuItem(plugin_instance, display_style), ICON.arrow_expand_all))
-        if G_reader_settings:readSetting("weather_override_scaling") then
-            table.insert(menu_items, withGlyph(self:getContentFillMenuItem(display_style), ICON.arrow_expand_all))
-        end
-    end
-
-    -- Orientation override (applies to every display mode).
-    -- (Forecast hours / Cover scaling live in the Display Style submenu.)
-    table.insert(menu_items, withGlyph(self:getOverrideRotationMenuItem(plugin_instance), ICON.screen_rotation))
-    if G_reader_settings:isTrue("weather_override_rotation") then
-        table.insert(menu_items, withGlyph(self:getOrientationMenuItem(plugin_instance), ICON.crop_portrait))
-    end
-
-    -- Separate the display/rotation group from the cache & refresh group
     menu_items[#menu_items].separator = true
 
+    -- What's drawn on the lockscreen
+    table.insert(menu_items, withGlyph(self:getShowHeaderMenuItem(), ICON.format_title))
+    table.insert(menu_items, withGlyph(self:getBatteryIndicatorMenuItem(), ICON.battery))
+    -- Scaling + rotation overrides share one row.
+    -- (Forecast hours / Cover scaling live in the Display Style submenu.)
+    table.insert(menu_items, withGlyph(self:getOverridesMenuItem(plugin_instance, display_style), ICON.arrow_expand_all))
+    menu_items[#menu_items].separator = true
+
+    -- Data & refresh
     table.insert(menu_items, withGlyph(self:getCacheMenuItem(plugin_instance), ICON.database))
     table.insert(menu_items, withGlyph(self:getFallbackMenuItem(), ICON.backup_restore))
     table.insert(menu_items, withGlyph(self:getRtcModeMenuItem(plugin_instance), ICON.sleep))
     table.insert(menu_items, withGlyph(self:getDashboardModeMenuItem(plugin_instance), ICON.view_dashboard))
     menu_items[#menu_items].separator = true
-    table.insert(menu_items, withGlyph(self:getUpdateCheckMenuItem(), ICON.update))
 
-    -- A known update goes first, so it's seen as soon as the menu opens.
+    -- Updates come last; they're the only entries allowed past the first page.
+    -- A pending update is also flagged on the plugin's own main-menu entry
+    -- (see WeatherLockscreen:addToMainMenu), so it's still seen right away.
     local update_version = WeatherUpdate:getAvailableVersion()
     if update_version then
-        table.insert(menu_items, 1, withGlyph({
+        table.insert(menu_items, withGlyph({
             text = T(_("Update available: %1"), update_version),
             callback = function()
                 WeatherUpdate:showUpdateDialog()
             end,
-            separator = true,
         }, ICON.update))
     end
+    table.insert(menu_items, withGlyph(self:getUpdateCheckMenuItem(), ICON.update))
 
     return menu_items
 end
@@ -357,37 +351,69 @@ function WeatherMenu:getDisplayStyleOption(plugin_instance, style_value, style_l
     }
 end
 
-function WeatherMenu:getOverrideRotationMenuItem(plugin_instance)
-    return {
+-- One row for both overrides (content scaling and rotation), so the main menu
+-- fits on one page. The row text lists the active overrides.
+function WeatherMenu:getOverridesMenuItem(plugin_instance, display_style)
+    local optionsutil = require("ui/data/optionsutil")
+    -- Content scaling doesn't apply to nightowl (fixed layout)
+    local has_scaling = display_style ~= "nightowl"
+
+    local sub_item_table = {}
+    if has_scaling then
+        table.insert(sub_item_table, {
+            text = _("Override scaling"),
+            checked_func = function()
+                return G_reader_settings:readSetting("weather_override_scaling") or false
+            end,
+            keep_menu_open = true,
+            callback = function(touchmenu_instance)
+                local current = G_reader_settings:readSetting("weather_override_scaling") or false
+                G_reader_settings:saveSetting("weather_override_scaling", not current)
+                G_reader_settings:flush()
+                touchmenu_instance:updateItems()
+            end,
+        })
+        local fill_item = self:getContentFillMenuItem(display_style)
+        fill_item.separator = true
+        table.insert(sub_item_table, fill_item)
+    end
+
+    table.insert(sub_item_table, {
         text = _("Override rotation"),
         checked_func = function()
             return G_reader_settings:isTrue("weather_override_rotation")
         end,
+        keep_menu_open = true,
         callback = function(touchmenu_instance)
             local current = G_reader_settings:isTrue("weather_override_rotation")
             G_reader_settings:saveSetting("weather_override_rotation", not current)
             G_reader_settings:flush()
-            touchmenu_instance.item_table = WeatherMenu:getSubMenuItems(plugin_instance)
             touchmenu_instance:updateItems()
         end,
-    }
-end
-
-function WeatherMenu:getOrientationMenuItem(plugin_instance)
-    local optionsutil = require("ui/data/optionsutil")
-    local sub_item_table = {}
+    })
     for i, mode in ipairs(optionsutil.rotation_modes) do
         table.insert(sub_item_table, self:getOrientationOption(plugin_instance, mode, optionsutil.rotation_labels[i]))
     end
+
     return {
         text_func = function()
-            local current = WeatherUtils:getOrientationMode()
-            local label = ""
-            for i, mode in ipairs(optionsutil.rotation_modes) do
-                if mode == current then label = optionsutil.rotation_labels[i] end
+            local active = {}
+            if has_scaling and G_reader_settings:readSetting("weather_override_scaling") then
+                local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
+                table.insert(active, fill_percent .. "%")
             end
-            return T(_("Orientation") .. " (" .. label .. ")")
+            if G_reader_settings:isTrue("weather_override_rotation") then
+                local current = WeatherUtils:getOrientationMode()
+                for i, mode in ipairs(optionsutil.rotation_modes) do
+                    if mode == current then table.insert(active, optionsutil.rotation_labels[i]) end
+                end
+            end
+            if #active == 0 then
+                return T(_("Overrides (%1)"), _("Off"))
+            end
+            return T(_("Overrides (%1)"), table.concat(active, ", "))
         end,
+        help_text = _("Override the automatic content scaling and the screen rotation for the lockscreen."),
         sub_item_table = sub_item_table,
     }
 end
@@ -397,6 +423,9 @@ function WeatherMenu:getOrientationOption(plugin_instance, mode_value, mode_labe
         text = mode_label,
         checked_func = function()
             return WeatherUtils:getOrientationMode() == mode_value
+        end,
+        enabled_func = function()
+            return G_reader_settings:isTrue("weather_override_rotation")
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
@@ -499,24 +528,6 @@ function WeatherMenu:getBatteryIndicatorMenuItem()
             option("bar"),
             option("header"),
         },
-        separator = true,
-    }
-end
-
-function WeatherMenu:getOverrideScalingMenuItem(plugin_instance, display_style)
-    return {
-        text = _("Override scaling"),
-        checked_func = function()
-            return G_reader_settings:readSetting("weather_override_scaling") or false
-        end,
-        callback = function(touchmenu_instance)
-            local current = G_reader_settings:readSetting("weather_override_scaling") or false
-            G_reader_settings:saveSetting("weather_override_scaling", not current)
-            touchmenu_instance.item_table = WeatherMenu:getSubMenuItems(plugin_instance)
-            touchmenu_instance:updateItems()
-            G_reader_settings:flush()
-        end,
-        separator = not G_reader_settings:readSetting("weather_override_scaling") and display_style ~= "reading",
     }
 end
 
@@ -525,6 +536,9 @@ function WeatherMenu:getContentFillMenuItem(display_style)
         text_func = function()
             local fill_percent = tonumber(G_reader_settings:readSetting("weather_fill_percent")) or 90
             return T(_("Content Fill (%1%)"), fill_percent)
+        end,
+        enabled_func = function()
+            return G_reader_settings:readSetting("weather_override_scaling") and true or false
         end,
         keep_menu_open = true,
         callback = function(touchmenu_instance)
@@ -549,7 +563,6 @@ function WeatherMenu:getContentFillMenuItem(display_style)
             }
             UIManager:show(spin_widget)
         end,
-        separator = display_style ~= "reading",
     }
 end
 
@@ -754,7 +767,6 @@ function WeatherMenu:getCacheMenuItem(plugin_instance)
     return {
         text = _("Cache Settings"),
         sub_item_table = sub_items,
-        separator = true,
     }
 end
 

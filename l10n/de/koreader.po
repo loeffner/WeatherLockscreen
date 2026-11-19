@@ -129,6 +129,15 @@ msgstr "Akkuanzeige (%1)"
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr "Zeigt den Akkustand auf dem Sperrbildschirm: als dünne Leiste am unteren Rand oder als Symbol mit Prozentwert oben rechts."
 
+msgid "Overrides (%1)"
+msgstr "Überschreibungen (%1)"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "Überschreibt die automatische Inhaltsskalierung und die Bildschirmdrehung für den Sperrbildschirm."
+
+msgid "update available"
+msgstr "Update verfügbar"
+
 msgid "Bottom bar"
 msgstr "Leiste unten"
 

@@ -113,6 +113,15 @@ msgstr "电池指示（%1）"
 msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
 msgstr "在锁屏上显示电池电量：底部边缘的细条，或右上角的图标和百分比。"
 
+msgid "Overrides (%1)"
+msgstr "覆盖设置（%1）"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "覆盖锁屏的自动内容缩放和屏幕旋转。"
+
+msgid "update available"
+msgstr "有可用更新"
+
 msgid "Bottom bar"
 msgstr "底部进度条"
 
