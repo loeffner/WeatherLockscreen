@@ -46,6 +46,56 @@ local ICON = {
     update           = nf(0xEDAE),
 }
 
+-- WeatherAPI icon number -> Material Design weather glyph (bundled
+-- nerdfonts/symbols.ttf, not shadowed by NotoSans). Night variants only where
+-- the icon set has one.
+local WEATHER_GLYPH = {}
+do
+    local function map(cp, numbers)
+        for _, n in ipairs(numbers) do WEATHER_GLYPH[n] = nf(cp) end
+    end
+    map(0xEC98, { 113 })                                         -- weather-sunny
+    map(0xEC94, { 116 })                                         -- weather-partlycloudy
+    map(0xEC8F, { 119, 122 })                                    -- weather-cloudy
+    map(0xEC90, { 143, 248, 260 })                               -- weather-fog
+    map(0xEC96, { 176, 263, 266, 281, 284, 293, 296, 299, 302, 353, 356 }) -- weather-rainy
+    map(0xEC95, { 305, 308, 359 })                               -- weather-pouring
+    map(0xED7D, { 182, 185, 311, 314, 317, 320, 362, 365 })     -- weather-snowy-rainy
+    map(0xEC91, { 350, 374, 377 })                               -- weather-hail
+    map(0xEC97, { 179, 227, 230, 323, 326, 329, 332, 335, 338, 368, 371 }) -- weather-snowy
+    map(0xEC92, { 200, 392, 395 })                               -- weather-lightning
+    map(0xED7C, { 386, 389 })                                    -- weather-lightning-rainy
+end
+local WEATHER_GLYPH_NIGHT = {
+    [113] = nf(0xEC93), -- weather-night (clear)
+    [116] = nf(0xEC93), -- no partly-cloudy-night glyph in the set; the moon reads better than a sun
+}
+
+--- Glyph for the current weather from the (fresh) cache. Falls back to the
+--- "clear" glyph (moon at night, otherwise sun) when there's no fresh data or
+--- the condition isn't mapped, so the entry always has an icon. Day/night
+--- comes from the weather icon when there is one, else from the clock.
+function WeatherMenu:getCurrentWeatherGlyph()
+    local icon_path = WeatherUtils:getCachedCurrentIconPath()
+    local name = type(icon_path) == "string" and (icon_path:match("([^/]+)$") or "") or ""
+    local num = tonumber(name:match("(%d+)%.%w+$"))
+    local is_night
+    if name:match("^night") then
+        is_night = true
+    elseif name:match("^day") then
+        is_night = false
+    else
+        is_night = WeatherUtils:isNightNow()
+    end
+    if num and is_night and WEATHER_GLYPH_NIGHT[num] then
+        return WEATHER_GLYPH_NIGHT[num]
+    end
+    if num and WEATHER_GLYPH[num] then
+        return WEATHER_GLYPH[num]
+    end
+    return is_night and WEATHER_GLYPH_NIGHT[113] or WEATHER_GLYPH[113]
+end
+
 -- Prefix a menu item's label with a glyph. Works for both static `text` and
 -- dynamic `text_func` items. Returns the item for convenient inline use.
 local function withGlyph(item, glyph)
