@@ -238,11 +238,14 @@ function WeatherLockscreen:addToMainMenu(menu_items)
     menu_items.weather_lockscreen = {
         -- The update entries sit at the end of the submenu (possibly on its
         -- second page), so flag a pending update here where it's always seen.
+        -- It's also prefixed with an icon for the current weather (the "clear"
+        -- icon when there's no fresh data or the condition is unknown).
         text_func = function()
+            local text = _("Weather Lockscreen")
             if WeatherUpdate:getAvailableVersion() then
-                return _("Weather Lockscreen") .. " (" .. _("update available") .. ")"
+                text = text .. " (" .. _("update available") .. ")"
             end
-            return _("Weather Lockscreen")
+            return WeatherMenu:getCurrentWeatherGlyph() .. " " .. text
         end,
         sub_item_table_func = function()
             UIManager:nextTick(function() WeatherUpdate:maybeNotify() end)

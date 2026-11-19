@@ -152,6 +152,71 @@ function WeatherUtils:getCacheMaxAge()
     return G_reader_settings:readSetting("weather_cache_max_age") or 3600 -- Default: 1 hour
 end
 
+--- Icon path of the current conditions in the weather cache (e.g.
+--- ".../day_113.png"), or nil when there's no cache or it's older than the
+--- maximum cache age. Cheap enough to call on every menu draw: the cache file
+--- is only decoded again when its modification time changes.
+function WeatherUtils:getCachedCurrentIconPath()
+    local mtime = self:_refreshCacheSummary()
+    -- saveWeatherCache writes the file when it stamps the data, so the file's
+    -- mtime doubles as the cache timestamp for the age check.
+    if not mtime or os.time() - mtime > self:getCacheMaxAge() then
+        return nil
+    end
+    return self._cache_summary.icon_path
+end
+
+-- Decode the weather cache only when the file changed, keeping the bits the
+-- menu needs. Returns the file's mtime, or nil when there's no cache.
+function WeatherUtils:_refreshCacheSummary()
+    local lfs = require("libs/libkoreader-lfs")
+    local cache_file = DataStorage:getDataDir() .. "/cache/weather-lockscreen.json"
+    local mtime = lfs.attributes(cache_file, "modification")
+    if not mtime then
+        return nil
+    end
+    if self._cache_summary_mtime ~= mtime then
+        self._cache_summary_mtime = mtime
+        local data = self:loadWeatherCache(math.huge)
+        local astro = data and data.astronomy
+        self._cache_summary = {
+            icon_path = data and data.current and data.current.icon_path or nil,
+            sunrise = astro and astro.sunrise or nil,
+            sunset = astro and astro.sunset or nil,
+        }
+    end
+    return mtime
+end
+
+-- "05:13 AM" / "09:18 PM" (WeatherAPI astronomy format) -> minutes after midnight
+local function parseClockTime(s)
+    if type(s) ~= "string" then return nil end
+    local h, m, ampm = s:match("^%s*(%d+):(%d+)%s*([AaPp][Mm])")
+    h, m = tonumber(h), tonumber(m)
+    if not h or not m then return nil end
+    ampm = ampm:upper()
+    if ampm == "AM" and h == 12 then h = 0 end
+    if ampm == "PM" and h ~= 12 then h = h + 12 end
+    return h * 60 + m
+end
+
+--- Whether it's night right now by the device clock. Uses the cached sunrise
+--- and sunset for the location (even from an expired cache: they barely move
+--- from one day to the next), falling back to night = before 6:00 / from 20:00.
+function WeatherUtils:isNightNow()
+    local now = os.date("*t")
+    local minutes = now.hour * 60 + now.min
+    local sunrise, sunset
+    if self:_refreshCacheSummary() then
+        sunrise = parseClockTime(self._cache_summary.sunrise)
+        sunset = parseClockTime(self._cache_summary.sunset)
+    end
+    if not sunrise or not sunset or sunrise >= sunset then
+        sunrise, sunset = 6 * 60, 20 * 60
+    end
+    return minutes < sunrise or minutes >= sunset
+end
+
 function WeatherUtils:getMinDelayBetweenUpdates()
     return G_reader_settings:readSetting("weather_min_update_delay") or 1800 -- Default: 30 minutes
 end
