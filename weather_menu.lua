@@ -74,7 +74,8 @@ function WeatherMenu:getSubMenuItems(plugin_instance)
 
     -- What's drawn on the lockscreen
     table.insert(menu_items, withGlyph(self:getShowHeaderMenuItem(), ICON.format_title))
-    table.insert(menu_items, withGlyph(self:getBatteryIndicatorMenuItem(), ICON.battery))
+    -- (adds its own live battery glyph, so no withGlyph here)
+    table.insert(menu_items, self:getBatteryIndicatorMenuItem())
     -- Scaling + rotation overrides share one row.
     -- (Forecast hours / Cover scaling live in the Display Style submenu.)
     table.insert(menu_items, withGlyph(self:getOverridesMenuItem(plugin_instance, display_style), ICON.arrow_expand_all))
@@ -519,8 +520,11 @@ function WeatherMenu:getBatteryIndicatorMenuItem()
         }
     end
     return {
+        -- The row's icon mirrors the live battery state (level / charging),
+        -- falling back to the static battery glyph when it can't be read.
         text_func = function()
-            return T(_("Battery indicator (%1)"), labels[DisplayHelper:getBatteryStyle()])
+            local glyph = DisplayHelper:getBatteryGlyph() or ICON.battery
+            return glyph .. " " .. T(_("Battery indicator (%1)"), labels[DisplayHelper:getBatteryStyle()])
         end,
         help_text = _("Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."),
         sub_item_table = {
