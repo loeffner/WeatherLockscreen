@@ -30,6 +30,34 @@ local _ = require("l10n/gettext")
 
 local DisplayHelper = {}
 
+--- Battery indicator for the header ("<glyph> 85%"), or nil when the device has
+--- no battery or the level can't be read. The glyph comes from KOReader's powerd
+--- (same as the reader footer) and renders through the bundled symbols font fallback.
+function DisplayHelper:getBatteryText()
+    if Device.hasBattery and not Device:hasBattery() then
+        return nil
+    end
+    local ok, text = pcall(function()
+        local powerd = Device:getPowerDevice()
+        local capacity = powerd and powerd:getCapacity()
+        if type(capacity) ~= "number" then
+            return nil
+        end
+        local symbol = ""
+        if powerd.getBatterySymbol then
+            local is_charged = powerd.isCharged and powerd:isCharged() or false
+            local is_charging = powerd.isCharging and powerd:isCharging() or false
+            symbol = (powerd:getBatterySymbol(is_charged, is_charging, capacity) or "") .. " "
+        end
+        return symbol .. capacity .. "%"
+    end)
+    if not ok then
+        logger.warn("WeatherLockscreen: Failed to read battery level:", text)
+        return nil
+    end
+    return text
+end
+
 function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weather_data, text_color, is_cached)
     local header_widgets = {}
     local show_header = G_reader_settings:nilOrTrue("weather_show_header")
@@ -83,6 +111,7 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
         })
     end
 
+    local right_text
     if show_header and weather_data.current.timestamp then
         local timestamp = weather_data.current.timestamp
         local year, month, day, hour, min = timestamp:match("(%d+)-(%d+)-(%d+) (%d+):(%d+)")
@@ -112,6 +141,15 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
             formatted_time = formatted_time .. " *"
         end
 
+        right_text = formatted_time
+    end
+
+    local battery_text = show_header and self:getBatteryText()
+    if battery_text then
+        right_text = right_text and (right_text .. "  " .. battery_text) or battery_text
+    end
+
+    if right_text then
         table.insert(header_widgets, RightContainer:new {
             dimen = { w = Screen:getWidth(), h = header_font_size + header_margin * 2 },
             FrameContainer:new {
@@ -119,7 +157,7 @@ function DisplayHelper:createHeaderWidgets(header_font_size, header_margin, weat
                 margin = 0,
                 bordersize = 0,
                 TextWidget:new {
-                    text = formatted_time,
+                    text = right_text,
                     face = Font:getFace("cfont", header_font_size),
                     fgcolor = text_color,
                 },
