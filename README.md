@@ -203,6 +203,7 @@ The plugin supports multiple languages through a hybrid localization approach:
 - 🇹🇷 Turkish (tr) - Complete by @omer-faruq
 - 🇨🇳 Chinese (Simplified)) (zh_CN) - Complete by @lianyis
 - 🇭🇺 Hungarian (hu) - Complete by @oldman63
+- 🇯🇵 Japanese (ja) - Complete by @rogervokma-stack
 
 **English (en)** - Default language (no translation needed)
 
