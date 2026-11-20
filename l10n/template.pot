@@ -149,6 +149,12 @@ msgstr ""
 msgid "Header"
 msgstr ""
 
+msgid "Bar thickness (%1)"
+msgstr ""
+
+msgid "Battery bar thickness"
+msgstr ""
+
 msgid "Override scaling"
 msgstr ""
 
@@ -387,6 +393,12 @@ msgstr ""
 
 # Reading/Cover Display (display_reading.lua)
 msgid "Page %1 of %2"
+msgstr ""
+
+msgid "Unknown Title"
+msgstr ""
+
+msgid "No book"
 msgstr ""
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases

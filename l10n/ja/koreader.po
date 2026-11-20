@@ -126,6 +126,33 @@ msgstr "（体感 %1）"
 msgid "Show header"
 msgstr "ヘッダーを表示"
 
+msgid "Battery indicator (%1)"
+msgstr "バッテリー表示（%1）"
+
+msgid "Shows the battery level on the lockscreen: as a thin bar along the bottom edge, or as an icon and percentage in the top right corner."
+msgstr "ロック画面にバッテリー残量を表示します。画面の下端に沿った細いバー、または右上のアイコンとパーセンテージで表示します。"
+
+msgid "Overrides (%1)"
+msgstr "上書き（%1）"
+
+msgid "Override the automatic content scaling and the screen rotation for the lockscreen."
+msgstr "ロック画面の自動の拡大率と画面の回転を上書きします。"
+
+msgid "update available"
+msgstr "アップデートがあります"
+
+msgid "Bottom bar"
+msgstr "下部のバー"
+
+msgid "Header"
+msgstr "ヘッダー"
+
+msgid "Bar thickness (%1)"
+msgstr "バーの太さ（%1）"
+
+msgid "Battery bar thickness"
+msgstr "バッテリーバーの太さ"
+
 msgid "Override scaling"
 msgstr "拡大率を上書き"
 
@@ -366,6 +393,12 @@ msgstr "湿度"
 msgid "Page %1 of %2"
 msgstr "ページ %1 / %2"
 
+msgid "Unknown Title"
+msgstr "不明なタイトル"
+
+msgid "No book"
+msgstr "本がありません"
+
 # Night Owl Display (display_nightowl.lua) - Moon Phases
 # These are dynamically translated via _(moon_phase) in weather_utils.lua
 msgid "New Moon"
@@ -455,3 +488,30 @@ msgstr "アップデートのファイルを展開できませんでした。"
 
 msgid "The downloaded update is not valid."
 msgstr "ダウンロードしたアップデートのファイルが正しくありません。"
+
+# ==============================================================================
+# KOReader strings used by the plugin (not in template.pot)
+# KOReader's own Japanese translations of these are marked fuzzy and thus
+# not used, so they are provided here. Remove once KOReader's are fixed.
+# ==============================================================================
+
+msgid "Show book cover on sleep screen"
+msgstr "スクリーンセーバーにブックカバーを表示"
+
+msgid "Show custom image or cover on sleep screen"
+msgstr "スクリーンセーバーにカスタム画像またはカバーを表示"
+
+msgid "Show random image from folder on sleep screen"
+msgstr "スクリーンセーバーにフォルダーのランダムな画像を表示"
+
+msgid "Show reading progress on sleep screen"
+msgstr "スクリーンセーバーに読書進行状況を表示"
+
+msgid "Show book status on sleep screen"
+msgstr "スクリーンセーバーに本のステータスを表示"
+
+msgid "Leave screen as-is"
+msgstr "画面をそのままにする"
+
+msgid "Later"
+msgstr "後で"

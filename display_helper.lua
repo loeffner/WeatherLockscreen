@@ -95,7 +95,18 @@ function DisplayHelper:getBatteryGlyph(state)
     return nil
 end
 
---- Full-screen overlay with a thin bar along the bottom edge, filled from the
+DisplayHelper.BATTERY_BAR_THICKNESS_DEFAULT = 9
+DisplayHelper.BATTERY_BAR_THICKNESS_MIN = 3
+DisplayHelper.BATTERY_BAR_THICKNESS_MAX = 40
+
+--- Height of the battery bar in DPI-independent units (before scaleBySize).
+function DisplayHelper:getBatteryBarThickness()
+    local value = tonumber(G_reader_settings:readSetting("weather_battery_bar_thickness"))
+        or self.BATTERY_BAR_THICKNESS_DEFAULT
+    return math.max(self.BATTERY_BAR_THICKNESS_MIN, math.min(self.BATTERY_BAR_THICKNESS_MAX, value))
+end
+
+--- Full-screen overlay with a bar along the bottom edge, filled from the
 --- left according to the battery level. Returns nil when the battery can't be
 --- read. `dark` selects colors for a black background (nightowl).
 function DisplayHelper:createBatteryBar(dark)
@@ -109,7 +120,7 @@ function DisplayHelper:createBatteryBar(dark)
         dimen = Screen:getSize(),
         ProgressWidget:new {
             width = Screen:getWidth(),
-            height = Screen:scaleBySize(9),
+            height = Screen:scaleBySize(self:getBatteryBarThickness()),
             percentage = state.capacity / 100,
             margin_h = 0,
             margin_v = 0,

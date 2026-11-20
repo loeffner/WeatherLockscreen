@@ -569,6 +569,9 @@ function WeatherMenu:getBatteryIndicatorMenuItem()
             radio = true,
         }
     end
+    -- A separator is drawn below its item: this one sets the thickness entry apart.
+    local header_option = option("header")
+    header_option.separator = true
     return {
         -- The row's icon mirrors the live battery state (level / charging),
         -- falling back to the static battery glyph when it can't be read.
@@ -580,7 +583,34 @@ function WeatherMenu:getBatteryIndicatorMenuItem()
         sub_item_table = {
             option("off"),
             option("bar"),
-            option("header"),
+            header_option,
+            {
+                text_func = function()
+                    return T(_("Bar thickness (%1)"), DisplayHelper:getBatteryBarThickness())
+                end,
+                enabled_func = function()
+                    return DisplayHelper:getBatteryStyle() == "bar"
+                end,
+                keep_menu_open = true,
+                callback = function(touchmenu_instance)
+                    local SpinWidget = require("ui/widget/spinwidget")
+                    UIManager:show(SpinWidget:new {
+                        title_text = _("Battery bar thickness"),
+                        value = DisplayHelper:getBatteryBarThickness(),
+                        value_min = DisplayHelper.BATTERY_BAR_THICKNESS_MIN,
+                        value_max = DisplayHelper.BATTERY_BAR_THICKNESS_MAX,
+                        value_step = 1,
+                        value_hold_step = 5,
+                        default_value = DisplayHelper.BATTERY_BAR_THICKNESS_DEFAULT,
+                        ok_text = _("Save"),
+                        callback = function(spin)
+                            G_reader_settings:saveSetting("weather_battery_bar_thickness", spin.value)
+                            G_reader_settings:flush()
+                            touchmenu_instance:updateItems()
+                        end,
+                    })
+                end,
+            },
         },
     }
 end

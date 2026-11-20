@@ -87,6 +87,7 @@ function WeatherLockscreen:initDefaultSettings()
         -- Display settings
         weather_show_header = true, -- nilOrTrue default is true
         weather_battery_style = "off", -- Battery indicator: "off", "bar" (bottom edge) or "header" (top right)
+        weather_battery_bar_thickness = 9, -- Bottom bar height, DPI-independent (Screen:scaleBySize) units
         weather_override_rotation = false, -- when false, use KOReader's rotation
         weather_orientation = 0, -- Screen rotation mode 0-3 (0 = upright portrait); day/default only
         weather_override_scaling = false,

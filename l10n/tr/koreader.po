@@ -147,6 +147,12 @@ msgstr "Alt çubuk"
 msgid "Header"
 msgstr "Başlık"
 
+msgid "Bar thickness (%1)"
+msgstr "Çubuk kalınlığı (%1)"
+
+msgid "Battery bar thickness"
+msgstr "Pil çubuğu kalınlığı"
+
 msgid "Override scaling"
 msgstr "Ölçeklemeyi geçersiz kıl"
 
@@ -386,6 +392,12 @@ msgstr "NEM"
 # Reading/Cover Display (display_reading.lua)
 msgid "Page %1 of %2"
 msgstr "Sayfa %1 / %2"
+
+msgid "Unknown Title"
+msgstr "Bilinmeyen başlık"
+
+msgid "No book"
+msgstr "Kitap yok"
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
 # These are dynamically translated via _(moon_phase) in weather_utils.lua

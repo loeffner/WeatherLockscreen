@@ -148,6 +148,12 @@ msgstr "Barra inferior"
 msgid "Header"
 msgstr "Encabezado"
 
+msgid "Bar thickness (%1)"
+msgstr "Grosor de la barra (%1)"
+
+msgid "Battery bar thickness"
+msgstr "Grosor de la barra de batería"
+
 msgid "Override scaling"
 msgstr "Forzar escalado"
 
@@ -387,6 +393,12 @@ msgstr "HUMEDAD"
 # Reading/Cover Display (display_reading.lua)
 msgid "Page %1 of %2"
 msgstr "Página %1 de %2"
+
+msgid "Unknown Title"
+msgstr "Título desconocido"
+
+msgid "No book"
+msgstr "Ningún libro"
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
 # These are dynamically translated via _(moon_phase) in weather_utils.lua

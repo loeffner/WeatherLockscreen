@@ -128,6 +128,12 @@ msgstr "底部进度条"
 msgid "Header"
 msgstr "标题栏"
 
+msgid "Bar thickness (%1)"
+msgstr "进度条粗细（%1）"
+
+msgid "Battery bar thickness"
+msgstr "电量条粗细"
+
 msgid "Override scaling"
 msgstr "覆盖缩放"
 
@@ -229,6 +235,15 @@ msgstr "6 小时"
 
 msgid "12 hours"
 msgstr "12 小时"
+
+msgid "While charging"
+msgstr "充电时"
+
+msgid "Same as base"
+msgstr "与默认相同"
+
+msgid "Refreshing, please wait…"
+msgstr "正在刷新，请稍候…"
 
 msgid "Custom…"
 msgstr "自定义…"
@@ -340,6 +355,12 @@ msgstr "湿度"
 
 msgid "Page %1 of %2"
 msgstr "第 %1 页,共 %2 页"
+
+msgid "Unknown Title"
+msgstr "未知标题"
+
+msgid "No book"
+msgstr "无书籍"
 
 msgid "New Moon"
 msgstr "新月"

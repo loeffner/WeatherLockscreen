@@ -144,6 +144,12 @@ msgstr "Leiste unten"
 msgid "Header"
 msgstr "Kopfzeile"
 
+msgid "Bar thickness (%1)"
+msgstr "Balkendicke (%1)"
+
+msgid "Battery bar thickness"
+msgstr "Dicke des Akkubalkens"
+
 msgid "Override scaling"
 msgstr "Skalierung überschreiben"
 
@@ -383,6 +389,12 @@ msgstr "LUFTFEUCHTIGKEIT"
 # Reading/Cover Display (display_reading.lua)
 msgid "Page %1 of %2"
 msgstr "Seite %1 von %2"
+
+msgid "Unknown Title"
+msgstr "Unbekannter Titel"
+
+msgid "No book"
+msgstr "Kein Buch"
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
 # These are dynamically translated via _(moon_phase) in weather_utils.lua

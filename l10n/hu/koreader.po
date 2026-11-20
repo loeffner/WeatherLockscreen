@@ -149,6 +149,12 @@ msgstr "Alsó sáv"
 msgid "Header"
 msgstr "Fejléc"
 
+msgid "Bar thickness (%1)"
+msgstr "Sáv vastagsága (%1)"
+
+msgid "Battery bar thickness"
+msgstr "Akkumulátorsáv vastagsága"
+
 msgid "Override scaling"
 msgstr "Méretezés felülbírálása"
 
@@ -388,6 +394,12 @@ msgstr "PÁRATARTALOM"
 # Reading/Cover Display (display_reading.lua)
 msgid "Page %1 of %2"
 msgstr "%1. oldal / %2"
+
+msgid "Unknown Title"
+msgstr "Ismeretlen cím"
+
+msgid "No book"
+msgstr "Nincs könyv"
 
 # Night Owl Display (display_nightowl.lua) - Moon Phases
 # These are dynamically translated via _(moon_phase) in weather_utils.lua
